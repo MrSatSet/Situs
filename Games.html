@@ -419,6 +419,47 @@
   </div>
 
   <!-- ===================================================================== -->
+  <!-- MODAL KONFIRMASI PEMULIHAN DATA (Sesuai Desain Gambar)                -->
+  <!-- ===================================================================== -->
+  <div id="restoreConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-[#192336] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/80 p-6 animate-modal">
+      <div class="flex items-start gap-3.5">
+        <div class="text-3xl leading-none select-none pt-0.5">📂</div>
+        <div class="flex-1">
+          <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Konfirmasi Pemulihan Data
+          </h3>
+          <p id="restoreConfirmMessage" class="text-sm sm:text-[15px] text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
+            Ditemukan 1 catatan pada sumber cadangan, sementara saat ini sudah ada 1 catatan tersimpan. Pilih metode pemulihan:
+          </p>
+
+          <!-- 3 Tombol Aksi: Batal, Gabungkan, Timpa Data Lama -->
+          <div class="flex flex-wrap items-center gap-2.5 mt-6">
+            <button 
+              id="btnRestoreCancel" 
+              type="button"
+              class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#2a364d] dark:hover:bg-[#34425e] border border-slate-300 dark:border-slate-600/80 text-slate-700 dark:text-slate-100 font-bold text-xs sm:text-sm transition active:scale-95">
+              Batal
+            </button>
+            <button 
+              id="btnRestoreMerge" 
+              type="button"
+              class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-600/25 transition active:scale-95">
+              Gabungkan
+            </button>
+            <button 
+              id="btnRestoreOverwrite" 
+              type="button"
+              class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-600/25 transition active:scale-95">
+              Timpa Data Lama
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser)          -->
   <!-- ===================================================================== -->
   <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
@@ -452,7 +493,7 @@
   <!-- ===================================================================== -->
   <!-- NOTIFIKASI TOAST (Pengganti alert() bawaan browser)                   -->
   <!-- ===================================================================== -->
-  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[92%] max-w-md pointer-events-none"></div>
+  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[70] flex flex-col gap-2 w-[92%] max-w-md pointer-events-none"></div>
 
   <!-- ===================================================================== -->
   <!-- LOGIKA JAVASCRIPT APLIKASI                                            -->
@@ -472,6 +513,7 @@
       let gameLogs = [];
       let sortOrder = 'newest'; // 'newest' | 'oldest'
       let confirmCallback = null;
+      let pendingRestoreData = null; // Menyimpan data sementara saat menunggu konfirmasi pemulihan
 
       // Referensi Elemen DOM
       const htmlEl = document.documentElement;
@@ -508,7 +550,14 @@
       const btnGithubPush = document.getElementById('btnGithubPush');
       const btnGithubPull = document.getElementById('btnGithubPull');
 
-      // Modal Konfirmasi
+      // Modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
+      const restoreConfirmModal = document.getElementById('restoreConfirmModal');
+      const restoreConfirmMessage = document.getElementById('restoreConfirmMessage');
+      const btnRestoreCancel = document.getElementById('btnRestoreCancel');
+      const btnRestoreMerge = document.getElementById('btnRestoreMerge');
+      const btnRestoreOverwrite = document.getElementById('btnRestoreOverwrite');
+
+      // Modal Konfirmasi Hapus
       const confirmModal = document.getElementById('confirmModal');
       const confirmTitle = document.getElementById('confirmTitle');
       const confirmMessage = document.getElementById('confirmMessage');
@@ -570,6 +619,93 @@
           confirmCallback();
         }
         closeConfirm();
+      });
+
+      // -------------------------------------------------------------------
+      // 1B. MODAL KONFIRMASI PEMULIHAN DATA (GABUNGKAN VS TIMPA DATA LAMA)
+      // -------------------------------------------------------------------
+      function normalizeLogItem(item) {
+        if (!item || !item.gameName || !item.startTime || !item.endTime) return null;
+        return {
+          id: item.id || ('log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
+          gameName: String(item.gameName),
+          startTime: String(item.startTime),
+          endTime: String(item.endTime),
+          durationMinutes: Number(item.durationMinutes) || calculateDurationMinutes(item.startTime, item.endTime) || 0,
+          battery: Number(item.battery) || 0,
+          connection: String(item.connection || 'WiFi'),
+          createdAt: item.createdAt || new Date().toISOString()
+        };
+      }
+
+      function promptRestoreMethod(incomingLogs, sourceLabel) {
+        const validLogs = incomingLogs
+          .map(normalizeLogItem)
+          .filter((item) => item !== null);
+
+        if (validLogs.length === 0) {
+          showToast('Tidak ditemukan catatan permainan yang valid di dalam file cadangan.', 'warning');
+          return;
+        }
+
+        // Jika penyimpanan lokal masih kosong, langsung pulihkan tanpa perlu memilih Gabungkan/Timpa
+        if (gameLogs.length === 0) {
+          gameLogs = validLogs;
+          saveLogsToStorage();
+          renderHistoryTable();
+          showToast(`Pemulihan berhasil! ${validLogs.length} catatan dipulihkan dari ${sourceLabel}.`, 'success');
+          return;
+        }
+
+        // Jika sudah ada catatan tersimpan di lokal, tampilkan dialog konfirmasi seperti gambar
+        pendingRestoreData = {
+          logs: validLogs,
+          sourceLabel: sourceLabel
+        };
+
+        restoreConfirmMessage.textContent = `Ditemukan ${validLogs.length} catatan pada ${sourceLabel}, sementara saat ini sudah ada ${gameLogs.length} catatan tersimpan. Pilih metode pemulihan:`;
+        restoreConfirmModal.classList.remove('hidden');
+        restoreConfirmModal.classList.add('flex');
+      }
+
+      function closeRestoreConfirmModal() {
+        restoreConfirmModal.classList.add('hidden');
+        restoreConfirmModal.classList.remove('flex');
+        pendingRestoreData = null;
+      }
+
+      btnRestoreCancel.addEventListener('click', () => {
+        closeRestoreConfirmModal();
+        showToast('Pemulihan data dibatalkan.', 'info');
+      });
+
+      // Tutup jika klik area backdrop di luar modal
+      restoreConfirmModal.addEventListener('click', (e) => {
+        if (e.target === restoreConfirmModal) {
+          closeRestoreConfirmModal();
+        }
+      });
+
+      // Pilihan 1: Gabungkan (menggabungkan tanpa menduplikasi data yang sama)
+      btnRestoreMerge.addEventListener('click', () => {
+        if (!pendingRestoreData) return;
+        const { logs, sourceLabel } = pendingRestoreData;
+        const addedCount = mergeLogsWithoutDuplicates(logs);
+        saveLogsToStorage();
+        renderHistoryTable();
+        closeRestoreConfirmModal();
+        showToast(`Data digabungkan dari ${sourceLabel}! ${addedCount} catatan baru ditambahkan.`, 'success');
+      });
+
+      // Pilihan 2: Timpa Data Lama (mengganti seluruh data lokal dengan data cadangan)
+      btnRestoreOverwrite.addEventListener('click', () => {
+        if (!pendingRestoreData) return;
+        const { logs, sourceLabel } = pendingRestoreData;
+        gameLogs = [...logs];
+        saveLogsToStorage();
+        renderHistoryTable();
+        closeRestoreConfirmModal();
+        showToast(`Data lama ditimpa! ${logs.length} catatan dari ${sourceLabel} diterapkan.`, 'success');
       });
 
       // -------------------------------------------------------------------
@@ -868,10 +1004,20 @@
       }
 
       function deleteSingleLog(id) {
-        gameLogs = gameLogs.filter((item) => item.id !== id);
-        saveLogsToStorage();
-        renderHistoryTable();
-        showToast('Catatan berhasil dihapus', 'info');
+        const logToDelete = gameLogs.find((item) => item.id === id);
+        if (!logToDelete) return;
+
+        openConfirm(
+          'Hapus Catatan?',
+          `Apakah Anda yakin ingin menghapus catatan pemakaian "${logToDelete.gameName}"?`,
+          'Ya, Lanjutkan',
+          () => {
+            gameLogs = gameLogs.filter((item) => item.id !== id);
+            saveLogsToStorage();
+            renderHistoryTable();
+            showToast('Catatan berhasil dihapus!', 'success');
+          }
+        );
       }
 
       // -------------------------------------------------------------------
@@ -898,8 +1044,6 @@
         const fileName = `catatan-pemakaian-game-${dateTag}.json`;
         const a = document.createElement('a');
 
-        // Beberapa browser Android perlu anchor tetap berada di DOM
-        // dan Blob URL jangan langsung dicabut setelah .click().
         a.href = url;
         a.download = fileName;
         a.style.display = 'none';
@@ -914,7 +1058,6 @@
           showToast('Browser gagal memulai unduhan. Coba buka halaman ini di Chrome.', 'error');
         }
 
-        // Tunda penghapusan Blob URL agar browser Android sempat memproses unduhan.
         setTimeout(() => {
           URL.revokeObjectURL(url);
           a.remove();
@@ -940,10 +1083,8 @@
               throw new Error('Format file JSON tidak dikenali.');
             }
 
-            const addedCount = mergeLogsWithoutDuplicates(importedLogs);
-            saveLogsToStorage();
-            renderHistoryTable();
-            showToast(`Berhasil memulihkan! ${addedCount} data baru ditambahkan (duplikat dilewati).`, 'success');
+            // Tampilkan konfirmasi metode pemulihan (Gabungkan vs Timpa Data Lama)
+            promptRestoreMethod(importedLogs, `file lokal (${file.name})`);
           } catch (err) {
             showToast('Gagal memulihkan file JSON: ' + err.message, 'error');
           }
@@ -951,7 +1092,7 @@
         reader.readAsText(file);
       });
 
-      // Mencegah data ganda saat pemulihan (baik dari JSON maupun GitHub)
+      // Mencegah data ganda saat penggabungan (baik dari JSON maupun GitHub)
       function mergeLogsWithoutDuplicates(incomingLogs) {
         const existingIds = new Set(gameLogs.map((l) => l.id));
         const existingSignatures = new Set(
@@ -960,23 +1101,13 @@
 
         let added = 0;
         incomingLogs.forEach((item) => {
-          if (!item || !item.gameName || !item.startTime || !item.endTime) return;
+          const cleanItem = normalizeLogItem(item);
+          if (!cleanItem) return;
 
-          const sig = `${item.gameName}|${item.startTime}|${item.endTime}|${item.battery}|${item.connection}`;
+          const sig = `${cleanItem.gameName}|${cleanItem.startTime}|${cleanItem.endTime}|${cleanItem.battery}|${cleanItem.connection}`;
           if ((item.id && existingIds.has(item.id)) || existingSignatures.has(sig)) {
             return; // Lewati data duplikat
           }
-
-          const cleanItem = {
-            id: item.id || ('log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
-            gameName: String(item.gameName),
-            startTime: String(item.startTime),
-            endTime: String(item.endTime),
-            durationMinutes: Number(item.durationMinutes) || calculateDurationMinutes(item.startTime, item.endTime) || 0,
-            battery: Number(item.battery) || 0,
-            connection: String(item.connection || 'WiFi'),
-            createdAt: item.createdAt || new Date().toISOString()
-          };
 
           gameLogs.push(cleanItem);
           existingIds.add(cleanItem.id);
@@ -1062,7 +1193,6 @@
       });
 
       // Tombol Simpan GitHub: hanya menyimpan konfigurasi secara lokal.
-      // Pengunggahan data dilakukan secara terpisah melalui tombol Backup ke GitHub.
       btnSaveGithub.addEventListener('click', () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
@@ -1204,11 +1334,8 @@
             throw new Error('Struktur data backup GitHub tidak valid.');
           }
 
-          const addedCount = mergeLogsWithoutDuplicates(remoteLogs);
-          saveLogsToStorage();
-          renderHistoryTable();
-
-          showToast(`Pemulihan GitHub berhasil! ${addedCount} catatan baru dipulihkan.`, 'success');
+          // Tampilkan modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
+          promptRestoreMethod(remoteLogs, `GitHub (${repo})`);
         } catch (err) {
           showToast('Gagal memulihkan dari GitHub: ' + err.message, 'error');
         } finally {
