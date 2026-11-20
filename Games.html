@@ -1061,8 +1061,9 @@
         }
       });
 
-      // Tombol Simpan GitHub (Menyimpan konfigurasi & melakukan backup otomatis ke GitHub)
-      btnSaveGithub.addEventListener('click', async () => {
+      // Tombol Simpan GitHub: hanya menyimpan konfigurasi secara lokal.
+      // Pengunggahan data dilakukan secara terpisah melalui tombol Backup ke GitHub.
+      btnSaveGithub.addEventListener('click', () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
 
@@ -1077,8 +1078,7 @@
         }
 
         saveGithubConfig(token, repo);
-        showToast('Konfigurasi GitHub disimpan! Memulai pencadangan...', 'info');
-        await pushBackupToGithub(token, repo);
+        showToast('Konfigurasi GitHub berhasil disimpan di perangkat. Belum ada data yang diunggah.', 'success');
       });
 
       btnGithubPush.addEventListener('click', async () => {
