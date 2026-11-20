@@ -124,6 +124,21 @@
                     </select>
                 </div>
 
+                <!-- Kolom nama aplikasi khusus, muncul saat memilih Lainnya -->
+                <div id="customAppNameWrapper" class="hidden">
+                    <label for="customAppName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Masukkan Nama Aplikasi
+                    </label>
+                    <input
+                        type="text"
+                        id="customAppName"
+                        maxlength="60"
+                        placeholder="Masukkan nama aplikasi secara manual..."
+                        autocomplete="off"
+                        class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    >
+                </div>
+
                 <!-- 2 & 3. Tanggal & Jam Mulai + Berakhir -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -277,7 +292,7 @@
         </section>
     </div>
 
-    <!-- MODAL PENGATURAN APLIKASI (Tanpa Bagian Background) -->
+    <!-- MODAL PENGATURAN APLIKASI -->
     <div 
         id="settingsModal" 
         class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm transition-opacity"
@@ -381,7 +396,7 @@
                             >
                         </div>
 
-                        <!-- Nama File di GitHub (Opsional, mendukung file backup lama maupun baru) -->
+                        <!-- Nama File di GitHub -->
                         <div>
                             <label for="githubFilePath" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                                 Nama File Cadangan di GitHub
@@ -432,7 +447,7 @@
         </div>
     </div>
 
-    <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser) -->
+    <!-- MODAL KONFIRMASI KUSTOM (Hapus Data) -->
     <div 
         id="confirmModal" 
         class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm"
@@ -465,14 +480,64 @@
         </div>
     </div>
 
+    <!-- MODAL KONFIRMASI PEMULIHAN DATA (Batal / Gabungkan / Timpa Data Lama) -->
+    <div 
+        id="restoreChoiceModal" 
+        class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+        role="dialog" 
+        aria-modal="true"
+        aria-labelledby="restoreChoiceTitle"
+    >
+        <div class="bg-white dark:bg-navy-900 w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-navy-700 animate-toast">
+            <div class="flex items-start gap-3.5 mb-5">
+                <div class="text-2xl sm:text-3xl leading-none shrink-0 mt-0.5 select-none">
+                    📂
+                </div>
+                <div>
+                    <h3 id="restoreChoiceTitle" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug mb-1.5">
+                        Konfirmasi Pemulihan Data
+                    </h3>
+                    <p id="restoreChoiceMessage" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Ditemukan 0 catatan pada sumber cadangan, sementara saat ini sudah ada 0 catatan tersimpan. Pilih metode pemulihan:
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2.5">
+                <button 
+                    id="btnRestoreChoiceCancel" 
+                    type="button" 
+                    class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-navy-600 bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold transition active:scale-95"
+                >
+                    Batal
+                </button>
+                <button 
+                    id="btnRestoreChoiceMerge" 
+                    type="button" 
+                    class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition active:scale-95"
+                >
+                    Gabungkan
+                </button>
+                <button 
+                    id="btnRestoreChoiceOverwrite" 
+                    type="button" 
+                    class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition active:scale-95"
+                >
+                    Timpa Data Lama
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- WADAH NOTIFIKASI TOAST -->
-    <div id="toastContainer" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toastContainer" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-96 z-[70] flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
         /**
          * Aplikasi Catatan Pemakaian Aplikasi
          * Penyimpanan: localStorage
          * Fitur: CRUD Riwayat, Hitung Durasi Otomatis, Ekspor/Impor JSON biasa,
+         *        Konfirmasi Pemulihan Data (Gabungkan / Timpa Data Lama),
          *        Tema Gelap/Terang, GitHub API Backup/Restore
          */
 
@@ -493,10 +558,13 @@
             filePath: DEFAULT_GITHUB_FILE
         };
         let confirmCallback = null;
+        let pendingRestoreState = null;
 
         // Elemen DOM Utama
         const usageForm = document.getElementById('usageForm');
         const appNameInput = document.getElementById('appName');
+        const customAppNameWrapper = document.getElementById('customAppNameWrapper');
+        const customAppNameInput = document.getElementById('customAppName');
         const startTimeInput = document.getElementById('startTime');
         const endTimeInput = document.getElementById('endTime');
         const batteryInput = document.getElementById('batteryLevel');
@@ -532,6 +600,13 @@
         const confirmMessage = document.getElementById('confirmMessage');
         const btnConfirmCancel = document.getElementById('btnConfirmCancel');
         const btnConfirmOk = document.getElementById('btnConfirmOk');
+
+        // Elemen DOM Modal Konfirmasi Pemulihan Data
+        const restoreChoiceModal = document.getElementById('restoreChoiceModal');
+        const restoreChoiceMessage = document.getElementById('restoreChoiceMessage');
+        const btnRestoreChoiceCancel = document.getElementById('btnRestoreChoiceCancel');
+        const btnRestoreChoiceMerge = document.getElementById('btnRestoreChoiceMerge');
+        const btnRestoreChoiceOverwrite = document.getElementById('btnRestoreChoiceOverwrite');
 
         // ==========================================
         // 1. INISIALISASI APLIKASI
@@ -606,6 +681,94 @@
             confirmModal.classList.add('hidden');
             confirmModal.classList.remove('flex');
             confirmCallback = null;
+        }
+
+        /**
+         * Menampilkan dialog Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
+         * apabila sudah terdapat catatan tersimpan di perangkat.
+         */
+        function promptRestoreStrategy(incomingRecords, sourceLabel) {
+            if (!Array.isArray(incomingRecords) || incomingRecords.length === 0) {
+                showToast('Tidak ditemukan catatan yang valid untuk dipulihkan.', 'warning');
+                return;
+            }
+
+            // Jika penyimpanan lokal masih kosong, langsung pulihkan tanpa dialog konflik
+            if (usageRecords.length === 0) {
+                executeRestoreStrategy('overwrite', incomingRecords, sourceLabel);
+                return;
+            }
+
+            pendingRestoreState = {
+                records: incomingRecords,
+                sourceLabel: sourceLabel
+            };
+
+            restoreChoiceMessage.textContent =
+                `Ditemukan ${incomingRecords.length} catatan pada ${sourceLabel}, sementara saat ini sudah ada ${usageRecords.length} catatan tersimpan. Pilih metode pemulihan:`;
+
+            restoreChoiceModal.classList.remove('hidden');
+            restoreChoiceModal.classList.add('flex');
+        }
+
+        function closeRestoreChoiceModal() {
+            restoreChoiceModal.classList.add('hidden');
+            restoreChoiceModal.classList.remove('flex');
+            pendingRestoreState = null;
+        }
+
+        function getRecordFingerprint(rec) {
+            return `${rec.appName}|${rec.startTime}|${rec.endTime}|${rec.battery}|${rec.connection}`;
+        }
+
+        function executeRestoreStrategy(mode, incomingRecords, sourceLabel) {
+            if (mode === 'overwrite') {
+                usageRecords = [...incomingRecords];
+                saveRecords();
+                renderTable();
+                showToast(
+                    `Berhasil menimpa data lama dengan ${usageRecords.length} catatan dari ${sourceLabel}!`,
+                    'success'
+                );
+                return;
+            }
+
+            if (mode === 'merge') {
+                const existingIds = new Set(usageRecords.map(r => r.id));
+                const existingFingerprints = new Set(usageRecords.map(getRecordFingerprint));
+                let addedCount = 0;
+
+                incomingRecords.forEach((item, index) => {
+                    const fp = getRecordFingerprint(item);
+                    if (existingIds.has(item.id) || existingFingerprints.has(fp)) {
+                        return;
+                    }
+
+                    const uniqueRecord = {
+                        ...item,
+                        id: item.id || `merged_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 6)}`
+                    };
+                    usageRecords.push(uniqueRecord);
+                    existingIds.add(uniqueRecord.id);
+                    existingFingerprints.add(fp);
+                    addedCount++;
+                });
+
+                saveRecords();
+                renderTable();
+
+                if (addedCount > 0) {
+                    showToast(
+                        `Berhasil menggabungkan ${addedCount} catatan baru (total ${usageRecords.length} catatan).`,
+                        'success'
+                    );
+                } else {
+                    showToast(
+                        `Semua catatan dari ${sourceLabel} sudah ada di riwayat (${usageRecords.length} catatan).`,
+                        'info'
+                    );
+                }
+            }
         }
 
         // ==========================================
@@ -747,7 +910,6 @@
                     const dur = calculateDuration(parsedRange.startTime, parsedRange.endTime);
                     const batteryNum = parseInt(String(item.baterai ?? '0').replace(/[^0-9]/g, ''), 10);
 
-                    // Pertahankan teks durasi lama jika gagal hitung, atau gunakan hasil hitung standar
                     let durationMinutes = dur ? dur.minutes : 0;
                     if (!durationMinutes && item.durasi) {
                         const matchMin = String(item.durasi).match(/(\d+)/);
@@ -884,15 +1046,21 @@
         function handleFormSubmit(e) {
             e.preventDefault();
 
-            const appName = appNameInput.value.trim();
+            const appName = appNameInput.value === 'Lainnya'
+                ? customAppNameInput.value.trim()
+                : appNameInput.value.trim();
             const startTime = startTimeInput.value;
             const endTime = endTimeInput.value;
             const batteryRaw = batteryInput.value.trim();
             const connection = connectionInput.value;
 
-            // Validasi input
             if (!appName) {
-                showToast('Silakan pilih nama aplikasi.', 'error');
+                if (appNameInput.value === 'Lainnya') {
+                    showToast('Silakan masukkan nama aplikasi terlebih dahulu.', 'error');
+                    customAppNameInput.focus();
+                } else {
+                    showToast('Silakan pilih nama aplikasi.', 'error');
+                }
                 return;
             }
             if (!startTime || !endTime) {
@@ -940,7 +1108,6 @@
             saveRecords();
             renderTable();
 
-            // Reset input baterai agar siap diisi berikutnya
             batteryInput.value = '';
             showToast(`Catatan ${appName} (${durationObj.text}) berhasil disimpan!`, 'success');
         }
@@ -978,13 +1145,11 @@
                     records: usageRecords
                 };
 
-                // Simpan data langsung dalam format JSON biasa.
                 const backupText = JSON.stringify(exportData, null, 2);
                 const backupBlob = new Blob([backupText], {
                     type: 'application/json;charset=utf-8'
                 });
 
-                // Buat URL unduhan dan biarkan browser memprosesnya terlebih dahulu.
                 if (window.URL && typeof URL.createObjectURL === 'function') {
                     downloadUrl = URL.createObjectURL(backupBlob);
                     downloadLink = document.createElement('a');
@@ -994,11 +1159,8 @@
                     downloadLink.setAttribute('aria-hidden', 'true');
                     document.body.appendChild(downloadLink);
 
-                    // Klik dilakukan langsung dari aksi pengguna agar diizinkan browser Android.
                     downloadLink.click();
 
-                    // Jangan revoke langsung setelah click: sebagian browser Android/WebView
-                    // baru mulai membaca Blob setelah event klik selesai diproses.
                     window.setTimeout(() => {
                         if (downloadLink && downloadLink.parentNode) {
                             downloadLink.parentNode.removeChild(downloadLink);
@@ -1043,13 +1205,7 @@
                         return;
                     }
 
-                    usageRecords = validRecords;
-                    saveRecords();
-                    renderTable();
-                    showToast(
-                        `Berhasil memulihkan ${validRecords.length} catatan dari JSON!`,
-                        'success'
-                    );
+                    promptRestoreStrategy(validRecords, `file JSON (${file.name})`);
                 } catch (err) {
                     showToast('Gagal membaca file JSON: ' + err.message, 'error');
                 } finally {
@@ -1098,7 +1254,6 @@
         function refreshGithubFormUI() {
             githubRepoInput.value = githubConfig.repo;
             githubFilePathInput.value = githubConfig.filePath || DEFAULT_GITHUB_FILE;
-            // Jangan tampilkan token secara terbuka setelah disimpan
             githubTokenInput.type = 'password';
             githubTokenInput.value = githubConfig.token;
             btnToggleToken.textContent = '👁️';
@@ -1132,7 +1287,6 @@
             showToast('Konfigurasi GitHub berhasil disimpan!', 'success');
         }
 
-        // Helper Base64 UTF-8 untuk format pengiriman GitHub Contents API
         function utf8ToBase64(str) {
             const bytes = new TextEncoder().encode(str);
             let binString = '';
@@ -1165,7 +1319,6 @@
             showToast('Menghubungkan ke GitHub untuk mencadangkan data...', 'info');
 
             try {
-                // 1. Cek apakah file sudah ada untuk mendapatkan SHA terbaru
                 let sha = null;
                 const getRes = await fetch(apiUrl, {
                     headers: {
@@ -1182,7 +1335,6 @@
                     throw new Error(errData.message || `HTTP ${getRes.status}`);
                 }
 
-                // 2. Siapkan payload JSON standar terbaru (termasuk data hasil konversi backup lama)
                 const payloadObj = {
                     app: 'Catatan Pemakaian Aplikasi',
                     updatedAt: new Date().toISOString(),
@@ -1196,7 +1348,6 @@
                 };
                 if (sha) bodyData.sha = sha;
 
-                // 3. Unggah (PUT) ke GitHub
                 const putRes = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
@@ -1260,13 +1411,7 @@
                     throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
                 }
 
-                usageRecords = validRecords;
-                saveRecords();
-                renderTable();
-                showToast(
-                    `Berhasil memulihkan ${usageRecords.length} catatan dari GitHub!`,
-                    'success'
-                );
+                promptRestoreStrategy(validRecords, `GitHub (${githubConfig.repo})`);
             } catch (error) {
                 showToast(`Gagal memulihkan dari GitHub: ${error.message}`, 'error');
             } finally {
@@ -1281,6 +1426,12 @@
         function setupEventListeners() {
             // Form & Tabel
             usageForm.addEventListener('submit', handleFormSubmit);
+            appNameInput.addEventListener('change', () => {
+                const showCustomInput = appNameInput.value === 'Lainnya';
+                customAppNameWrapper.classList.toggle('hidden', !showCustomInput);
+                customAppNameInput.required = showCustomInput;
+                if (showCustomInput) customAppNameInput.focus();
+            });
             sortOrderSelect.addEventListener('change', renderTable);
 
             // Tombol Pengelolaan Data
@@ -1327,7 +1478,7 @@
             btnGithubPush.addEventListener('click', backupToGithub);
             btnGithubPull.addEventListener('click', restoreFromGithub);
 
-            // Modal Konfirmasi
+            // Modal Konfirmasi Hapus
             btnConfirmCancel.addEventListener('click', closeConfirm);
             btnConfirmOk.addEventListener('click', () => {
                 if (typeof confirmCallback === 'function') {
@@ -1337,6 +1488,34 @@
             });
             confirmModal.addEventListener('click', (e) => {
                 if (e.target === confirmModal) closeConfirm();
+            });
+
+            // Modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
+            btnRestoreChoiceCancel.addEventListener('click', () => {
+                closeRestoreChoiceModal();
+                showToast('Pemulihan data dibatalkan.', 'info');
+            });
+
+            btnRestoreChoiceMerge.addEventListener('click', () => {
+                if (pendingRestoreState) {
+                    const { records, sourceLabel } = pendingRestoreState;
+                    closeRestoreChoiceModal();
+                    executeRestoreStrategy('merge', records, sourceLabel);
+                }
+            });
+
+            btnRestoreChoiceOverwrite.addEventListener('click', () => {
+                if (pendingRestoreState) {
+                    const { records, sourceLabel } = pendingRestoreState;
+                    closeRestoreChoiceModal();
+                    executeRestoreStrategy('overwrite', records, sourceLabel);
+                }
+            });
+
+            restoreChoiceModal.addEventListener('click', (e) => {
+                if (e.target === restoreChoiceModal) {
+                    closeRestoreChoiceModal();
+                }
             });
         }
 
