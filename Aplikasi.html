@@ -393,7 +393,7 @@
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                                Mendukung file backup format baru maupun format lama (terkompresi Base64).
+                                Gunakan file cadangan berformat JSON biasa.
                             </p>
                         </div>
 
@@ -472,7 +472,7 @@
         /**
          * Aplikasi Catatan Pemakaian Aplikasi
          * Penyimpanan: localStorage
-         * Fitur: CRUD Riwayat, Hitung Durasi Otomatis, Ekspor/Impor JSON (Format Baru & Lama/Terkompresi),
+         * Fitur: CRUD Riwayat, Hitung Durasi Otomatis, Ekspor/Impor JSON biasa,
          *        Tema Gelap/Terang, GitHub API Backup/Restore
          */
 
@@ -718,101 +718,16 @@
             return { startTime, endTime };
         }
 
-        // Kompresi LZW ringan untuk file backup lokal (tanpa library eksternal).
-        // Data biner disimpan sebagai Base64 agar tetap berupa file .json yang mudah dipindahkan.
-        function lzwCompressToBase64(input) {
-            if (!input) return '';
-            // Kompresi byte UTF-8 agar emoji dan teks non-Latin juga aman.
-            const utf8Bytes = new TextEncoder().encode(input);
-            let source = '';
-            for (let i = 0; i < utf8Bytes.length; i++) source += String.fromCharCode(utf8Bytes[i]);
-
-            const dictionary = new Map();
-            let nextCode = 256;
-            let phrase = source.charAt(0);
-            const codes = [];
-
-            for (let i = 1; i < source.length; i++) {
-                const current = source.charAt(i);
-                const combined = phrase + current;
-                if (dictionary.has(combined)) {
-                    phrase = combined;
-                } else {
-                    codes.push(phrase.length === 1 ? phrase.charCodeAt(0) : dictionary.get(phrase));
-                    if (nextCode < 65535) dictionary.set(combined, nextCode++);
-                    phrase = current;
-                }
-            }
-            codes.push(phrase.length === 1 ? phrase.charCodeAt(0) : dictionary.get(phrase));
-
-            const bytes = new Uint8Array(codes.length * 2);
-            for (let i = 0; i < codes.length; i++) {
-                bytes[i * 2] = codes[i] & 255;
-                bytes[i * 2 + 1] = (codes[i] >>> 8) & 255;
-            }
-            let binary = '';
-            const chunkSize = 0x8000;
-            for (let i = 0; i < bytes.length; i += chunkSize) {
-                binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-            }
-            return btoa(binary);
-        }
-
-        function lzwDecompressFromBase64(encoded) {
-            const binary = atob(String(encoded || '').replace(/\s/g, ''));
-            if (binary.length % 2 !== 0) throw new Error('Data kompresi cadangan rusak.');
-            const codes = new Array(binary.length / 2);
-            for (let i = 0; i < codes.length; i++) {
-                codes[i] = binary.charCodeAt(i * 2) | (binary.charCodeAt(i * 2 + 1) << 8);
-            }
-            if (!codes.length) return '';
-
-            const dictionary = [];
-            for (let i = 0; i < 256; i++) dictionary[i] = String.fromCharCode(i);
-            let nextCode = 256;
-            let phrase = dictionary[codes[0]];
-            if (phrase === undefined) throw new Error('Format kompresi cadangan tidak dikenali.');
-            let result = phrase;
-
-            for (let i = 1; i < codes.length; i++) {
-                const code = codes[i];
-                let entry;
-                if (dictionary[code] !== undefined) {
-                    entry = dictionary[code];
-                } else if (code === nextCode) {
-                    entry = phrase + phrase.charAt(0);
-                } else {
-                    throw new Error('Data kompresi cadangan tidak lengkap atau rusak.');
-                }
-                result += entry;
-                if (nextCode < 65535) dictionary[nextCode++] = phrase + entry.charAt(0);
-                phrase = entry;
-            }
-            const outputBytes = new Uint8Array(result.length);
-            for (let i = 0; i < result.length; i++) outputBytes[i] = result.charCodeAt(i);
-            return new TextDecoder('utf-8', { fatal: true }).decode(outputBytes);
-        }
-
-        /**
-         * Mendukung penguraian dan normalisasi baik format backup baru maupun format backup lama
-         * (termasuk format {"compressed": true, "data": "Base64..."} dengan properti tanggal, aplikasi, jam, durasi, baterai, koneksi)
-         */
+        /** Membaca dan menormalkan data cadangan JSON. */
         function parseAndNormalizeBackupPayload(rawParsed) {
             let rawItems = [];
 
-            // 1. Cek apakah format backup lama dengan wrapper compressed Base64
-            if (rawParsed && typeof rawParsed === 'object' && rawParsed.compressed === true && typeof rawParsed.data === 'string') {
-                const decodedStr = rawParsed.compression === 'lzw-base64'
-                    ? lzwDecompressFromBase64(rawParsed.data)
-                    : base64ToUtf8(rawParsed.data); // format backup lama
-                const decodedJson = JSON.parse(decodedStr);
-                rawItems = Array.isArray(decodedJson) ? decodedJson : (decodedJson.records || []);
-            } else if (Array.isArray(rawParsed)) {
+            if (Array.isArray(rawParsed)) {
                 rawItems = rawParsed;
             } else if (rawParsed && Array.isArray(rawParsed.records)) {
                 rawItems = rawParsed.records;
             } else {
-                throw new Error('Struktur JSON cadangan tidak dikenali.');
+                throw new Error('Struktur JSON cadangan tidak dikenali. Gunakan file JSON biasa.');
             }
 
             if (!Array.isArray(rawItems)) {
@@ -1063,18 +978,8 @@
                     records: usageRecords
                 };
 
-                // JSON asli dikompres dengan LZW sebelum dimasukkan ke file JSON.
-                const jsonText = JSON.stringify(exportData);
-                const compressedBackup = {
-                    app: 'Catatan Pemakaian Aplikasi',
-                    compressed: true,
-                    compression: 'lzw-base64',
-                    encoding: 'UTF-8',
-                    exportedAt: exportData.exportedAt,
-                    totalRecords: usageRecords.length,
-                    data: lzwCompressToBase64(jsonText)
-                };
-                const backupText = JSON.stringify(compressedBackup, null, 2);
+                // Simpan data langsung dalam format JSON biasa.
+                const backupText = JSON.stringify(exportData, null, 2);
                 const backupBlob = new Blob([backupText], {
                     type: 'application/json;charset=utf-8'
                 });
@@ -1104,7 +1009,7 @@
                     }, 30000);
 
                     showToast(
-                        `Cadangan terkompresi ${usageRecords.length} catatan sedang diunduh. Periksa folder Download.`,
+                        `Cadangan JSON ${usageRecords.length} catatan sedang diunduh. Periksa folder Download.`,
                         'success'
                     );
                     return;
@@ -1138,12 +1043,11 @@
                         return;
                     }
 
-                    const isLegacy = Boolean(parsed && parsed.compressed === true);
                     usageRecords = validRecords;
                     saveRecords();
                     renderTable();
                     showToast(
-                        `Berhasil memulihkan ${validRecords.length} catatan${isLegacy ? ' (dari format cadangan lama)' : ''}!`,
+                        `Berhasil memulihkan ${validRecords.length} catatan dari JSON!`,
                         'success'
                     );
                 } catch (err) {
@@ -1228,7 +1132,7 @@
             showToast('Konfigurasi GitHub berhasil disimpan!', 'success');
         }
 
-        // Helper Base64 UTF-8 Safe untuk GitHub Contents API & Dekompresi Backup Lama
+        // Helper Base64 UTF-8 untuk format pengiriman GitHub Contents API
         function utf8ToBase64(str) {
             const bytes = new TextEncoder().encode(str);
             let binString = '';
@@ -1356,12 +1260,11 @@
                     throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
                 }
 
-                const isLegacy = Boolean(parsed && parsed.compressed === true);
                 usageRecords = validRecords;
                 saveRecords();
                 renderTable();
                 showToast(
-                    `Berhasil memulihkan ${usageRecords.length} catatan dari GitHub${isLegacy ? ' (format cadangan lama)' : ''}!`,
+                    `Berhasil memulihkan ${usageRecords.length} catatan dari GitHub!`,
                     'success'
                 );
             } catch (error) {
