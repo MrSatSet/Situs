@@ -1,159 +1,411 @@
 <!DOCTYPE html>
-
-<html lang="id">
+<html lang="id" class="dark">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Daftar Jam ke Menit</title>
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#1f2328 url("background.jpg") no-repeat center center fixed;
-    background-size:cover;
-    color:white;
-    margin:20px;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Daftar Jam ke Menit</title>
 
-h2{
-text-align:center;
-font-size:34px;
-font-weight:bold;
-background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#00ffff,#0000ff,#8b00ff,#ff0000);
-background-size:400% 100%;
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-animation:rainbow 4s linear infinite;
-}
-@keyframes rainbow{
-0%{background-position:0% 50%;}
-100%{background-position:400% 50%;}
-}
+  <!-- Memuat Google Fonts (Roboto & Inter) untuk tipografi modern yang bersih -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    background:rgba(43,48,54,.45);
-}
+  <!-- Memuat Tailwind CSS untuk tata letak responsif -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Konfigurasi Tailwind untuk mendukung mode gelap berbasis class
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Roboto', 'Arial', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
 
-th,td{
-    border:1px solid #444;
-    padding:12px;
-    text-align:left;
-}
+  <style>
+    /* Pengaturan dasar tinggi layar penuh dan transisi halus antar tema */
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-th{
-    background:rgba(59,64,70,.55);
-}
+    /* Gradasi warna biru untuk judul utama agar tetap kontras di Mode Gelap maupun Mode Terang */
+    .title-blue-gradient {
+      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-tr:nth-child(even){
-    background:rgba(37,42,48,.35);
-}
+    /* Kustomisasi scrollbar vertikal agar minimalis dan tidak mengganggu tampilan */
+    .table-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
 
-.settings-btn{position:fixed;top:15px;right:15px;background:rgba(59,64,70,.55);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-.panel{display:none;position:fixed;top:55px;right:15px;background:rgba(43,48,54,.45);border:1px solid #555;border-radius:8px;padding:12px;min-width:180px}
-.panel button{display:block;width:100%;margin:6px 0;padding:8px}
+    .table-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
+    html.dark .table-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(156, 163, 175, 0.3);
+      border-radius: 9999px;
+    }
 
+    html:not(.dark) .table-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(107, 114, 128, 0.3);
+      border-radius: 9999px;
+    }
 
-body.light{
-    color:#000;
-}
-body.light table{background:rgba(255,255,255,.25);}
-body.light th{background:rgba(229,229,229,.45);}
-body.light td{border:1px solid #ccc;}
-body.light tr:nth-child(even){background:rgba(245,245,245,.25);}
+    /* Animasi kemunculan menu pengaturan */
+    .settings-popover {
+      transform-origin: top right;
+      transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+    }
 
-.settings-btn{position:fixed;top:15px;right:15px;background:rgba(59,64,70,.55);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5)}
-.settings{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-background:#232b38;color:#fff;width:90%;max-width:420px;border-radius:16px;padding:18px;z-index:10}
-.settings h2{margin:0 0 10px}
-.segment{display:flex;background:#3a4658;border-radius:16px;overflow:hidden}
-.segment button{flex:1;padding:12px;border:none;background:transparent;color:#fff}
-.segment button.active{background:#2da2ff}
-select{width:100%;padding:12px;border-radius:12px}
-</style>
+    .settings-popover.closed {
+      opacity: 0;
+      transform: scale(0.92) translateY(-6px);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .settings-popover.open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+  </style>
 </head>
-<body>
-<button class="settings-btn" onclick="openSettings()">⚙️</button>
-<div class="overlay" id="ov" onclick="closeSettings()"></div>
-<div class="settings" id="settings">
-<h2>⚙️ Pengaturan</h2>
-<hr/>
-<h3>1. Tampilan</h3>
-<div class="segment">
-<button class="active" id="darkBtn" onclick="setTheme('dark')">🌙 Gelap</button>
-<button id="lightBtn" onclick="setTheme('light')">☀️ Terang</button>
-</div>
-<hr/>
-<h3>2. Background</h3>
-<label>Pilih Gambar</label>
-<select onchange="setBg(this.value)">
-    <option value="none">Tanpa Gambar</option>
-<option value="background/Foto_V1.jpg">Foto 1</option>
-<option value="background/Foto_V2.jpg">Foto 2</option>
-<option value="background/Foto_V3.jpg">Foto 3</option>
-<option value="background/Foto_V4.jpg">Foto 4</option>
-<option value="background/Foto_V5.jpg">Foto 5</option>
-</select>
-</div>
-<script>
-function openSettings(){ov.style.display='block';settings.style.display='block';}
-function closeSettings(){ov.style.display='none';settings.style.display='none';}
-function setBg(v){
- document.body.style.backgroundImage='url('+v+')';
- localStorage.setItem('bg',v);
- closeSettings();
-}
-function setTheme(m){
- document.body.classList.toggle('light',m==='light');
- darkBtn.classList.toggle('active',m==='dark');
- lightBtn.classList.toggle('active',m==='light');
- localStorage.setItem('theme',m);
- closeSettings();
-}
-window.onload=function(){
- const bg=localStorage.getItem('bg');
- if(bg){document.body.style.backgroundImage='url('+bg+')';}
- const th=localStorage.getItem('theme');
- if(th){
-  document.body.classList.toggle('light',th==='light');
-  darkBtn.classList.toggle('active',th==='dark');
-  lightBtn.classList.toggle('active',th==='light');
- }
-}
-</script>
+<body class="bg-[#e5e7eb] dark:bg-[#111215] transition-colors duration-300 flex justify-center items-stretch overflow-hidden">
 
+  <!-- Kontainer Utama Tampilan Smartphone (Mobile-First) -->
+  <main
+    id="app-container"
+    class="relative w-full max-w-md h-[100dvh] flex flex-col bg-[#f3f4f6] dark:bg-[#1b1c20] text-[#111827] dark:text-[#ffffff] sm:shadow-2xl sm:border-x border-gray-200 dark:border-[#2e3038] transition-colors duration-300"
+  >
+    <!-- Bagian Header: Judul Rata Tengah Dua Baris & Tombol Pengaturan di Pojok Kanan Atas -->
+    <header class="relative flex items-center justify-center pt-7 pb-5 px-14 shrink-0">
+      <h1
+        class="title-blue-gradient text-center font-black uppercase tracking-wide text-[1.65rem] sm:text-[1.85rem] leading-[1.2] select-none"
+      >
+        DAFTAR JAM<br />KE MENIT
+      </h1>
 
+      <!-- Tombol Pengaturan (Ikon Roda Gigi) dengan area sentuh optimal -->
+      <button
+        id="settings-btn"
+        type="button"
+        aria-label="Pengaturan Tema"
+        aria-expanded="false"
+        aria-haspopup="true"
+        class="absolute top-5 right-4 w-11 h-11 rounded-full flex items-center justify-center bg-white/90 dark:bg-[#272930] hover:bg-gray-100 dark:hover:bg-[#32353f] active:scale-95 text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-[#383b45] shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <!-- Ikon Roda Gigi SVG presisi agar selalu tajam di semua layar -->
+        <svg
+          id="gear-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          class="w-6 h-6 text-gray-700 dark:text-gray-200 transition-transform duration-300"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
 
+      <!-- Menu Popover Pengaturan Tema -->
+      <div
+        id="settings-menu"
+        role="menu"
+        aria-labelledby="settings-btn"
+        class="settings-popover closed absolute top-[4.4rem] right-4 z-30 w-56 rounded-2xl bg-white dark:bg-[#262830] border border-gray-200 dark:border-[#3a3d47] shadow-xl p-2 transition-colors duration-300"
+      >
+        <div class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-400 select-none">
+          Tampilan Tema
+        </div>
 
-<h2>DAFTAR JAM KE MENIT</h2>
-<table>
-<tr><th>Jam</th><th>Menit</th></tr>
-<tr><td>1 jam</td><td>60 menit</td></tr>
-<tr><td>2 jam</td><td>120 menit</td></tr>
-<tr><td>3 jam</td><td>180 menit</td></tr>
-<tr><td>4 jam</td><td>240 menit</td></tr>
-<tr><td>5 jam</td><td>300 menit</td></tr>
-<tr><td>6 jam</td><td>360 menit</td></tr>
-<tr><td>7 jam</td><td>420 menit</td></tr>
-<tr><td>8 jam</td><td>480 menit</td></tr>
-<tr><td>9 jam</td><td>540 menit</td></tr>
-<tr><td>10 jam</td><td>600 menit</td></tr>
-<tr><td>11 jam</td><td>660 menit</td></tr>
-<tr><td>12 jam</td><td>720 menit</td></tr>
-<tr><td>13 jam</td><td>780 menit</td></tr>
-<tr><td>14 jam</td><td>840 menit</td></tr>
-<tr><td>15 jam</td><td>900 menit</td></tr>
-<tr><td>16 jam</td><td>960 menit</td></tr>
-<tr><td>17 jam</td><td>1020 menit</td></tr>
-<tr><td>18 jam</td><td>1080 menit</td></tr>
-<tr><td>19 jam</td><td>1140 menit</td></tr>
-<tr><td>20 jam</td><td>1200 menit</td></tr>
-<tr><td>21 jam</td><td>1260 menit</td></tr>
-<tr><td>22 jam</td><td>1320 menit</td></tr>
-<tr><td>23 jam</td><td>1380 menit</td></tr>
-<tr><td>24 jam</td><td>1440 menit</td></tr>
-</table>
+        <!-- Opsi Mode Gelap -->
+        <button
+          id="theme-dark-btn"
+          type="button"
+          role="menuitemradio"
+          aria-checked="true"
+          class="w-full flex items-center justify-between px-3 py-2.5 mt-1 rounded-xl text-sm font-medium text-left transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#323540]"
+        >
+          <span class="flex items-center gap-2.5">
+            <span class="text-base leading-none" aria-hidden="true">🌙</span>
+            <span>Mode Gelap</span>
+          </span>
+          <span
+            id="indicator-dark"
+            class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-500 text-xs font-bold"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
+        </button>
+
+        <!-- Opsi Mode Terang -->
+        <button
+          id="theme-light-btn"
+          type="button"
+          role="menuitemradio"
+          aria-checked="false"
+          class="w-full flex items-center justify-between px-3 py-2.5 mt-1 rounded-xl text-sm font-medium text-left transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#323540]"
+        >
+          <span class="flex items-center gap-2.5">
+            <span class="text-base leading-none" aria-hidden="true">☀️</span>
+            <span>Mode Terang</span>
+          </span>
+          <span
+            id="indicator-light"
+            class="hidden items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-600 text-xs font-bold"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Kontainer Tabel Konversi Jam ke Menit -->
+    <section
+      aria-label="Tabel Konversi Jam ke Menit"
+      class="flex-1 min-h-0 mx-4 mb-5 rounded-2xl bg-white dark:bg-[#24262c] border border-gray-200 dark:border-[#363942] shadow-md flex flex-col overflow-hidden transition-colors duration-300"
+    >
+      <!-- Pembungkus Tabel dengan Gulir Vertikal (Vertical Scrolling) -->
+      <div class="table-scroll flex-1 overflow-y-auto">
+        <table class="w-full table-fixed border-collapse text-left">
+          <!-- Header Tabel Tetap (Sticky) saat digulir -->
+          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-[#2c2f37] border-b border-gray-200 dark:border-[#3c3f49] transition-colors duration-300">
+            <tr>
+              <th
+                scope="col"
+                class="w-1/2 px-5 py-3.5 text-sm sm:text-base font-bold text-[#111827] dark:text-white tracking-wide"
+              >
+                Jam
+              </th>
+              <th
+                scope="col"
+                class="w-1/2 px-5 py-3.5 text-sm sm:text-base font-bold text-[#111827] dark:text-white tracking-wide"
+              >
+                Menit
+              </th>
+            </tr>
+          </thead>
+
+          <!-- Isi Tabel 1 sampai 24 Jam (Diisi secara dinamis dan konsisten) -->
+          <tbody
+            id="conversion-tbody"
+            class="divide-y divide-gray-200 dark:divide-[#363942] text-sm sm:text-base transition-colors duration-300"
+          >
+            <!-- Baris 1 jam - 24 jam akan dirender oleh JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**
+     * Inisialisasi Aplikasi Daftar Jam ke Menit
+     * Mengelola pembuatan tabel konversi 1-24 jam serta pengaturan tema (Gelap/Terang)
+     * yang tersimpan secara permanen di localStorage.
+     */
+    (function () {
+      'use strict';
+
+      // Kunci penyimpanan tema di localStorage
+      const THEME_STORAGE_KEY = 'daftar_jam_ke_menit_theme';
+
+      // Referensi elemen DOM
+      const htmlElement = document.documentElement;
+      const tbodyElement = document.getElementById('conversion-tbody');
+      const settingsBtn = document.getElementById('settings-btn');
+      const gearIcon = document.getElementById('gear-icon');
+      const settingsMenu = document.getElementById('settings-menu');
+      const themeDarkBtn = document.getElementById('theme-dark-btn');
+      const themeLightBtn = document.getElementById('theme-light-btn');
+      const indicatorDark = document.getElementById('indicator-dark');
+      const indicatorLight = document.getElementById('indicator-light');
+
+      let isMenuOpen = false;
+
+      /**
+       * Membaca preferensi tema dari localStorage dengan penanganan error
+       * @returns {'dark' | 'light'} Tema yang tersimpan atau 'dark' sebagai default
+       */
+      function getSavedTheme() {
+        try {
+          const saved = localStorage.getItem(THEME_STORAGE_KEY);
+          if (saved === 'light' || saved === 'dark') {
+            return saved;
+          }
+        } catch (error) {
+          console.warn('Penyimpanan lokal tidak tersedia:', error);
+        }
+        return 'dark';
+      }
+
+      /**
+       * Menyimpan preferensi tema ke localStorage dengan aman
+       * @param {'dark' | 'light'} theme
+       */
+      function saveTheme(theme) {
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (error) {
+          console.warn('Gagal menyimpan tema ke penyimpanan lokal:', error);
+        }
+      }
+
+      /**
+       * Menerapkan tema ke seluruh aplikasi secara langsung dan memperbarui indikator aktif
+       * @param {'dark' | 'light'} theme
+       */
+      function applyTheme(theme) {
+        const isDark = theme === 'dark';
+
+        if (isDark) {
+          htmlElement.classList.add('dark');
+        } else {
+          htmlElement.classList.remove('dark');
+        }
+
+        // Perbarui status aksesibilitas dan indikator visual pada menu tema
+        themeDarkBtn.setAttribute('aria-checked', String(isDark));
+        themeLightBtn.setAttribute('aria-checked', String(!isDark));
+
+        if (isDark) {
+          themeDarkBtn.classList.add('bg-blue-500/10', 'text-blue-400', 'font-semibold');
+          themeLightBtn.classList.remove('bg-blue-500/10', 'text-blue-600', 'font-semibold');
+
+          indicatorDark.classList.remove('hidden');
+          indicatorDark.classList.add('inline-flex');
+          indicatorLight.classList.add('hidden');
+          indicatorLight.classList.remove('inline-flex');
+        } else {
+          themeLightBtn.classList.add('bg-blue-500/10', 'text-blue-600', 'font-semibold');
+          themeDarkBtn.classList.remove('bg-blue-500/10', 'text-blue-400', 'font-semibold');
+
+          indicatorLight.classList.remove('hidden');
+          indicatorLight.classList.add('inline-flex');
+          indicatorDark.classList.add('hidden');
+          indicatorDark.classList.remove('inline-flex');
+        }
+
+        saveTheme(theme);
+      }
+
+      /**
+       * Membuka atau menutup menu pengaturan tema
+       * @param {boolean} [forceState]
+       */
+      function toggleSettingsMenu(forceState) {
+        isMenuOpen = typeof forceState === 'boolean' ? forceState : !isMenuOpen;
+        settingsBtn.setAttribute('aria-expanded', String(isMenuOpen));
+
+        if (isMenuOpen) {
+          settingsMenu.classList.remove('closed');
+          settingsMenu.classList.add('open');
+          gearIcon.classList.add('rotate-90');
+        } else {
+          settingsMenu.classList.remove('open');
+          settingsMenu.classList.add('closed');
+          gearIcon.classList.remove('rotate-90');
+        }
+      }
+
+      /**
+       * Merender seluruh baris konversi dari 1 jam hingga 24 jam
+       * Format: "X jam" dan "Y menit" tanpa pemisah ribuan sesuai spesifikasi
+       */
+      function renderConversionTable() {
+        try {
+          const fragment = document.createDocumentFragment();
+
+          for (let jam = 1; jam <= 24; jam++) {
+            const menit = jam * 60;
+            const tr = document.createElement('tr');
+            tr.className =
+              'h-12 hover:bg-gray-50/90 dark:hover:bg-[#2c2f37]/80 transition-colors duration-150';
+
+            const tdJam = document.createElement('td');
+            tdJam.className =
+              'w-1/2 px-5 py-3 font-medium text-[#111827] dark:text-[#f9fafb] whitespace-nowrap';
+            tdJam.textContent = `${jam} jam`;
+
+            const tdMenit = document.createElement('td');
+            tdMenit.className =
+              'w-1/2 px-5 py-3 font-normal text-[#1f2937] dark:text-[#e5e7eb] whitespace-nowrap';
+            tdMenit.textContent = `${menit} menit`;
+
+            tr.appendChild(tdJam);
+            tr.appendChild(tdMenit);
+            fragment.appendChild(tr);
+          }
+
+          tbodyElement.innerHTML = '';
+          tbodyElement.appendChild(fragment);
+        } catch (error) {
+          console.error('Terjadi kesalahan saat memuat tabel konversi:', error);
+        }
+      }
+
+      // Event Listener untuk tombol pengaturan (ikon roda gigi)
+      settingsBtn.addEventListener('click', function (event) {
+        event.stopPropagation();
+        toggleSettingsMenu();
+      });
+
+      // Event Listener untuk pemilihan Mode Gelap
+      themeDarkBtn.addEventListener('click', function () {
+        applyTheme('dark');
+        toggleSettingsMenu(false);
+      });
+
+      // Event Listener untuk pemilihan Mode Terang
+      themeLightBtn.addEventListener('click', function () {
+        applyTheme('light');
+        toggleSettingsMenu(false);
+      });
+
+      // Menutup menu pengaturan apabila pengguna menekan area di luar menu
+      document.addEventListener('click', function (event) {
+        if (
+          isMenuOpen &&
+          !settingsMenu.contains(event.target) &&
+          !settingsBtn.contains(event.target)
+        ) {
+          toggleSettingsMenu(false);
+        }
+      });
+
+      // Menutup menu pengaturan saat tombol Escape ditekan
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && isMenuOpen) {
+          toggleSettingsMenu(false);
+          settingsBtn.focus();
+        }
+      });
+
+      // Jalankan inisialisasi awal saat halaman dimuat
+      applyTheme(getSavedTheme());
+      renderConversionTable();
+    })();
+  </script>
 </body>
 </html>
