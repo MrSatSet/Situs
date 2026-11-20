@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catatan Pemakaian Aplikasi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#0a0f1c',
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155',
+                            600: '#475569'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar untuk tabel & halaman */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 116, 139, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.7);
+        }
+
+        /* Penyesuaian ikon kalender/waktu bawaan browser pada mode gelap */
+        html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        html:not(.dark) input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
+
+        /* Animasi halus untuk toast dan modal */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-toast {
+            animation: slideUp 0.25s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-navy-950 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200 selection:bg-blue-600 selection:text-white">
+
+    <!-- Container Utama -->
+    <div class="max-w-3xl mx-auto px-4 py-6 sm:py-8">
+        
+        <!-- Header Aplikasi -->
+        <header class="flex items-center justify-between mb-6 bg-white dark:bg-navy-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-navy-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 flex items-center justify-center text-xl">
+                    📱
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        Catatan Pemakaian Aplikasi
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+                        Pantau durasi, baterai, dan aktivitas aplikasi harian Anda
+                    </p>
+                </div>
+            </div>
+            <button 
+                id="btnOpenSettings" 
+                type="button" 
+                aria-label="Pengaturan Aplikasi"
+                title="Pengaturan Aplikasi"
+                class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 text-xl transition active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                ⚙️
+            </button>
+        </header>
+
+        <!-- Bagian 1: Formulir Pencatatan -->
+        <section class="bg-white dark:bg-navy-900 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-navy-800 mb-6">
+            <form id="usageForm" class="space-y-4" novalidate>
+                
+                <!-- 1. Nama Aplikasi -->
+                <div>
+                    <label for="appName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Nama Aplikasi
+                    </label>
+                    <select 
+                        id="appName" 
+                        class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    >
+                        <option value="YouTube" selected>▶️ YouTube</option>
+                        <option value="TikTok Biasa">🎵 TikTok Biasa</option>
+                        <option value="TikTok Lite">🎵 TikTok Lite</option>
+                        <option value="Facebook">📘 Facebook</option>
+                        <option value="Instagram">📸 Instagram</option>
+                        <option value="X (Twitter)">🐦 X (Twitter)</option>
+                        <option value="Shopee">🛍️ Shopee</option>
+                        <option value="Lainnya">📦 Lainnya</option>
+                    </select>
+                </div>
+
+                <!-- 2 & 3. Tanggal & Jam Mulai + Berakhir -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="startTime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Tanggal & Jam Mulai
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="startTime" 
+                            required
+                            class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        >
+                    </div>
+                    <div>
+                        <label for="endTime" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Tanggal & Jam Berakhir
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="endTime" 
+                            required
+                            class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        >
+                    </div>
+                </div>
+
+                <!-- 4 & 5. Baterai (%) + Koneksi -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="batteryLevel" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Baterai (%)
+                        </label>
+                        <input 
+                            type="number" 
+                            id="batteryLevel" 
+                            min="0" 
+                            max="100" 
+                            placeholder="80" 
+                            required
+                            class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        >
+                    </div>
+                    <div>
+                        <label for="connectionType" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Koneksi
+                        </label>
+                        <select 
+                            id="connectionType" 
+                            class="w-full px-3.5 py-3 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                        >
+                            <option value="WiFi" selected>📶 WiFi</option>
+                            <option value="Data Seluler">📡 Data Seluler</option>
+                            <option value="Offline">📴 Offline</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tombol Utama Simpan -->
+                <div class="pt-2">
+                    <button 
+                        type="submit" 
+                        class="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-base shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 transition active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-navy-900"
+                    >
+                        <span>💾</span>
+                        <span>Simpan Catatan</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tombol Pengelolaan Data (3 Tombol Sejajar) -->
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-navy-800 grid grid-cols-3 gap-2.5 sm:gap-3">
+                <button 
+                    id="btnBackupJson" 
+                    type="button" 
+                    class="py-2.5 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                >
+                    <span>📦</span>
+                    <span>Cadangkan</span>
+                </button>
+                
+                <button 
+                    id="btnRestoreJson" 
+                    type="button" 
+                    class="py-2.5 px-2 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                >
+                    <span>📂</span>
+                    <span>Pulihkan</span>
+                </button>
+                <!-- Input file tersembunyi untuk pulihkan JSON -->
+                <input type="file" id="jsonFileInput" accept=".json,application/json" class="hidden">
+
+                <button 
+                    id="btnDeleteAll" 
+                    type="button" 
+                    class="py-2.5 px-2 sm:px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
+                >
+                    <span>🗑️</span>
+                    <span>Hapus Semua</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Bagian 2: Riwayat Pemakaian -->
+        <section class="bg-white dark:bg-navy-900 p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-navy-800">
+            <!-- Header Tabel & Urutan -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        📋 Riwayat Pemakaian
+                    </h2>
+                    <span id="recordCountBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-navy-800 dark:text-blue-400">
+                        0
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <label for="sortOrder" class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        Urutan:
+                    </label>
+                    <select 
+                        id="sortOrder" 
+                        class="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-800 dark:text-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="newest" selected>Tanggal terbaru → terlama</option>
+                        <option value="oldest">Tanggal terlama → terbaru</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Wrapper Tabel Responsif Horizontal -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-navy-800">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-navy-800/90 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-navy-700">
+                            <th class="py-3 px-3.5 font-semibold">No</th>
+                            <th class="py-3 px-3.5 font-semibold">Tanggal</th>
+                            <th class="py-3 px-3.5 font-semibold">Aplikasi</th>
+                            <th class="py-3 px-3.5 font-semibold">Jam Mulai</th>
+                            <th class="py-3 px-3.5 font-semibold">Jam Akhir</th>
+                            <th class="py-3 px-3.5 font-semibold">Durasi</th>
+                            <th class="py-3 px-3.5 font-semibold">Baterai</th>
+                            <th class="py-3 px-3.5 font-semibold">Koneksi</th>
+                            <th class="py-3 px-3.5 font-semibold text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-slate-200 dark:divide-navy-800 text-sm">
+                        <!-- Baris data akan dirender melalui JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL PENGATURAN APLIKASI (Tanpa Bagian Background) -->
+    <div 
+        id="settingsModal" 
+        class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm transition-opacity"
+        role="dialog" 
+        aria-modal="true" 
+        aria-labelledby="settingsTitle"
+    >
+        <div class="bg-white dark:bg-navy-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-navy-700 overflow-hidden max-h-[90vh] flex flex-col">
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-navy-800">
+                <h2 id="settingsTitle" class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>⚙️</span>
+                    <span>Pengaturan Aplikasi</span>
+                </h2>
+                <button 
+                    id="btnCloseSettings" 
+                    type="button" 
+                    aria-label="Tutup Pengaturan"
+                    class="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-navy-800 transition"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <!-- Isi Modal Pengaturan -->
+            <div class="p-5 overflow-y-auto space-y-6">
+                
+                <!-- 1. Tampilan -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
+                        1. Tampilan
+                    </h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                        Pilih Mode Tema yang nyaman untuk mata Anda:
+                    </p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button 
+                            id="btnThemeDark" 
+                            type="button" 
+                            class="py-3.5 px-4 rounded-xl border-2 font-semibold text-sm flex items-center justify-center gap-2 transition active:scale-95"
+                        >
+                            <span>🌙</span>
+                            <span>Gelap</span>
+                        </button>
+                        <button 
+                            id="btnThemeLight" 
+                            type="button" 
+                            class="py-3.5 px-4 rounded-xl border-2 font-semibold text-sm flex items-center justify-center gap-2 transition active:scale-95"
+                        >
+                            <span>☀️</span>
+                            <span>Terang</span>
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 dark:border-navy-800">
+
+                <!-- 2. GitHub Backup -->
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
+                        2. GitHub Backup
+                    </h3>
+                    <div class="space-y-3.5">
+                        <!-- GitHub Token -->
+                        <div>
+                            <label for="githubToken" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                GitHub Token (Personal Access Token)
+                            </label>
+                            <div class="relative flex items-center">
+                                <input 
+                                    type="password" 
+                                    id="githubToken" 
+                                    autocomplete="off"
+                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" 
+                                    class="w-full pr-12 pl-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                <button 
+                                    id="btnToggleToken" 
+                                    type="button" 
+                                    title="Tampilkan/Sembunyikan Token"
+                                    class="absolute right-2 p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white text-sm"
+                                >
+                                    👁️
+                                </button>
+                            </div>
+                            <p id="tokenStatusHint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                                Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.
+                            </p>
+                        </div>
+
+                        <!-- Repository (user/repo) -->
+                        <div>
+                            <label for="githubRepo" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                Repository (user/repo)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="githubRepo" 
+                                placeholder="geminiveo600-byte/backup" 
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                        </div>
+
+                        <!-- Nama File di GitHub (Opsional, mendukung file backup lama maupun baru) -->
+                        <div>
+                            <label for="githubFilePath" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                Nama File Cadangan di GitHub
+                            </label>
+                            <input 
+                                type="text" 
+                                id="githubFilePath" 
+                                placeholder="catatan-pemakaian-aplikasi-backup.json" 
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                                Mendukung file backup format baru maupun format lama (terkompresi Base64).
+                            </p>
+                        </div>
+
+                        <!-- Tombol Simpan GitHub -->
+                        <button 
+                            id="btnSaveGithub" 
+                            type="button" 
+                            class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99]"
+                        >
+                            <span>💾</span>
+                            <span>Simpan GitHub</span>
+                        </button>
+
+                        <!-- Tombol Aksi Sync GitHub (Backup & Restore) -->
+                        <div class="pt-2 grid grid-cols-2 gap-2.5">
+                            <button 
+                                id="btnGithubPush" 
+                                type="button" 
+                                class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 transition active:scale-95"
+                            >
+                                <span>☁️⬆️</span>
+                                <span>Backup ke GitHub</span>
+                            </button>
+                            <button 
+                                id="btnGithubPull" 
+                                type="button" 
+                                class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 transition active:scale-95"
+                            >
+                                <span>☁️⬇️</span>
+                                <span>Pulihkan GitHub</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser) -->
+    <div 
+        id="confirmModal" 
+        class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm"
+        role="dialog" 
+        aria-modal="true"
+    >
+        <div class="bg-white dark:bg-navy-900 w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-navy-700">
+            <h3 id="confirmTitle" class="text-base font-bold text-slate-900 dark:text-white mb-2">
+                Konfirmasi Tindakan
+            </h3>
+            <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-300 mb-5">
+                Apakah Anda yakin ingin melanjutkan?
+            </p>
+            <div class="flex justify-end gap-2.5">
+                <button 
+                    id="btnConfirmCancel" 
+                    type="button" 
+                    class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-navy-800 dark:hover:bg-navy-700 text-slate-800 dark:text-slate-200 text-sm font-medium transition"
+                >
+                    Batal
+                </button>
+                <button 
+                    id="btnConfirmOk" 
+                    type="button" 
+                    class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition"
+                >
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WADAH NOTIFIKASI TOAST -->
+    <div id="toastContainer" class="fixed bottom-5 right-4 left-4 sm:left-auto sm:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        /**
+         * Aplikasi Catatan Pemakaian Aplikasi
+         * Penyimpanan: localStorage
+         * Fitur: CRUD Riwayat, Hitung Durasi Otomatis, Ekspor/Impor JSON (Format Baru & Lama/Terkompresi),
+         *        Tema Gelap/Terang, GitHub API Backup/Restore
+         */
+
+        // Konstanta Kunci Penyimpanan
+        const STORAGE_KEYS = {
+            RECORDS: 'app_usage_records_v1',
+            THEME: 'app_usage_theme_v1',
+            GITHUB_CFG: 'app_usage_github_cfg_v1'
+        };
+
+        const DEFAULT_GITHUB_FILE = 'catatan-pemakaian-aplikasi-backup.json';
+
+        // State Aplikasi
+        let usageRecords = [];
+        let githubConfig = {
+            token: '',
+            repo: '',
+            filePath: DEFAULT_GITHUB_FILE
+        };
+        let confirmCallback = null;
+
+        // Elemen DOM Utama
+        const usageForm = document.getElementById('usageForm');
+        const appNameInput = document.getElementById('appName');
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const batteryInput = document.getElementById('batteryLevel');
+        const connectionInput = document.getElementById('connectionType');
+        const sortOrderSelect = document.getElementById('sortOrder');
+        const historyTableBody = document.getElementById('historyTableBody');
+        const recordCountBadge = document.getElementById('recordCountBadge');
+
+        // Elemen DOM Pengelolaan Data
+        const btnBackupJson = document.getElementById('btnBackupJson');
+        const btnRestoreJson = document.getElementById('btnRestoreJson');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        const btnDeleteAll = document.getElementById('btnDeleteAll');
+
+        // Elemen DOM Pengaturan
+        const settingsModal = document.getElementById('settingsModal');
+        const btnOpenSettings = document.getElementById('btnOpenSettings');
+        const btnCloseSettings = document.getElementById('btnCloseSettings');
+        const btnThemeDark = document.getElementById('btnThemeDark');
+        const btnThemeLight = document.getElementById('btnThemeLight');
+        const githubTokenInput = document.getElementById('githubToken');
+        const btnToggleToken = document.getElementById('btnToggleToken');
+        const tokenStatusHint = document.getElementById('tokenStatusHint');
+        const githubRepoInput = document.getElementById('githubRepo');
+        const githubFilePathInput = document.getElementById('githubFilePath');
+        const btnSaveGithub = document.getElementById('btnSaveGithub');
+        const btnGithubPush = document.getElementById('btnGithubPush');
+        const btnGithubPull = document.getElementById('btnGithubPull');
+
+        // Elemen DOM Modal Konfirmasi
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmTitle = document.getElementById('confirmTitle');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+        const btnConfirmOk = document.getElementById('btnConfirmOk');
+
+        // ==========================================
+        // 1. INISIALISASI APLIKASI
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadRecords();
+            loadGithubConfig();
+            setDefaultDateTimes();
+            renderTable();
+            setupEventListeners();
+        });
+
+        function setDefaultDateTimes() {
+            const now = new Date();
+            const thirtyMinsAgo = new Date(now.getTime() - 30 * 60000);
+            startTimeInput.value = formatForDateTimeLocal(thirtyMinsAgo);
+            endTimeInput.value = formatForDateTimeLocal(now);
+        }
+
+        function formatForDateTimeLocal(date) {
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        // ==========================================
+        // 2. SISTEM NOTIFIKASI & KONFIRMASI KUSTOM
+        // ==========================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const styles = {
+                success: 'bg-emerald-600 text-white border-emerald-500',
+                error: 'bg-rose-600 text-white border-rose-500',
+                info: 'bg-blue-600 text-white border-blue-500',
+                warning: 'bg-amber-500 text-white border-amber-400'
+            };
+
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-toast ${styles[type] || styles.info}`;
+            toast.innerHTML = `
+                <span class="text-base shrink-0">${icons[type] || icons.info}</span>
+                <span class="leading-snug">${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                toast.style.transition = 'all 0.25s ease';
+                setTimeout(() => toast.remove(), 250);
+            }, 3500);
+        }
+
+        function openConfirm(title, message, onConfirm) {
+            confirmTitle.textContent = title;
+            confirmMessage.textContent = message;
+            confirmCallback = onConfirm;
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('flex');
+        }
+
+        function closeConfirm() {
+            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('flex');
+            confirmCallback = null;
+        }
+
+        // ==========================================
+        // 3. MANAJEMEN TEMA (GELAP & TERANG)
+        // ==========================================
+        function loadTheme() {
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
+            applyTheme(savedTheme, false);
+        }
+
+        function applyTheme(theme, notify = true) {
+            const htmlEl = document.documentElement;
+            if (theme === 'dark') {
+                htmlEl.classList.add('dark');
+                btnThemeDark.className = 'py-3.5 px-4 rounded-xl border-2 border-blue-500 bg-navy-800 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition';
+                btnThemeLight.className = 'py-3.5 px-4 rounded-xl border-2 border-slate-700 bg-navy-900/50 text-slate-400 hover:text-white font-semibold text-sm flex items-center justify-center gap-2 transition';
+            } else {
+                htmlEl.classList.remove('dark');
+                btnThemeLight.className = 'py-3.5 px-4 rounded-xl border-2 border-blue-600 bg-blue-50 text-blue-700 font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition';
+                btnThemeDark.className = 'py-3.5 px-4 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 font-semibold text-sm flex items-center justify-center gap-2 transition';
+            }
+            localStorage.setItem(STORAGE_KEYS.THEME, theme);
+            if (notify) {
+                showToast(`Tema ${theme === 'dark' ? 'Gelap 🌙' : 'Terang ☀️'} diterapkan.`, 'info');
+            }
+        }
+
+        // ==========================================
+        // 4. LOGIKA DATA, PERHITUNGAN & PARSER BACKUP LAMA
+        // ==========================================
+        function loadRecords() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
+                usageRecords = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(usageRecords)) usageRecords = [];
+            } catch (err) {
+                console.error('Gagal memuat data:', err);
+                usageRecords = [];
+            }
+        }
+
+        function saveRecords() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(usageRecords));
+            } catch (err) {
+                showToast('Gagal menyimpan data ke penyimpanan lokal.', 'error');
+            }
+        }
+
+        function calculateDuration(startIso, endIso) {
+            const start = new Date(startIso);
+            const end = new Date(endIso);
+            const diffMs = end - start;
+
+            if (isNaN(diffMs) || diffMs <= 0) return null;
+
+            const totalMinutes = Math.floor(diffMs / 60000);
+            const days = Math.floor(totalMinutes / 1440);
+            const hours = Math.floor((totalMinutes % 1440) / 60);
+            const minutes = totalMinutes % 60;
+
+            const parts = [];
+            if (days > 0) parts.push(`${days} hr`);
+            if (hours > 0) parts.push(`${hours} jam`);
+            if (minutes > 0 || parts.length === 0) parts.push(`${minutes} mnt`);
+
+            return {
+                text: parts.join(' '),
+                minutes: totalMinutes
+            };
+        }
+
+        /**
+         * Mengonversi tanggal & rentang jam dari format cadangan lama:
+         * Contoh: tanggal = "25.08.2026", jam = "18.42-19.42"
+         * Menjadi { startTime: "2026-08-25T18:42", endTime: "2026-08-25T19:42" }
+         */
+        function parseLegacyDateAndTimeRange(tanggalStr, jamStr) {
+            const dateParts = String(tanggalStr || '').trim().split(/[.\-\/]/);
+            if (dateParts.length !== 3) return null;
+
+            const day = dateParts[0].padStart(2, '0');
+            const month = dateParts[1].padStart(2, '0');
+            const year = dateParts[2].length === 2 ? `20${dateParts[2]}` : dateParts[2];
+            const isoDate = `${year}-${month}-${day}`;
+
+            const timeRange = String(jamStr || '').trim().split('-');
+            if (timeRange.length !== 2) return null;
+
+            const normalizeClock = (clock) => {
+                const cleaned = clock.trim().replace('.', ':');
+                const [h = '00', m = '00'] = cleaned.split(':');
+                return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
+            };
+
+            const startClock = normalizeClock(timeRange[0]);
+            const endClock = normalizeClock(timeRange[1]);
+
+            const startTime = `${isoDate}T${startClock}`;
+            let endTime = `${isoDate}T${endClock}`;
+
+            // Jika jam berakhir melewati tengah malam (misal 23.30-00.30), tambahkan 1 hari pada endTime
+            const startObj = new Date(startTime);
+            const endObj = new Date(endTime);
+            if (!isNaN(startObj) && !isNaN(endObj) && endObj <= startObj) {
+                endObj.setDate(endObj.getDate() + 1);
+                endTime = formatForDateTimeLocal(endObj);
+            }
+
+            return { startTime, endTime };
+        }
+
+        // Kompresi LZW ringan untuk file backup lokal (tanpa library eksternal).
+        // Data biner disimpan sebagai Base64 agar tetap berupa file .json yang mudah dipindahkan.
+        function lzwCompressToBase64(input) {
+            if (!input) return '';
+            // Kompresi byte UTF-8 agar emoji dan teks non-Latin juga aman.
+            const utf8Bytes = new TextEncoder().encode(input);
+            let source = '';
+            for (let i = 0; i < utf8Bytes.length; i++) source += String.fromCharCode(utf8Bytes[i]);
+
+            const dictionary = new Map();
+            let nextCode = 256;
+            let phrase = source.charAt(0);
+            const codes = [];
+
+            for (let i = 1; i < source.length; i++) {
+                const current = source.charAt(i);
+                const combined = phrase + current;
+                if (dictionary.has(combined)) {
+                    phrase = combined;
+                } else {
+                    codes.push(phrase.length === 1 ? phrase.charCodeAt(0) : dictionary.get(phrase));
+                    if (nextCode < 65535) dictionary.set(combined, nextCode++);
+                    phrase = current;
+                }
+            }
+            codes.push(phrase.length === 1 ? phrase.charCodeAt(0) : dictionary.get(phrase));
+
+            const bytes = new Uint8Array(codes.length * 2);
+            for (let i = 0; i < codes.length; i++) {
+                bytes[i * 2] = codes[i] & 255;
+                bytes[i * 2 + 1] = (codes[i] >>> 8) & 255;
+            }
+            let binary = '';
+            const chunkSize = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+            }
+            return btoa(binary);
+        }
+
+        function lzwDecompressFromBase64(encoded) {
+            const binary = atob(String(encoded || '').replace(/\s/g, ''));
+            if (binary.length % 2 !== 0) throw new Error('Data kompresi cadangan rusak.');
+            const codes = new Array(binary.length / 2);
+            for (let i = 0; i < codes.length; i++) {
+                codes[i] = binary.charCodeAt(i * 2) | (binary.charCodeAt(i * 2 + 1) << 8);
+            }
+            if (!codes.length) return '';
+
+            const dictionary = [];
+            for (let i = 0; i < 256; i++) dictionary[i] = String.fromCharCode(i);
+            let nextCode = 256;
+            let phrase = dictionary[codes[0]];
+            if (phrase === undefined) throw new Error('Format kompresi cadangan tidak dikenali.');
+            let result = phrase;
+
+            for (let i = 1; i < codes.length; i++) {
+                const code = codes[i];
+                let entry;
+                if (dictionary[code] !== undefined) {
+                    entry = dictionary[code];
+                } else if (code === nextCode) {
+                    entry = phrase + phrase.charAt(0);
+                } else {
+                    throw new Error('Data kompresi cadangan tidak lengkap atau rusak.');
+                }
+                result += entry;
+                if (nextCode < 65535) dictionary[nextCode++] = phrase + entry.charAt(0);
+                phrase = entry;
+            }
+            const outputBytes = new Uint8Array(result.length);
+            for (let i = 0; i < result.length; i++) outputBytes[i] = result.charCodeAt(i);
+            return new TextDecoder('utf-8', { fatal: true }).decode(outputBytes);
+        }
+
+        /**
+         * Mendukung penguraian dan normalisasi baik format backup baru maupun format backup lama
+         * (termasuk format {"compressed": true, "data": "Base64..."} dengan properti tanggal, aplikasi, jam, durasi, baterai, koneksi)
+         */
+        function parseAndNormalizeBackupPayload(rawParsed) {
+            let rawItems = [];
+
+            // 1. Cek apakah format backup lama dengan wrapper compressed Base64
+            if (rawParsed && typeof rawParsed === 'object' && rawParsed.compressed === true && typeof rawParsed.data === 'string') {
+                const decodedStr = rawParsed.compression === 'lzw-base64'
+                    ? lzwDecompressFromBase64(rawParsed.data)
+                    : base64ToUtf8(rawParsed.data); // format backup lama
+                const decodedJson = JSON.parse(decodedStr);
+                rawItems = Array.isArray(decodedJson) ? decodedJson : (decodedJson.records || []);
+            } else if (Array.isArray(rawParsed)) {
+                rawItems = rawParsed;
+            } else if (rawParsed && Array.isArray(rawParsed.records)) {
+                rawItems = rawParsed.records;
+            } else {
+                throw new Error('Struktur JSON cadangan tidak dikenali.');
+            }
+
+            if (!Array.isArray(rawItems)) {
+                throw new Error('Data catatan di dalam cadangan bukan berupa daftar.');
+            }
+
+            const normalizedRecords = [];
+
+            rawItems.forEach((item, idx) => {
+                if (!item || typeof item !== 'object') return;
+
+                // Deteksi Format Lama: memiliki properti `aplikasi`, `tanggal`, `jam`
+                if (item.aplikasi && item.tanggal && item.jam) {
+                    const parsedRange = parseLegacyDateAndTimeRange(item.tanggal, item.jam);
+                    if (!parsedRange) return;
+
+                    const dur = calculateDuration(parsedRange.startTime, parsedRange.endTime);
+                    const batteryNum = parseInt(String(item.baterai ?? '0').replace(/[^0-9]/g, ''), 10);
+
+                    // Pertahankan teks durasi lama jika gagal hitung, atau gunakan hasil hitung standar
+                    let durationMinutes = dur ? dur.minutes : 0;
+                    if (!durationMinutes && item.durasi) {
+                        const matchMin = String(item.durasi).match(/(\d+)/);
+                        if (matchMin) durationMinutes = parseInt(matchMin[1], 10);
+                    }
+
+                    normalizedRecords.push({
+                        id: item.id || `legacy_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+                        appName: String(item.aplikasi).trim(),
+                        startTime: parsedRange.startTime,
+                        endTime: parsedRange.endTime,
+                        durationText: dur ? dur.text : String(item.durasi || `${durationMinutes} mnt`),
+                        durationMinutes: durationMinutes,
+                        battery: isNaN(batteryNum) ? 0 : Math.min(100, Math.max(0, batteryNum)),
+                        connection: String(item.koneksi || 'WiFi').trim(),
+                        createdAt: new Date().toISOString()
+                    });
+                    return;
+                }
+
+                // Deteksi Format Baru: memiliki `appName`, `startTime`, `endTime`
+                if (item.appName && item.startTime && item.endTime) {
+                    const dur = calculateDuration(item.startTime, item.endTime);
+                    normalizedRecords.push({
+                        id: item.id || `rec_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
+                        appName: String(item.appName).trim(),
+                        startTime: item.startTime,
+                        endTime: item.endTime,
+                        durationText: item.durationText || (dur ? dur.text : '0 mnt'),
+                        durationMinutes: item.durationMinutes || (dur ? dur.minutes : 0),
+                        battery: Number(item.battery ?? 0),
+                        connection: item.connection || 'WiFi',
+                        createdAt: item.createdAt || new Date().toISOString()
+                    });
+                }
+            });
+
+            return normalizedRecords;
+        }
+
+        function formatDisplayDate(isoString) {
+            const d = new Date(isoString);
+            if (isNaN(d)) return '-';
+            return d.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function formatDisplayTime(isoString) {
+            const d = new Date(isoString);
+            if (isNaN(d)) return '-';
+            return d.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).replace('.', ':');
+        }
+
+        // ==========================================
+        // 5. RENDER TABEL RIWAYAT
+        // ==========================================
+        function renderTable() {
+            const sortType = sortOrderSelect.value;
+            const sorted = [...usageRecords].sort((a, b) => {
+                const dateA = new Date(a.startTime).getTime();
+                const dateB = new Date(b.startTime).getTime();
+                return sortType === 'newest' ? dateB - dateA : dateA - dateB;
+            });
+
+            recordCountBadge.textContent = `${sorted.length} catatan`;
+
+            if (sorted.length === 0) {
+                historyTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-10 px-4 text-center text-slate-500 dark:text-slate-400">
+                            <div class="text-3xl mb-2">📭</div>
+                            <p class="font-medium text-sm">Belum ada catatan pemakaian aplikasi.</p>
+                            <p class="text-xs mt-1">Isi formulir di atas lalu tekan <strong>Simpan Catatan</strong>.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            historyTableBody.innerHTML = sorted.map((item, index) => {
+                const batteryBadgeColor = item.battery <= 20 
+                    ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50' 
+                    : item.battery <= 50 
+                    ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50' 
+                    : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50';
+
+                const connIcon = item.connection === 'WiFi' ? '📶' : item.connection === 'Data Seluler' ? '📡' : '📴';
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-navy-800/50 transition-colors">
+                        <td class="py-3 px-3.5 text-slate-500 dark:text-slate-400 font-medium">${index + 1}</td>
+                        <td class="py-3 px-3.5 text-slate-800 dark:text-slate-200">${formatDisplayDate(item.startTime)}</td>
+                        <td class="py-3 px-3.5 font-semibold text-slate-900 dark:text-white">${escapeHtml(item.appName)}</td>
+                        <td class="py-3 px-3.5 text-slate-700 dark:text-slate-300 font-mono text-xs sm:text-sm">${formatDisplayTime(item.startTime)}</td>
+                        <td class="py-3 px-3.5 text-slate-700 dark:text-slate-300 font-mono text-xs sm:text-sm">${formatDisplayTime(item.endTime)}</td>
+                        <td class="py-3 px-3.5">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                                ⏱️ ${escapeHtml(item.durationText)}
+                            </span>
+                        </td>
+                        <td class="py-3 px-3.5">
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${batteryBadgeColor}">
+                                🔋 ${item.battery}%
+                            </span>
+                        </td>
+                        <td class="py-3 px-3.5 text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                            ${connIcon} ${escapeHtml(item.connection)}
+                        </td>
+                        <td class="py-3 px-3.5 text-center">
+                            <button 
+                                type="button" 
+                                onclick="deleteSingleRecord('${item.id}')" 
+                                title="Hapus catatan ini"
+                                class="p-2 rounded-lg text-rose-600 hover:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-950/60 transition active:scale-90"
+                            >
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // 6. AKSI FORMULIR & PENGELOLAAN DATA LOKAL
+        // ==========================================
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const appName = appNameInput.value.trim();
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+            const batteryRaw = batteryInput.value.trim();
+            const connection = connectionInput.value;
+
+            // Validasi input
+            if (!appName) {
+                showToast('Silakan pilih nama aplikasi.', 'error');
+                return;
+            }
+            if (!startTime || !endTime) {
+                showToast('Tanggal & jam mulai maupun berakhir wajib diisi.', 'error');
+                return;
+            }
+
+            const startDate = new Date(startTime);
+            const endDate = new Date(endTime);
+            if (endDate <= startDate) {
+                showToast('Jam berakhir harus lebih besar dari jam mulai!', 'error');
+                return;
+            }
+
+            if (batteryRaw === '' || isNaN(Number(batteryRaw))) {
+                showToast('Masukkan persentase baterai yang valid (0–100).', 'error');
+                return;
+            }
+
+            const battery = Number(batteryRaw);
+            if (battery < 0 || battery > 100) {
+                showToast('Nilai baterai harus di antara 0 hingga 100%.', 'error');
+                return;
+            }
+
+            const durationObj = calculateDuration(startTime, endTime);
+            if (!durationObj) {
+                showToast('Durasi tidak valid. Periksa kembali waktu Anda.', 'error');
+                return;
+            }
+
+            const newRecord = {
+                id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                appName,
+                startTime,
+                endTime,
+                durationText: durationObj.text,
+                durationMinutes: durationObj.minutes,
+                battery,
+                connection,
+                createdAt: new Date().toISOString()
+            };
+
+            usageRecords.unshift(newRecord);
+            saveRecords();
+            renderTable();
+
+            // Reset input baterai agar siap diisi berikutnya
+            batteryInput.value = '';
+            showToast(`Catatan ${appName} (${durationObj.text}) berhasil disimpan!`, 'success');
+        }
+
+        window.deleteSingleRecord = function(id) {
+            const target = usageRecords.find(r => r.id === id);
+            if (!target) return;
+
+            openConfirm(
+                'Hapus Catatan',
+                `Hapus catatan pemakaian "${target.appName}" pada ${formatDisplayDate(target.startTime)}?`,
+                () => {
+                    usageRecords = usageRecords.filter(r => r.id !== id);
+                    saveRecords();
+                    renderTable();
+                    showToast('Catatan berhasil dihapus.', 'success');
+                }
+            );
+        };
+
+        function exportToJson() {
+            if (usageRecords.length === 0) {
+                showToast('Tidak ada data untuk dicadangkan.', 'warning');
+                return;
+            }
+
+            let downloadUrl = null;
+            let downloadLink = null;
+
+            try {
+                const exportData = {
+                    app: 'Catatan Pemakaian Aplikasi',
+                    exportedAt: new Date().toISOString(),
+                    totalRecords: usageRecords.length,
+                    records: usageRecords
+                };
+
+                // JSON asli dikompres dengan LZW sebelum dimasukkan ke file JSON.
+                const jsonText = JSON.stringify(exportData);
+                const compressedBackup = {
+                    app: 'Catatan Pemakaian Aplikasi',
+                    compressed: true,
+                    compression: 'lzw-base64',
+                    encoding: 'UTF-8',
+                    exportedAt: exportData.exportedAt,
+                    totalRecords: usageRecords.length,
+                    data: lzwCompressToBase64(jsonText)
+                };
+                const backupText = JSON.stringify(compressedBackup, null, 2);
+                const backupBlob = new Blob([backupText], {
+                    type: 'application/json;charset=utf-8'
+                });
+
+                // Buat URL unduhan dan biarkan browser memprosesnya terlebih dahulu.
+                if (window.URL && typeof URL.createObjectURL === 'function') {
+                    downloadUrl = URL.createObjectURL(backupBlob);
+                    downloadLink = document.createElement('a');
+                    downloadLink.href = downloadUrl;
+                    downloadLink.download = `cadangan-pemakaian-aplikasi-${new Date().toISOString().slice(0, 10)}.json`;
+                    downloadLink.style.display = 'none';
+                    downloadLink.setAttribute('aria-hidden', 'true');
+                    document.body.appendChild(downloadLink);
+
+                    // Klik dilakukan langsung dari aksi pengguna agar diizinkan browser Android.
+                    downloadLink.click();
+
+                    // Jangan revoke langsung setelah click: sebagian browser Android/WebView
+                    // baru mulai membaca Blob setelah event klik selesai diproses.
+                    window.setTimeout(() => {
+                        if (downloadLink && downloadLink.parentNode) {
+                            downloadLink.parentNode.removeChild(downloadLink);
+                        }
+                        if (downloadUrl) {
+                            URL.revokeObjectURL(downloadUrl);
+                        }
+                    }, 30000);
+
+                    showToast(
+                        `Cadangan terkompresi ${usageRecords.length} catatan sedang diunduh. Periksa folder Download.`,
+                        'success'
+                    );
+                    return;
+                }
+
+                throw new Error('Browser ini tidak mendukung pembuatan file unduhan.');
+            } catch (err) {
+                if (downloadLink && downloadLink.parentNode) {
+                    downloadLink.parentNode.removeChild(downloadLink);
+                }
+                if (downloadUrl) {
+                    URL.revokeObjectURL(downloadUrl);
+                }
+                console.error('Gagal mengunduh cadangan:', err);
+                showToast('Gagal memulai unduhan cadangan. Coba buka file ini melalui Chrome.', 'error');
+            }
+        }
+
+        function importFromJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    const validRecords = parseAndNormalizeBackupPayload(parsed);
+
+                    if (validRecords.length === 0) {
+                        showToast('File JSON tidak berisi catatan yang valid.', 'error');
+                        return;
+                    }
+
+                    const isLegacy = Boolean(parsed && parsed.compressed === true);
+                    usageRecords = validRecords;
+                    saveRecords();
+                    renderTable();
+                    showToast(
+                        `Berhasil memulihkan ${validRecords.length} catatan${isLegacy ? ' (dari format cadangan lama)' : ''}!`,
+                        'success'
+                    );
+                } catch (err) {
+                    showToast('Gagal membaca file JSON: ' + err.message, 'error');
+                } finally {
+                    jsonFileInput.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleDeleteAll() {
+            if (usageRecords.length === 0) {
+                showToast('Riwayat sudah kosong.', 'info');
+                return;
+            }
+
+            openConfirm(
+                'Hapus Semua Riwayat',
+                `Anda yakin ingin menghapus seluruh (${usageRecords.length}) catatan riwayat? Tindakan ini tidak dapat dibatalkan.`,
+                () => {
+                    usageRecords = [];
+                    saveRecords();
+                    renderTable();
+                    showToast('Seluruh riwayat pemakaian telah dihapus.', 'success');
+                }
+            );
+        }
+
+        // ==========================================
+        // 7. PENGATURAN & INTEGRASI GITHUB BACKUP
+        // ==========================================
+        function loadGithubConfig() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEYS.GITHUB_CFG);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    githubConfig.token = parsed.token || '';
+                    githubConfig.repo = parsed.repo || '';
+                    githubConfig.filePath = parsed.filePath || DEFAULT_GITHUB_FILE;
+                }
+            } catch (e) {
+                console.error('Gagal memuat konfigurasi GitHub', e);
+            }
+            refreshGithubFormUI();
+        }
+
+        function refreshGithubFormUI() {
+            githubRepoInput.value = githubConfig.repo;
+            githubFilePathInput.value = githubConfig.filePath || DEFAULT_GITHUB_FILE;
+            // Jangan tampilkan token secara terbuka setelah disimpan
+            githubTokenInput.type = 'password';
+            githubTokenInput.value = githubConfig.token;
+            btnToggleToken.textContent = '👁️';
+
+            if (githubConfig.token) {
+                tokenStatusHint.textContent = '🔒 Token tersimpan dengan aman di perangkat (tersembunyi).';
+                tokenStatusHint.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 mt-1';
+            } else {
+                tokenStatusHint.textContent = 'Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.';
+                tokenStatusHint.className = 'text-[11px] text-slate-500 dark:text-slate-400 mt-1';
+            }
+        }
+
+        function handleSaveGithub() {
+            const token = githubTokenInput.value.trim();
+            const repo = githubRepoInput.value.trim();
+            const filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
+
+            if (!token) {
+                showToast('Masukkan GitHub Personal Access Token terlebih dahulu.', 'error');
+                return;
+            }
+            if (!repo || !repo.includes('/')) {
+                showToast('Masukkan nama repository dengan format user/repo (contoh: geminiveo600-byte/backup).', 'error');
+                return;
+            }
+
+            githubConfig = { token, repo, filePath };
+            localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, JSON.stringify(githubConfig));
+            refreshGithubFormUI();
+            showToast('Konfigurasi GitHub berhasil disimpan!', 'success');
+        }
+
+        // Helper Base64 UTF-8 Safe untuk GitHub Contents API & Dekompresi Backup Lama
+        function utf8ToBase64(str) {
+            const bytes = new TextEncoder().encode(str);
+            let binString = '';
+            bytes.forEach((b) => { binString += String.fromCharCode(b); });
+            return btoa(binString);
+        }
+
+        function base64ToUtf8(base64) {
+            const binString = atob(base64.replace(/\s/g, ''));
+            const bytes = Uint8Array.from(binString, (m) => m.charCodeAt(0));
+            return new TextDecoder().decode(bytes);
+        }
+
+        async function backupToGithub() {
+            if (!githubConfig.token || !githubConfig.repo) {
+                showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
+                return;
+            }
+            if (usageRecords.length === 0) {
+                showToast('Tidak ada data riwayat untuk dicadangkan ke GitHub.', 'warning');
+                return;
+            }
+
+            const filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
+            const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+            const apiUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${encodedPath}`;
+
+            btnGithubPush.disabled = true;
+            btnGithubPush.classList.add('opacity-60');
+            showToast('Menghubungkan ke GitHub untuk mencadangkan data...', 'info');
+
+            try {
+                // 1. Cek apakah file sudah ada untuk mendapatkan SHA terbaru
+                let sha = null;
+                const getRes = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github+json'
+                    }
+                });
+
+                if (getRes.ok) {
+                    const existingFile = await getRes.json();
+                    sha = existingFile.sha;
+                } else if (getRes.status !== 404) {
+                    const errData = await getRes.json().catch(() => ({}));
+                    throw new Error(errData.message || `HTTP ${getRes.status}`);
+                }
+
+                // 2. Siapkan payload JSON standar terbaru (termasuk data hasil konversi backup lama)
+                const payloadObj = {
+                    app: 'Catatan Pemakaian Aplikasi',
+                    updatedAt: new Date().toISOString(),
+                    totalRecords: usageRecords.length,
+                    records: usageRecords
+                };
+
+                const bodyData = {
+                    message: `Backup Catatan Pemakaian Aplikasi (${new Date().toLocaleString('id-ID')})`,
+                    content: utf8ToBase64(JSON.stringify(payloadObj, null, 2))
+                };
+                if (sha) bodyData.sha = sha;
+
+                // 3. Unggah (PUT) ke GitHub
+                const putRes = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!putRes.ok) {
+                    const errPut = await putRes.json().catch(() => ({}));
+                    throw new Error(errPut.message || `Gagal mengunggah (HTTP ${putRes.status})`);
+                }
+
+                showToast(`Berhasil backup ${usageRecords.length} catatan ke GitHub (${githubConfig.repo}/${filePath})!`, 'success');
+            } catch (error) {
+                showToast(`Gagal backup ke GitHub: ${error.message}`, 'error');
+            } finally {
+                btnGithubPush.disabled = false;
+                btnGithubPush.classList.remove('opacity-60');
+            }
+        }
+
+        async function restoreFromGithub() {
+            if (!githubConfig.token || !githubConfig.repo) {
+                showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
+                return;
+            }
+
+            const filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
+            const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+            const apiUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${encodedPath}`;
+
+            btnGithubPull.disabled = true;
+            btnGithubPull.classList.add('opacity-60');
+            showToast('Mengambil data cadangan dari GitHub...', 'info');
+
+            try {
+                const res = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github+json'
+                    }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        throw new Error(`File "${filePath}" belum ditemukan di repository ini.`);
+                    }
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || `HTTP ${res.status}`);
+                }
+
+                const fileData = await res.json();
+                const decodedText = base64ToUtf8(fileData.content);
+                const parsed = JSON.parse(decodedText);
+                const validRecords = parseAndNormalizeBackupPayload(parsed);
+
+                if (validRecords.length === 0) {
+                    throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
+                }
+
+                const isLegacy = Boolean(parsed && parsed.compressed === true);
+                usageRecords = validRecords;
+                saveRecords();
+                renderTable();
+                showToast(
+                    `Berhasil memulihkan ${usageRecords.length} catatan dari GitHub${isLegacy ? ' (format cadangan lama)' : ''}!`,
+                    'success'
+                );
+            } catch (error) {
+                showToast(`Gagal memulihkan dari GitHub: ${error.message}`, 'error');
+            } finally {
+                btnGithubPull.disabled = false;
+                btnGithubPull.classList.remove('opacity-60');
+            }
+        }
+
+        // ==========================================
+        // 8. EVENT LISTENERS & UTILITAS
+        // ==========================================
+        function setupEventListeners() {
+            // Form & Tabel
+            usageForm.addEventListener('submit', handleFormSubmit);
+            sortOrderSelect.addEventListener('change', renderTable);
+
+            // Tombol Pengelolaan Data
+            btnBackupJson.addEventListener('click', exportToJson);
+            btnRestoreJson.addEventListener('click', () => jsonFileInput.click());
+            jsonFileInput.addEventListener('change', importFromJson);
+            btnDeleteAll.addEventListener('click', handleDeleteAll);
+
+            // Modal Pengaturan
+            btnOpenSettings.addEventListener('click', () => {
+                refreshGithubFormUI();
+                settingsModal.classList.remove('hidden');
+                settingsModal.classList.add('flex');
+            });
+
+            btnCloseSettings.addEventListener('click', () => {
+                settingsModal.classList.add('hidden');
+                settingsModal.classList.remove('flex');
+            });
+
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.add('hidden');
+                    settingsModal.classList.remove('flex');
+                }
+            });
+
+            // Tema
+            btnThemeDark.addEventListener('click', () => applyTheme('dark', true));
+            btnThemeLight.addEventListener('click', () => applyTheme('light', true));
+
+            // GitHub Settings
+            btnToggleToken.addEventListener('click', () => {
+                if (githubTokenInput.type === 'password') {
+                    githubTokenInput.type = 'text';
+                    btnToggleToken.textContent = '🙈';
+                } else {
+                    githubTokenInput.type = 'password';
+                    btnToggleToken.textContent = '👁️';
+                }
+            });
+
+            btnSaveGithub.addEventListener('click', handleSaveGithub);
+            btnGithubPush.addEventListener('click', backupToGithub);
+            btnGithubPull.addEventListener('click', restoreFromGithub);
+
+            // Modal Konfirmasi
+            btnConfirmCancel.addEventListener('click', closeConfirm);
+            btnConfirmOk.addEventListener('click', () => {
+                if (typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
+                closeConfirm();
+            });
+            confirmModal.addEventListener('click', (e) => {
+                if (e.target === confirmModal) closeConfirm();
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
