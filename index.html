@@ -4,92 +4,142 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Daftar Jam ke Menit</title>
+<title>Daftar Pemakaian Smartphone</title>
 <style>
-body{
-    font-family: Arial, sans-serif;
-    background:#1f2328 url("background.jpg") no-repeat center center fixed;
-    background-size:cover;
-    color:white;
-    margin:20px;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
-h2{
-text-align:center;
-font-size:34px;
-font-weight:bold;
-background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#00ffff,#0000ff,#8b00ff,#ff0000);
+body{
+    background:#071020;
+    color:#fff;
+}
+
+header{
+    text-align:center;
+    padding:50px 20px 35px;
+}
+
+header h1{
+    font-size:40px;
+    font-style: italic;
+    font-weight:bold;
+}
+
+header p{
+    margin-top:12px;
+    color:#9aa6b2;
+    font-size:18px;
+}
+
+.container{
+    width:92%;
+    max-width:700px;
+    margin:auto;
+}
+
+.card{
+    background:#162234;
+    border:2px solid rgba(255,255,255,.15);
+    border-radius:28px;
+    padding:30px;
+    margin-bottom:35px;
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+    border-color:#4b8cff;
+}
+
+.icon{
+    margin-bottom:20px;
+}
+.icon img{
+    width:64px;
+    height:64px;
+    object-fit:contain;
+    display:block;
+}
+
+.card h2{
+    font-size:40px;
+    margin-bottom:15px;
+}
+
+.card p{
+    color:#9aa6b2;
+    font-size:20px;
+    line-height:1.6;
+}
+
+.open{
+    display:inline-block;
+    margin-top:28px;
+    text-decoration:none;
+    font-size:24px;
+    font-weight:bold;
+}
+
+footer{
+    text-align:center;
+    color:#8d98a5;
+    font-size:18px;
+    padding:35px 20px;
+}
+
+:root{--bg:#071020;--text:#fff;--card:#162234}
+body{background-color:var(--bg)!important;color:var(--text)!important;background-repeat:no-repeat;background-position:center;background-size:cover;background-attachment:fixed}
+.card{background:var(--card)!important}
+body.light{--bg:#f5f7fb;--text:#111;--card:#fff}
+#themeBtn{position:fixed;top:15px;right:15px;padding:8px 12px;border-radius:20px}
+
+body::before{
+content:"";
+position:fixed;inset:0;
+background:rgba(0,0,0,var(--overlay,0));
+backdrop-filter:blur(var(--blur,0px));
+pointer-events:none;
+z-index:-1;
+}
+
+.rainbow-text{
+background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#00bfff,#0000ff,#8b00ff,#ff0000);
 background-size:400% 100%;
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
-animation:rainbow 4s linear infinite;
+background-clip:text;
+color:transparent!important;
+animation:rainbowMove 4s linear infinite;
 }
-@keyframes rainbow{
+@keyframes rainbowMove{
 0%{background-position:0% 50%;}
 100%{background-position:400% 50%;}
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    background:rgba(43,48,54,.45);
-}
-
-th,td{
-    border:1px solid #444;
-    padding:12px;
-    text-align:left;
-}
-
-th{
-    background:rgba(59,64,70,.55);
-}
-
-tr:nth-child(even){
-    background:rgba(37,42,48,.35);
-}
-
-.settings-btn{position:fixed;top:15px;right:15px;background:rgba(59,64,70,.55);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-.panel{display:none;position:fixed;top:55px;right:15px;background:rgba(43,48,54,.45);border:1px solid #555;border-radius:8px;padding:12px;min-width:180px}
-.panel button{display:block;width:100%;margin:6px 0;padding:8px}
-
-
-
-body.light{
-    color:#000;
-}
-body.light table{background:rgba(255,255,255,.25);}
-body.light th{background:rgba(229,229,229,.45);}
-body.light td{border:1px solid #ccc;}
-body.light tr:nth-child(even){background:rgba(245,245,245,.25);}
-
-.settings-btn{position:fixed;top:15px;right:15px;background:rgba(59,64,70,.55);color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5)}
-.settings{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-background:#232b38;color:#fff;width:90%;max-width:420px;border-radius:16px;padding:18px;z-index:10}
-.settings h2{margin:0 0 10px}
-.segment{display:flex;background:#3a4658;border-radius:16px;overflow:hidden}
-.segment button{flex:1;padding:12px;border:none;background:transparent;color:#fff}
-.segment button.active{background:#2da2ff}
-select{width:100%;padding:12px;border-radius:12px}
 </style>
-</head>
-<body>
-<button class="settings-btn" onclick="openSettings()">⚙️</button>
-<div class="overlay" id="ov" onclick="closeSettings()"></div>
-<div class="settings" id="settings">
-<h2>⚙️ Pengaturan</h2>
-<hr/>
-<h3>1. Tampilan</h3>
-<div class="segment">
-<button class="active" id="darkBtn" onclick="setTheme('dark')">🌙 Gelap</button>
-<button id="lightBtn" onclick="setTheme('light')">☀️ Terang</button>
+<style>
+#settingsBtn{position:fixed;top:15px;right:15px;background:transparent;border:none;padding:0;font-size:28px;cursor:pointer;z-index:100;}
+#panel{display:none;position:fixed;top:55px;right:15px;background:#fff;color:#000;padding:12px;border-radius:10px;box-shadow:0 2px 8px #0005;z-index:99}
+body:not(.light) #panel{background:#162234;color:#fff}
+</style></head>
+<body><button id="settingsBtn">⚙️</button><div id="panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+<div style="background:#162234;color:#fff;width:min(92vw,430px);border-radius:24px;padding:20px">
+<div style="font-size:30px;font-weight:bold">⚙️ Pengaturan</div><hr style="margin:12px 0;border-color:#334155"/>
+<div style="color:#1da1f2;font-weight:bold;margin:10px 0">1. Tampilan</div>
+<div>Mode Tema</div>
+<div style="display:flex;background:#334155;border-radius:14px;padding:4px;margin-top:8px">
+<button id="darkBtn" style="flex:1;padding:12px">🌙 Gelap</button>
+<button id="lightBtn" style="flex:1;padding:12px">☀️ Terang</button>
 </div>
-<hr/>
-<h3>2. Background</h3>
-<label>Pilih Gambar</label>
-<select onchange="setBg(this.value)">
-    <option value="none">Tanpa Gambar</option>
+<hr style="margin:12px 0;border-color:#334155"/>
+<div style="color:#1da1f2;font-weight:bold;margin:10px 0">2. Background Foto</div>
+<div style="margin:10px 0">Pilih Gambar</div>
+<select id="bgSelect" style="width:100%;padding:16px;border-radius:22px;background:#2b3546;color:#fff;border:2px solid #1da1f2">
+<option value="">Default</option>
 <option value="background/Foto_V1.jpg">Foto 1</option>
 <option value="background/Foto_V2.jpg">Foto 2</option>
 <option value="background/Foto_V3.jpg">Foto 3</option>
@@ -101,64 +151,72 @@ select{width:100%;padding:12px;border-radius:12px}
 <option value="background/Foto_V9.jpg">Foto 9</option>
 <option value="background/Foto_V10.jpg">Foto 10</option>
 </select>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin-top:18px">
+<label>Kecerahan Foto</label><input id="bright" max="150" min="50" type="range" value="100"/>
+<label>Blur Foto</label><input id="blur" max="20" min="0" type="range" value="0"/>
+<label>Gelap Overlay</label><input id="overlay" max="80" min="0" type="range" value="0"/>
 </div>
+</div></div>
+<header>
+<h1 class="rainbow-text">Daftar Pemakaian Smartphone</h1>
+<p class="rainbow-text">Pilih aplikasi yang ingin kamu gunakan</p>
+</header>
+<div class="container"><div class="card">
+<div class="icon"><img alt="Pemakaian HP" src="img/pemakaian-hp.png"/></div>
+<h2 class="rainbow-text">Pemakaian HP</h2>
+<p class="rainbow-text">Catatan pemakaian HP secara umum.</p>
+<a class="open rainbow-text" href="Smartphone.html">            Buka →  
+        </a>
+</div>
+<div class="card">
+<div class="icon"><img alt="Catatan Waktu" src="img/waktu.png"/></div>
+<h2 class="rainbow-text">Catatan Waktu</h2>
+<p class="rainbow-text">
+            Catatan Jam Dan menit
+        </p>
+<a class="open rainbow-text" href="Catatan-Waktu.html">
+            Buka →
+        </a>
+</div>
+</div>
+<footer>
+<a class="green rainbow-text">
+    Data setiap aplikasi disimpan terpisah di perangkatmu.
+    </a>
+</footer>
 <script>
-function openSettings(){ov.style.display='block';settings.style.display='block';}
-function closeSettings(){ov.style.display='none';settings.style.display='none';}
-function setBg(v){
- document.body.style.backgroundImage='url('+v+')';
- localStorage.setItem('bg',v);
- closeSettings();
+const s=document.getElementById('settingsBtn'),pnl=document.getElementById('panel'),tg=document.getElementById('themeToggle');
+function sync(){let l=document.body.classList.contains('light');lightBtn.style.background=l?'#1da1f2':'transparent';darkBtn.style.background=!l?'#1da1f2':'transparent';}
+s.style.zIndex=1001;
+s.onclick=()=>{pnl.style.display=pnl.style.display==='flex'?'none':'flex';sync();};
+darkBtn.onclick=()=>{document.body.classList.remove('light');localStorage.theme='dark';sync();};
+lightBtn.onclick=()=>{document.body.classList.add('light');localStorage.theme='light';sync();};
+if(tg){
+tg.checked=document.body.classList.contains('light');
+tg.onchange=()=>{document.body.classList.toggle('light',tg.checked);localStorage.theme=tg.checked?'light':'dark';};
 }
-function setTheme(m){
- document.body.classList.toggle('light',m==='light');
- darkBtn.classList.toggle('active',m==='dark');
- lightBtn.classList.toggle('active',m==='light');
- localStorage.setItem('theme',m);
- closeSettings();
+
+const bg=document.getElementById('bgSelect'),
+br=document.getElementById('bright'),
+bl=document.getElementById('blur'),
+ov=document.getElementById('overlay');
+function applyBg(){
+const p=bg.value;
+if(p){document.body.style.backgroundImage=`url('${p}')`;}else{document.body.style.backgroundImage='none';}
+document.body.style.backgroundSize="cover";
+document.body.style.backgroundPosition="center";
+document.body.style.filter=`brightness(${br.value}%)`;
+document.documentElement.style.setProperty('--blur',bl.value+'px');
+document.documentElement.style.setProperty('--overlay',(ov.value/100).toString());
+localStorage.setItem('index',JSON.stringify({p,b:br.value,l:bl.value,o:ov.value}));
 }
-window.onload=function(){
- const bg=localStorage.getItem('bg');
- if(bg){document.body.style.backgroundImage='url('+bg+')';}
- const th=localStorage.getItem('theme');
- if(th){
-  document.body.classList.toggle('light',th==='light');
-  darkBtn.classList.toggle('active',th==='dark');
-  lightBtn.classList.toggle('active',th==='light');
- }
-}
-</script>
+const cfg=JSON.parse(localStorage.getItem('index')||'{}');
+if(cfg.p)bg.value=cfg.p;
+if(cfg.b)br.value=cfg.b;
+if(cfg.l)bl.value=cfg.l;
+if(cfg.o)ov.value=cfg.o;
+[bg,br,bl,ov].forEach(e=>e&&e.addEventListener('input',applyBg));
+applyBg();
 
-
-
-
-<h2>DAFTAR JAM KE MENIT</h2>
-<table>
-<tr><th>Jam</th><th>Menit</th></tr>
-<tr><td>1 jam</td><td>60 menit</td></tr>
-<tr><td>2 jam</td><td>120 menit</td></tr>
-<tr><td>3 jam</td><td>180 menit</td></tr>
-<tr><td>4 jam</td><td>240 menit</td></tr>
-<tr><td>5 jam</td><td>300 menit</td></tr>
-<tr><td>6 jam</td><td>360 menit</td></tr>
-<tr><td>7 jam</td><td>420 menit</td></tr>
-<tr><td>8 jam</td><td>480 menit</td></tr>
-<tr><td>9 jam</td><td>540 menit</td></tr>
-<tr><td>10 jam</td><td>600 menit</td></tr>
-<tr><td>11 jam</td><td>660 menit</td></tr>
-<tr><td>12 jam</td><td>720 menit</td></tr>
-<tr><td>13 jam</td><td>780 menit</td></tr>
-<tr><td>14 jam</td><td>840 menit</td></tr>
-<tr><td>15 jam</td><td>900 menit</td></tr>
-<tr><td>16 jam</td><td>960 menit</td></tr>
-<tr><td>17 jam</td><td>1020 menit</td></tr>
-<tr><td>18 jam</td><td>1080 menit</td></tr>
-<tr><td>19 jam</td><td>1140 menit</td></tr>
-<tr><td>20 jam</td><td>1200 menit</td></tr>
-<tr><td>21 jam</td><td>1260 menit</td></tr>
-<tr><td>22 jam</td><td>1320 menit</td></tr>
-<tr><td>23 jam</td><td>1380 menit</td></tr>
-<tr><td>24 jam</td><td>1440 menit</td></tr>
-</table>
-</body>
+</script></body>
 </html>
