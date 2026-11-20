@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Catatan Pemakaian Game</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#080e1a',
+              900: '#0f172a', // Background utama mode gelap
+              800: '#1e293b', // Card / Container mode gelap
+              700: '#2c3a4f', // Input abu-abu kebiruan
+              600: '#334155', // Border / Hover
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar untuk tabel horizontal pada smartphone */
+    .table-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 999px;
+    }
+    .table-scroll::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 999px;
+    }
+    .table-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.8);
+    }
+
+    /* Styling input datetime-local agar ikon kalender terlihat jelas di mode gelap */
+    html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    html:not(.dark) input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+    }
+
+    /* Animasi halus untuk modal & toast */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-modal {
+      animation: fadeIn 0.2s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 dark:bg-navy-900 dark:text-white font-sans min-h-screen transition-colors duration-200 selection:bg-blue-500 selection:text-white pb-10">
+
+  <!-- Container Utama (Dioptimalkan untuk Android & Desktop) -->
+  <div class="max-w-3xl mx-auto px-4 pt-5 sm:pt-8">
+    
+    <!-- Header Aplikasi -->
+    <header class="flex items-center justify-between bg-white dark:bg-navy-800 px-5 py-4 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70 mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl font-bold shadow-inner">
+          🎮
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+            Catatan Pemakaian Game
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Pantau durasi & riwayat bermainmu</p>
+        </div>
+      </div>
+
+      <!-- Tombol Pengaturan ⚙️ di sebelah kanan judul -->
+      <button 
+        id="btnOpenSettings" 
+        type="button"
+        aria-label="Pengaturan Aplikasi"
+        class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-slate-600 text-xl transition active:scale-95 shadow-sm border border-slate-200 dark:border-slate-600/50"
+        title="Pengaturan">
+        ⚙️
+      </button>
+    </header>
+
+    <!-- Formulir Pencatatan Aktivitas Game -->
+    <main class="bg-white dark:bg-navy-800 p-5 sm:p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70 mb-6">
+      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+        <span class="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
+        Tambah Catatan Bermain
+      </h2>
+
+      <form id="gameLogForm" class="space-y-4" novalidate>
+        <!-- 1. Nama Game -->
+        <div>
+          <label for="gameSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+            Nama Game
+          </label>
+          <select 
+            id="gameSelect" 
+            class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="Mobile Legends">Mobile Legends</option>
+            <option value="PUBG Flash">PUBG Flash</option>
+            <option value="Free Fire Max">Free Fire Max</option>
+            <option value="Minecraft">Minecraft</option>
+            <option value="FC Mobile">FC Mobile</option>
+            <option value="Game Lainnya">Game Lainnya...</option>
+          </select>
+
+          <!-- Input Manual jika memilih "Game Lainnya" -->
+          <div id="customGameWrapper" class="hidden mt-2.5">
+            <input 
+              type="text" 
+              id="customGameInput" 
+              placeholder="Masukkan nama game secara manual..." 
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+          </div>
+        </div>
+
+        <!-- 2 & 3. Tanggal & Jam Mulai + Berakhir -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="startTime" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+              Tanggal & Jam Mulai
+            </label>
+            <input 
+              type="datetime-local" 
+              id="startTime" 
+              required
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+          </div>
+
+          <div>
+            <label for="endTime" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+              Tanggal & Jam Berakhir
+            </label>
+            <input 
+              type="datetime-local" 
+              id="endTime" 
+              required
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+          </div>
+        </div>
+
+        <!-- Pratinjau Otomatis Durasi Bermain -->
+        <div id="durationPreviewBox" class="px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-navy-900/80 border border-blue-200 dark:border-slate-700 flex items-center justify-between text-sm">
+          <span class="text-slate-600 dark:text-slate-400 font-medium">Estimasi Durasi Bermain:</span>
+          <span id="durationPreviewText" class="font-bold text-blue-600 dark:text-blue-400">0 jam 0 menit</span>
+        </div>
+
+        <!-- 4 & 5. Baterai (%) + Koneksi -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="batteryInput" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+              Baterai (%)
+            </label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="batteryInput" 
+                min="0" 
+                max="100" 
+                placeholder="80" 
+                required
+                class="w-full px-4 py-3 pr-10 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+            </div>
+          </div>
+
+          <div>
+            <label for="connectionSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+              Koneksi
+            </label>
+            <select 
+              id="connectionSelect" 
+              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+              <option value="WiFi">WiFi</option>
+              <option value="Data Seluler">Data Seluler</option>
+              <option value="Offline">Offline</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tombol Simpan Besar Berwarna Biru -->
+        <div class="pt-2">
+          <button 
+            type="submit" 
+            class="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+            <span>💾</span>
+            <span>Simpan Catatan</span>
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Bagian Pengelolaan Data & Riwayat Permainan -->
+    <section class="bg-white dark:bg-navy-800 p-5 sm:p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70">
+      
+      <!-- Baris Tombol Pengelolaan Data: Cadangkan (Hijau), Pulihkan (Oranye), Hapus Semua (Merah) -->
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-3 mb-5">
+        <button 
+          id="btnBackupJson" 
+          type="button"
+          class="py-3 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          <span>📦</span>
+          <span>Cadangkan</span>
+        </button>
+
+        <button 
+          id="btnRestoreJson" 
+          type="button"
+          class="py-3 px-2 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          <span>📂</span>
+          <span>Pulihkan</span>
+        </button>
+
+        <button 
+          id="btnDeleteAll" 
+          type="button"
+          class="py-3 px-2 sm:px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-rose-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          <span>🗑️</span>
+          <span>Hapus Semua</span>
+        </button>
+
+        <!-- Input file tersembunyi untuk Pulihkan JSON -->
+        <input type="file" id="restoreFileInput" accept=".json,application/json" class="hidden" />
+      </div>
+
+      <!-- Header Tabel & Dropdown Urutan Riwayat -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <span class="w-2 h-5 bg-emerald-500 rounded-full inline-block"></span>
+          Riwayat Permainan
+        </h2>
+
+        <div class="flex items-center gap-2">
+          <label for="sortOrderSelect" class="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">
+            Urutkan:
+          </label>
+          <select 
+            id="sortOrderSelect" 
+            class="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="newest">Tanggal terbaru → terlama</option>
+            <option value="oldest">Tanggal terlama → terbaru</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabel Riwayat Permainan (Dapat digeser horizontal pada smartphone) -->
+      <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 dark:border-slate-700">
+        <table class="w-full text-left border-collapse min-w-[780px]">
+          <thead>
+            <tr class="bg-slate-100 dark:bg-navy-900/90 text-slate-700 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+              <th class="py-3.5 px-3 font-bold text-center w-12">No</th>
+              <th class="py-3.5 px-3 font-bold">Tanggal</th>
+              <th class="py-3.5 px-3 font-bold">Nama Game</th>
+              <th class="py-3.5 px-3 font-bold">Jam Mulai</th>
+              <th class="py-3.5 px-3 font-bold">Jam Akhir</th>
+              <th class="py-3.5 px-3 font-bold">Durasi Bermain</th>
+              <th class="py-3.5 px-3 font-bold text-center">Baterai (%)</th>
+              <th class="py-3.5 px-3 font-bold">Koneksi</th>
+              <th class="py-3.5 px-3 font-bold text-center w-20">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/70 text-sm">
+            <!-- Baris riwayat akan dirender melalui JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Petunjuk Geser untuk Mobile -->
+      <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2.5 text-center sm:hidden">
+        ← Geser tabel ke kiri/kanan untuk melihat semua kolom →
+      </p>
+    </section>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL PENGATURAN APLIKASI (Hanya 2 Bagian: Tampilan & GitHub Backup)  -->
+  <!-- ===================================================================== -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-navy-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-modal my-auto">
+      
+      <!-- Header Modal Pengaturan -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-900/60">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>⚙️</span>
+          <span>Pengaturan Aplikasi</span>
+        </h3>
+        <button 
+          id="btnCloseSettings" 
+          type="button"
+          class="w-9 h-9 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-navy-700 dark:hover:bg-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold transition">
+          ✕
+        </button>
+      </div>
+
+      <div class="p-5 space-y-6">
+        
+        <!-- BAGIAN 1: TAMPILAN -->
+        <div>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+            1. Tampilan
+          </h4>
+          <div class="grid grid-cols-2 gap-3">
+            <button 
+              id="btnThemeDark" 
+              type="button"
+              class="py-3.5 px-4 rounded-xl font-bold text-sm border-2 transition flex items-center justify-center gap-2 shadow-sm">
+              <span>🌙</span>
+              <span>Gelap</span>
+            </button>
+
+            <button 
+              id="btnThemeLight" 
+              type="button"
+              class="py-3.5 px-4 rounded-xl font-bold text-sm border-2 transition flex items-center justify-center gap-2 shadow-sm">
+              <span>☀️</span>
+              <span>Terang</span>
+            </button>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700" />
+
+        <!-- BAGIAN 2: GITHUB BACKUP -->
+        <div>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+            2. GitHub Backup
+          </h4>
+
+          <div class="space-y-3.5">
+            <!-- GitHub Token -->
+            <div>
+              <label for="githubTokenInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                GitHub Token (Personal Access Token)
+              </label>
+              <div class="relative">
+                <input 
+                  type="password" 
+                  id="githubTokenInput" 
+                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                  autocomplete="off"
+                  class="w-full px-3.5 py-2.5 pr-12 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button 
+                  id="btnToggleTokenVisibility" 
+                  type="button"
+                  title="Tampilkan/Sembunyikan Token"
+                  class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white text-sm">
+                  👁️
+                </button>
+              </div>
+            </div>
+
+            <!-- Repository (user/repo) -->
+            <div>
+              <label for="githubRepoInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Repository (user/repo)
+              </label>
+              <input 
+                type="text" 
+                id="githubRepoInput" 
+                placeholder="geminiveo600-byte/backup"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Gunakan repository <strong>Private</strong> demi keamanan data & token Anda.
+              </p>
+            </div>
+
+            <!-- Tombol Simpan GitHub & Aksi Sinkronisasi -->
+            <div class="pt-1 space-y-2.5">
+              <button 
+                id="btnSaveGithub" 
+                type="button"
+                class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm shadow-md shadow-blue-600/25 transition flex items-center justify-center gap-2">
+                <span>💾</span>
+                <span>Simpan GitHub</span>
+              </button>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <button 
+                  id="btnGithubPush" 
+                  type="button"
+                  class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                  <span>☁️⬆️</span>
+                  <span>Backup ke GitHub</span>
+                </button>
+
+                <button 
+                  id="btnGithubPull" 
+                  type="button"
+                  class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                  <span>☁️⬇️</span>
+                  <span>Pulihkan GitHub</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser)          -->
+  <!-- ===================================================================== -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-navy-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5 animate-modal">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+          ⚠️
+        </div>
+        <h3 id="confirmTitle" class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi</h3>
+      </div>
+      <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-300 mb-5 leading-relaxed">
+        Apakah Anda yakin ingin melanjutkan tindakan ini?
+      </p>
+      <div class="flex justify-end gap-2.5">
+        <button 
+          id="btnConfirmCancel" 
+          type="button"
+          class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-navy-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold text-sm transition">
+          Batal
+        </button>
+        <button 
+          id="btnConfirmOk" 
+          type="button"
+          class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-600/20 transition">
+          Ya, Hapus
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- NOTIFIKASI TOAST (Pengganti alert() bawaan browser)                   -->
+  <!-- ===================================================================== -->
+  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[92%] max-w-md pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI                                            -->
+  <!-- ===================================================================== -->
+  <script>
+    (function () {
+      // Kunci penyimpanan localStorage
+      const STORAGE_KEYS = {
+        LOGS: 'cpg_game_logs_v1',
+        THEME: 'cpg_theme_v1',
+        GITHUB_CFG: 'cpg_github_cfg_v1'
+      };
+
+      const GITHUB_BACKUP_FILENAME = 'Games.json';
+
+      // State Aplikasi
+      let gameLogs = [];
+      let sortOrder = 'newest'; // 'newest' | 'oldest'
+      let confirmCallback = null;
+
+      // Referensi Elemen DOM
+      const htmlEl = document.documentElement;
+      const gameLogForm = document.getElementById('gameLogForm');
+      const gameSelect = document.getElementById('gameSelect');
+      const customGameWrapper = document.getElementById('customGameWrapper');
+      const customGameInput = document.getElementById('customGameInput');
+      const startTimeInput = document.getElementById('startTime');
+      const endTimeInput = document.getElementById('endTime');
+      const durationPreviewText = document.getElementById('durationPreviewText');
+      const batteryInput = document.getElementById('batteryInput');
+      const connectionSelect = document.getElementById('connectionSelect');
+      const sortOrderSelect = document.getElementById('sortOrderSelect');
+      const historyTableBody = document.getElementById('historyTableBody');
+
+      // Tombol Data
+      const btnBackupJson = document.getElementById('btnBackupJson');
+      const btnRestoreJson = document.getElementById('btnRestoreJson');
+      const restoreFileInput = document.getElementById('restoreFileInput');
+      const btnDeleteAll = document.getElementById('btnDeleteAll');
+
+      // Modal Pengaturan
+      const settingsModal = document.getElementById('settingsModal');
+      const btnOpenSettings = document.getElementById('btnOpenSettings');
+      const btnCloseSettings = document.getElementById('btnCloseSettings');
+      const btnThemeDark = document.getElementById('btnThemeDark');
+      const btnThemeLight = document.getElementById('btnThemeLight');
+
+      // Pengaturan GitHub
+      const githubTokenInput = document.getElementById('githubTokenInput');
+      const btnToggleTokenVisibility = document.getElementById('btnToggleTokenVisibility');
+      const githubRepoInput = document.getElementById('githubRepoInput');
+      const btnSaveGithub = document.getElementById('btnSaveGithub');
+      const btnGithubPush = document.getElementById('btnGithubPush');
+      const btnGithubPull = document.getElementById('btnGithubPull');
+
+      // Modal Konfirmasi
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmTitle = document.getElementById('confirmTitle');
+      const confirmMessage = document.getElementById('confirmMessage');
+      const btnConfirmCancel = document.getElementById('btnConfirmCancel');
+      const btnConfirmOk = document.getElementById('btnConfirmOk');
+
+      // -------------------------------------------------------------------
+      // 1. SISTEM NOTIFIKASI TOAST & KONFIRMASI KUSTOM
+      // -------------------------------------------------------------------
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        
+        let bgClass = 'bg-slate-800 text-white border-slate-700';
+        let icon = 'ℹ️';
+        if (type === 'success') {
+          bgClass = 'bg-emerald-600 text-white border-emerald-500';
+          icon = '✅';
+        } else if (type === 'error') {
+          bgClass = 'bg-rose-600 text-white border-rose-500';
+          icon = '❌';
+        } else if (type === 'warning') {
+          bgClass = 'bg-amber-600 text-white border-amber-500';
+          icon = '⚠️';
+        }
+
+        toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
+        toast.innerHTML = `<span>${icon}</span><span class="flex-1">${escapeHtml(message)}</span>`;
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+
+      function openConfirm(title, message, okText, onConfirm) {
+        confirmTitle.textContent = title;
+        confirmMessage.textContent = message;
+        btnConfirmOk.textContent = okText || 'Ya, Lanjutkan';
+        confirmCallback = onConfirm;
+        confirmModal.classList.remove('hidden');
+        confirmModal.classList.add('flex');
+      }
+
+      function closeConfirm() {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+        confirmCallback = null;
+      }
+
+      btnConfirmCancel.addEventListener('click', closeConfirm);
+      btnConfirmOk.addEventListener('click', () => {
+        if (typeof confirmCallback === 'function') {
+          confirmCallback();
+        }
+        closeConfirm();
+      });
+
+      // -------------------------------------------------------------------
+      // 2. MANAJEMEN TEMA (GELAP & TERANG)
+      // -------------------------------------------------------------------
+      function applyTheme(theme) {
+        if (theme === 'light') {
+          htmlEl.classList.remove('dark');
+          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-blue-600 bg-blue-50 text-blue-700 transition flex items-center justify-center gap-2 shadow-sm';
+          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center gap-2';
+        } else {
+          htmlEl.classList.add('dark');
+          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-blue-500 bg-blue-600/20 text-blue-300 transition flex items-center justify-center gap-2 shadow-sm';
+          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-slate-700 bg-navy-700 text-slate-300 hover:bg-slate-600 transition flex items-center justify-center gap-2';
+        }
+        localStorage.setItem(STORAGE_KEYS.THEME, theme);
+      }
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
+        applyTheme(savedTheme);
+      }
+
+      btnThemeDark.addEventListener('click', () => {
+        applyTheme('dark');
+        showToast('Mode Gelap diaktifkan', 'info');
+      });
+
+      btnThemeLight.addEventListener('click', () => {
+        applyTheme('light');
+        showToast('Mode Terang diaktifkan', 'info');
+      });
+
+      // -------------------------------------------------------------------
+      // 3. HELPER WAKTU, TANGGAL & PERHITUNGAN DURASI
+      // -------------------------------------------------------------------
+      function setDefaultDateTimes() {
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        startTimeInput.value = toLocalDateTimeInputString(oneHourAgo);
+        endTimeInput.value = toLocalDateTimeInputString(now);
+        updateDurationPreview();
+      }
+
+      function toLocalDateTimeInputString(date) {
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      }
+
+      function calculateDurationMinutes(startStr, endStr) {
+        if (!startStr || !endStr) return null;
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+        const diffMs = end.getTime() - start.getTime();
+        return Math.floor(diffMs / 60000);
+      }
+
+      function formatDuration(totalMinutes) {
+        if (totalMinutes === null || totalMinutes < 0) return 'Tidak valid';
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        if (hours > 0 && minutes > 0) return `${hours} jam ${minutes} menit`;
+        if (hours > 0) return `${hours} jam 0 menit`;
+        return `0 jam ${minutes} menit`;
+      }
+
+      function formatDisplayDate(isoStr) {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleDateString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
+
+      function formatDisplayTime(isoStr) {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }).replace('.', ':');
+      }
+
+      function updateDurationPreview() {
+        const mins = calculateDurationMinutes(startTimeInput.value, endTimeInput.value);
+        if (mins === null) {
+          durationPreviewText.textContent = '-';
+          durationPreviewText.className = 'font-bold text-slate-400';
+        } else if (mins <= 0) {
+          durationPreviewText.textContent = 'Jam berakhir harus setelah jam mulai';
+          durationPreviewText.className = 'font-bold text-rose-500';
+        } else {
+          durationPreviewText.textContent = formatDuration(mins);
+          durationPreviewText.className = 'font-bold text-blue-600 dark:text-blue-400';
+        }
+      }
+
+      startTimeInput.addEventListener('change', updateDurationPreview);
+      endTimeInput.addEventListener('change', updateDurationPreview);
+
+      // -------------------------------------------------------------------
+      // 4. INTERAKSI FORMULIR & PENYIMPANAN DATA (localStorage)
+      // -------------------------------------------------------------------
+      gameSelect.addEventListener('change', () => {
+        if (gameSelect.value === 'Game Lainnya') {
+          customGameWrapper.classList.remove('hidden');
+          customGameInput.focus();
+        } else {
+          customGameWrapper.classList.add('hidden');
+          customGameInput.value = '';
+        }
+      });
+
+      function loadLogsFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.LOGS);
+          gameLogs = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(gameLogs)) gameLogs = [];
+        } catch (err) {
+          console.error('Gagal membaca riwayat:', err);
+          gameLogs = [];
+        }
+      }
+
+      function saveLogsToStorage() {
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(gameLogs));
+      }
+
+      gameLogForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // 1. Validasi Nama Game
+        let gameName = gameSelect.value;
+        if (gameName === 'Game Lainnya') {
+          gameName = customGameInput.value.trim();
+          if (!gameName) {
+            showToast('Masukkan nama game secara manual terlebih dahulu!', 'error');
+            customGameInput.focus();
+            return;
+          }
+        }
+
+        // 2. Validasi Tanggal & Jam
+        const startVal = startTimeInput.value;
+        const endVal = endTimeInput.value;
+        if (!startVal || !endVal) {
+          showToast('Tanggal & jam mulai maupun berakhir wajib diisi!', 'error');
+          return;
+        }
+
+        const durationMinutes = calculateDurationMinutes(startVal, endVal);
+        if (durationMinutes === null || durationMinutes <= 0) {
+          showToast('Jam berakhir tidak boleh lebih awal atau sama dengan jam mulai!', 'error');
+          return;
+        }
+
+        // 3. Validasi Baterai (0 - 100)
+        const batteryRaw = batteryInput.value.trim();
+        const batteryNum = Number(batteryRaw);
+        if (batteryRaw === '' || isNaN(batteryNum) || batteryNum < 0 || batteryNum > 100) {
+          showToast('Persentase baterai harus berupa angka 0 hingga 100!', 'error');
+          batteryInput.focus();
+          return;
+        }
+
+        // 4. Koneksi
+        const connectionVal = connectionSelect.value;
+
+        // Buat objek catatan
+        const newEntry = {
+          id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+          gameName: gameName,
+          startTime: startVal,
+          endTime: endVal,
+          durationMinutes: durationMinutes,
+          battery: Math.round(batteryNum),
+          connection: connectionVal,
+          createdAt: new Date().toISOString()
+        };
+
+        gameLogs.push(newEntry);
+        saveLogsToStorage();
+        renderHistoryTable();
+
+        // Reset sebagian input
+        batteryInput.value = '';
+        if (gameSelect.value === 'Game Lainnya') {
+          customGameInput.value = '';
+        }
+
+        showToast(`Catatan ${gameName} (${formatDuration(durationMinutes)}) berhasil disimpan!`, 'success');
+      });
+
+      // -------------------------------------------------------------------
+      // 5. RENDER TABEL RIWAYAT & STATISTIK
+      // -------------------------------------------------------------------
+      sortOrderSelect.addEventListener('change', () => {
+        sortOrder = sortOrderSelect.value;
+        renderHistoryTable();
+      });
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function renderHistoryTable() {
+        // Urutkan data sesuai pilihan
+        const sortedLogs = [...gameLogs].sort((a, b) => {
+          const timeA = new Date(a.startTime).getTime();
+          const timeB = new Date(b.startTime).getTime();
+          return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+        });
+
+        historyTableBody.innerHTML = '';
+
+        if (sortedLogs.length === 0) {
+          historyTableBody.innerHTML = `
+            <tr>
+              <td colspan="9" class="py-10 px-4 text-center text-slate-400 dark:text-slate-500">
+                <div class="text-3xl mb-2">📭</div>
+                <p class="font-medium">Belum ada catatan pemakaian game.</p>
+                <p class="text-xs mt-1">Isi formulir di atas untuk mulai mencatat aktivitas bermain.</p>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        sortedLogs.forEach((log, index) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50 dark:hover:bg-navy-700/50 transition';
+
+          // Cek apakah melewati tengah malam / beda hari
+          const startDateStr = formatDisplayDate(log.startTime);
+          const endDateStr = formatDisplayDate(log.endTime);
+          const dateDisplay = startDateStr === endDateStr 
+            ? startDateStr 
+            : `${startDateStr} → ${endDateStr}`;
+
+          // Badge warna koneksi
+          let connBadgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
+          if (log.connection === 'Data Seluler') {
+            connBadgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300';
+          } else if (log.connection === 'Offline') {
+            connBadgeClass = 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-300';
+          }
+
+          // Warna indikator baterai
+          let batColorClass = 'text-emerald-600 dark:text-emerald-400';
+          if (log.battery <= 20) batColorClass = 'text-rose-600 dark:text-rose-400';
+          else if (log.battery <= 50) batColorClass = 'text-amber-600 dark:text-amber-400';
+
+          tr.innerHTML = `
+            <td class="py-3.5 px-3 text-center font-semibold text-slate-500 dark:text-slate-400">${index + 1}</td>
+            <td class="py-3.5 px-3 whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium">${escapeHtml(dateDisplay)}</td>
+            <td class="py-3.5 px-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">${escapeHtml(log.gameName)}</td>
+            <td class="py-3.5 px-3 whitespace-nowrap font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">${formatDisplayTime(log.startTime)}</td>
+            <td class="py-3.5 px-3 whitespace-nowrap font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">${formatDisplayTime(log.endTime)}</td>
+            <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">${escapeHtml(formatDuration(log.durationMinutes))}</td>
+            <td class="py-3.5 px-3 text-center font-bold ${batColorClass}">${log.battery}%</td>
+            <td class="py-3.5 px-3 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${connBadgeClass}">
+                ${escapeHtml(log.connection)}
+              </span>
+            </td>
+            <td class="py-3.5 px-3 text-center">
+              <button 
+                type="button"
+                data-id="${escapeHtml(log.id)}"
+                class="btn-delete-row px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 text-rose-600 hover:text-white dark:text-rose-400 dark:hover:text-white text-xs font-bold transition"
+                title="Hapus catatan ini">
+                🗑️ Hapus
+              </button>
+            </td>
+          `;
+
+          historyTableBody.appendChild(tr);
+        });
+
+        // Event listener hapus satu per satu
+        document.querySelectorAll('.btn-delete-row').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idToDelete = btn.getAttribute('data-id');
+            deleteSingleLog(idToDelete);
+          });
+        });
+      }
+
+      function deleteSingleLog(id) {
+        gameLogs = gameLogs.filter((item) => item.id !== id);
+        saveLogsToStorage();
+        renderHistoryTable();
+        showToast('Catatan berhasil dihapus', 'info');
+      }
+
+      // -------------------------------------------------------------------
+      // 6. BACKUP & PULIHKAN JSON LOKAL + HAPUS SEMUA
+      // -------------------------------------------------------------------
+      btnBackupJson.addEventListener('click', () => {
+        if (gameLogs.length === 0) {
+          showToast('Tidak ada data riwayat untuk dicadangkan!', 'warning');
+          return;
+        }
+
+        const payload = {
+          appName: 'Catatan Pemakaian Game',
+          exportedAt: new Date().toISOString(),
+          totalRecords: gameLogs.length,
+          logs: gameLogs
+        };
+
+        const jsonStr = JSON.stringify(payload, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const dateTag = new Date().toISOString().slice(0, 10);
+        const fileName = `catatan-pemakaian-game-${dateTag}.json`;
+        const a = document.createElement('a');
+
+        // Beberapa browser Android perlu anchor tetap berada di DOM
+        // dan Blob URL jangan langsung dicabut setelah .click().
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        a.setAttribute('target', '_self');
+        document.body.appendChild(a);
+
+        try {
+          a.click();
+          showToast('Permintaan unduh dikirim. Periksa folder Download.', 'success');
+        } catch (err) {
+          console.error('Unduhan cadangan gagal:', err);
+          showToast('Browser gagal memulai unduhan. Coba buka halaman ini di Chrome.', 'error');
+        }
+
+        // Tunda penghapusan Blob URL agar browser Android sempat memproses unduhan.
+        setTimeout(() => {
+          URL.revokeObjectURL(url);
+          a.remove();
+        }, 60000);
+      });
+
+      btnRestoreJson.addEventListener('click', () => {
+        restoreFileInput.value = '';
+        restoreFileInput.click();
+      });
+
+      restoreFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            const importedLogs = Array.isArray(parsed) ? parsed : parsed.logs;
+
+            if (!Array.isArray(importedLogs)) {
+              throw new Error('Format file JSON tidak dikenali.');
+            }
+
+            const addedCount = mergeLogsWithoutDuplicates(importedLogs);
+            saveLogsToStorage();
+            renderHistoryTable();
+            showToast(`Berhasil memulihkan! ${addedCount} data baru ditambahkan (duplikat dilewati).`, 'success');
+          } catch (err) {
+            showToast('Gagal memulihkan file JSON: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      // Mencegah data ganda saat pemulihan (baik dari JSON maupun GitHub)
+      function mergeLogsWithoutDuplicates(incomingLogs) {
+        const existingIds = new Set(gameLogs.map((l) => l.id));
+        const existingSignatures = new Set(
+          gameLogs.map((l) => `${l.gameName}|${l.startTime}|${l.endTime}|${l.battery}|${l.connection}`)
+        );
+
+        let added = 0;
+        incomingLogs.forEach((item) => {
+          if (!item || !item.gameName || !item.startTime || !item.endTime) return;
+
+          const sig = `${item.gameName}|${item.startTime}|${item.endTime}|${item.battery}|${item.connection}`;
+          if ((item.id && existingIds.has(item.id)) || existingSignatures.has(sig)) {
+            return; // Lewati data duplikat
+          }
+
+          const cleanItem = {
+            id: item.id || ('log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
+            gameName: String(item.gameName),
+            startTime: String(item.startTime),
+            endTime: String(item.endTime),
+            durationMinutes: Number(item.durationMinutes) || calculateDurationMinutes(item.startTime, item.endTime) || 0,
+            battery: Number(item.battery) || 0,
+            connection: String(item.connection || 'WiFi'),
+            createdAt: item.createdAt || new Date().toISOString()
+          };
+
+          gameLogs.push(cleanItem);
+          existingIds.add(cleanItem.id);
+          existingSignatures.add(sig);
+          added++;
+        });
+
+        return added;
+      }
+
+      btnDeleteAll.addEventListener('click', () => {
+        if (gameLogs.length === 0) {
+          showToast('Riwayat permainan sudah kosong.', 'info');
+          return;
+        }
+
+        openConfirm(
+          'Hapus Semua Riwayat?',
+          `Tindakan ini akan menghapus seluruh ${gameLogs.length} catatan permainan secara permanen. Pastikan Anda sudah membuat cadangan jika diperlukan.`,
+          '🗑️ Hapus Semua',
+          () => {
+            gameLogs = [];
+            saveLogsToStorage();
+            renderHistoryTable();
+            showToast('Seluruh riwayat permainan berhasil dihapus.', 'success');
+          }
+        );
+      });
+
+      // -------------------------------------------------------------------
+      // 7. PENGATURAN MODAL & GITHUB BACKUP API
+      // -------------------------------------------------------------------
+      function loadGithubConfig() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.GITHUB_CFG);
+          if (!raw) return { token: '', repo: '' };
+          const decoded = JSON.parse(atob(raw));
+          return {
+            token: decoded.token || '',
+            repo: decoded.repo || ''
+          };
+        } catch (e) {
+          return { token: '', repo: '' };
+        }
+      }
+
+      function saveGithubConfig(token, repo) {
+        const encoded = btoa(JSON.stringify({ token, repo }));
+        localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, encoded);
+      }
+
+      btnOpenSettings.addEventListener('click', () => {
+        const cfg = loadGithubConfig();
+        githubTokenInput.value = cfg.token;
+        githubRepoInput.value = cfg.repo;
+        githubTokenInput.type = 'password';
+        settingsModal.classList.remove('hidden');
+        settingsModal.classList.add('flex');
+      });
+
+      btnCloseSettings.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        settingsModal.classList.remove('flex');
+      });
+
+      // Tutup modal jika klik di luar area dialog
+      settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+          settingsModal.classList.add('hidden');
+          settingsModal.classList.remove('flex');
+        }
+      });
+
+      // Toggle tampilkan / sembunyikan token
+      btnToggleTokenVisibility.addEventListener('click', () => {
+        if (githubTokenInput.type === 'password') {
+          githubTokenInput.type = 'text';
+          btnToggleTokenVisibility.textContent = '🙈';
+        } else {
+          githubTokenInput.type = 'password';
+          btnToggleTokenVisibility.textContent = '👁️';
+        }
+      });
+
+      // Tombol Simpan GitHub (Menyimpan konfigurasi & melakukan backup otomatis ke GitHub)
+      btnSaveGithub.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        const repo = githubRepoInput.value.trim();
+
+        if (!token || !repo) {
+          showToast('Harap isi GitHub Token dan Repository (user/repo)!', 'error');
+          return;
+        }
+
+        if (!repo.includes('/')) {
+          showToast('Format repository harus user/repo (contoh: geminiveo600-byte/backup)', 'error');
+          return;
+        }
+
+        saveGithubConfig(token, repo);
+        showToast('Konfigurasi GitHub disimpan! Memulai pencadangan...', 'info');
+        await pushBackupToGithub(token, repo);
+      });
+
+      btnGithubPush.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        const repo = githubRepoInput.value.trim();
+        if (!token || !repo) {
+          showToast('Isi GitHub Token dan Repository terlebih dahulu!', 'error');
+          return;
+        }
+        saveGithubConfig(token, repo);
+        await pushBackupToGithub(token, repo);
+      });
+
+      btnGithubPull.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        const repo = githubRepoInput.value.trim();
+        if (!token || !repo) {
+          showToast('Isi GitHub Token dan Repository terlebih dahulu!', 'error');
+          return;
+        }
+        saveGithubConfig(token, repo);
+        await pullBackupFromGithub(token, repo);
+      });
+
+      // Helper Base64 Unicode-safe untuk GitHub Contents API
+      function utf8ToBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
+      function base64ToUtf8(str) {
+        return decodeURIComponent(escape(atob(str)));
+      }
+
+      async function pushBackupToGithub(token, repo) {
+        btnSaveGithub.disabled = true;
+        btnGithubPush.disabled = true;
+
+        const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_FILENAME}`;
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        };
+
+        try {
+          // 1. Cek apakah file sudah ada untuk mendapatkan SHA terbaru
+          let fileSha = null;
+          const getRes = await fetch(apiUrl, { method: 'GET', headers });
+          if (getRes.ok) {
+            const existingData = await getRes.json();
+            fileSha = existingData.sha;
+          } else if (getRes.status !== 404) {
+            const errData = await getRes.json().catch(() => ({}));
+            throw new Error(errData.message || `HTTP ${getRes.status}`);
+          }
+
+          // 2. Siapkan payload JSON
+          const backupContent = JSON.stringify({
+            appName: 'Catatan Pemakaian Game',
+            updatedAt: new Date().toISOString(),
+            totalRecords: gameLogs.length,
+            logs: gameLogs
+          }, null, 2);
+
+          const bodyPayload = {
+            message: `Backup Catatan Pemakaian Game (${new Date().toLocaleString('id-ID')})`,
+            content: utf8ToBase64(backupContent)
+          };
+          if (fileSha) {
+            bodyPayload.sha = fileSha;
+          }
+
+          // 3. Unggah (PUT) ke GitHub Repository
+          const putRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify(bodyPayload)
+          });
+
+          if (!putRes.ok) {
+            const errPut = await putRes.json().catch(() => ({}));
+            throw new Error(errPut.message || `Gagal mengunggah (HTTP ${putRes.status})`);
+          }
+
+          showToast('Berhasil backup seluruh data ke GitHub!', 'success');
+        } catch (err) {
+          showToast('GitHub Backup gagal: ' + err.message, 'error');
+        } finally {
+          btnSaveGithub.disabled = false;
+          btnGithubPush.disabled = false;
+        }
+      }
+
+      async function pullBackupFromGithub(token, repo) {
+        btnGithubPull.disabled = true;
+
+        const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_FILENAME}`;
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        };
+
+        try {
+          const res = await fetch(apiUrl, { method: 'GET', headers });
+          if (!res.ok) {
+            if (res.status === 404) {
+              throw new Error('File backup belum ditemukan di repository ini.');
+            }
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.message || `HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          if (!data.content) {
+            throw new Error('Isi file backup kosong.');
+          }
+
+          const rawJson = base64ToUtf8(data.content.replace(/\n/g, ''));
+          const parsed = JSON.parse(rawJson);
+          const remoteLogs = Array.isArray(parsed) ? parsed : parsed.logs;
+
+          if (!Array.isArray(remoteLogs)) {
+            throw new Error('Struktur data backup GitHub tidak valid.');
+          }
+
+          const addedCount = mergeLogsWithoutDuplicates(remoteLogs);
+          saveLogsToStorage();
+          renderHistoryTable();
+
+          showToast(`Pemulihan GitHub berhasil! ${addedCount} catatan baru dipulihkan.`, 'success');
+        } catch (err) {
+          showToast('Gagal memulihkan dari GitHub: ' + err.message, 'error');
+        } finally {
+          btnGithubPull.disabled = false;
+        }
+      }
+
+      // -------------------------------------------------------------------
+      // 8. INISIALISASI APLIKASI
+      // -------------------------------------------------------------------
+      function initApp() {
+        initTheme();
+        setDefaultDateTimes();
+        loadLogsFromStorage();
+        renderHistoryTable();
+      }
+
+      window.addEventListener('DOMContentLoaded', initApp);
+    })();
+  </script>
+</body>
+</html>
