@@ -1,217 +1,614 @@
 <!DOCTYPE html>
-
-<html lang="id">
+<html lang="id" class="dark">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Daftar Pemakaian Smartphone</title>
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Pemakaian Smartphone</title>
 
-body{
-    background:#071020;
-    color:#fff;
-}
+    <!-- Google Fonts: Poppins untuk tipografi modern dan futuristik -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
 
-header{
-    text-align:center;
-    padding:50px 20px 35px;
-}
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-header h1{
-    font-size:40px;
-    font-style: italic;
-    font-weight:bold;
-}
+    <!-- Konfigurasi Tailwind aman (dicek terlebih dahulu agar tidak error saat offline) -->
+    <script>
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Poppins', 'Arial', 'sans-serif'],
+                        },
+                        colors: {
+                            navyBase: '#070F20',
+                            cardDark: '#101D36',
+                            panelDark: '#0F1C34',
+                        }
+                    }
+                }
+            };
+        }
+    </script>
 
-header p{
-    margin-top:12px;
-    color:#9aa6b2;
-    font-size:18px;
-}
+    <style>
+        /* Pengaturan dasar font dan transisi halus */
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-.container{
-    width:92%;
-    max-width:700px;
-    margin:auto;
-}
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #070F20;
+            color: #FFFFFF;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-.card{
-    background:#162234;
-    border:2px solid rgba(255,255,255,.15);
-    border-radius:28px;
-    padding:30px;
-    margin-bottom:35px;
-    transition:.25s;
-}
+        html:not(.dark) body {
+            background-color: #EEF4FB;
+            color: #0F172A;
+        }
 
-.card:hover{
-    transform:translateY(-5px);
-    border-color:#4b8cff;
-}
+        /* Fallback utilitas penting agar halaman tetap berfungsi meski offline */
+        .hidden {
+            display: none !important;
+        }
 
-.icon{
-    margin-bottom:20px;
-}
-.icon img{
-    width:64px;
-    height:64px;
-    object-fit:contain;
-    display:block;
-}
+        /* =========================================================
+           TIPOGRAFI GRADASI SESUAI REFERENSI DESAIN
+           ========================================================= */
+        /* Gradasi Judul Utama: Hijau -> Turquoise -> Biru */
+        .grad-title-main {
+            background: linear-gradient(100deg, #34D399 0%, #2DD4BF 45%, #38BDF8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.card h2{
-    font-size:40px;
-    margin-bottom:15px;
-}
+        html:not(.dark) .grad-title-main {
+            background: linear-gradient(100deg, #059669 0%, #0D9488 45%, #0284C7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.card p{
-    color:#9aa6b2;
-    font-size:20px;
-    line-height:1.6;
-}
+        /* Gradasi Subjudul: Hijau hingga Biru */
+        .grad-subtitle {
+            background: linear-gradient(90deg, #4ADE80 0%, #22D3EE 55%, #60A5FA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.open{
-    display:inline-block;
-    margin-top:28px;
-    text-decoration:none;
-    font-size:24px;
-    font-weight:bold;
-}
+        html:not(.dark) .grad-subtitle {
+            background: linear-gradient(90deg, #16A34A 0%, #0891B2 55%, #2563EB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-footer{
-    text-align:center;
-    color:#8d98a5;
-    font-size:18px;
-    padding:35px 20px;
-}
+        /* Gradasi Deskripsi Kartu 1: Biru */
+        .grad-desc-blue {
+            background: linear-gradient(90deg, #7DD3FC 0%, #38BDF8 50%, #60A5FA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-:root{--bg:#071020;--text:#fff;--card:#162234}
-body{background-color:var(--bg)!important;color:var(--text)!important;background-repeat:no-repeat;background-position:center;background-size:cover;background-attachment:fixed}
-.card{background:var(--card)!important}
-body.light{--bg:#f5f7fb;--text:#111;--card:#fff}
-#themeBtn{position:fixed;top:15px;right:15px;padding:8px 12px;border-radius:20px}
+        html:not(.dark) .grad-desc-blue {
+            background: linear-gradient(90deg, #0284C7 0%, #2563EB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-body::before{
-content:"";
-position:fixed;inset:0;
-background:rgba(0,0,0,var(--overlay,0));
-backdrop-filter:blur(var(--blur,0px));
-pointer-events:none;
-z-index:-1;
-}
+        /* Gradasi Judul Kartu 2 (Kalkulator): Biru hingga Ungu */
+        .grad-title-calc {
+            background: linear-gradient(95deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-.rainbow-text{
-background:linear-gradient(90deg,#ff0000,#ff7f00,#ffff00,#00ff00,#00bfff,#0000ff,#8b00ff,#ff0000);
-background-size:400% 100%;
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-background-clip:text;
-color:transparent!important;
-animation:rainbowMove 4s linear infinite;
-}
-@keyframes rainbowMove{
-0%{background-position:0% 50%;}
-100%{background-position:400% 50%;}
-}
+        html:not(.dark) .grad-title-calc {
+            background: linear-gradient(95deg, #0284C7 0%, #4F46E5 50%, #9333EA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-</style>
-<style>
-#settingsBtn{position:fixed;top:15px;right:15px;background:transparent;border:none;padding:0;font-size:28px;cursor:pointer;z-index:100;}
-#panel{display:none;position:fixed;top:55px;right:15px;background:#fff;color:#000;padding:12px;border-radius:10px;box-shadow:0 2px 8px #0005;z-index:99}
-body:not(.light) #panel{background:#162234;color:#fff}
-</style></head>
-<body><button id="settingsBtn">⚙️</button><div id="panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
-<div style="background:#162234;color:#fff;width:min(92vw,430px);border-radius:24px;padding:20px">
-<div style="font-size:30px;font-weight:bold">⚙️ Pengaturan</div><hr style="margin:12px 0;border-color:#334155"/>
-<div style="color:#1da1f2;font-weight:bold;margin:10px 0">1. Tampilan</div>
-<div>Mode Tema</div>
-<div style="display:flex;background:#334155;border-radius:14px;padding:4px;margin-top:8px">
-<button id="darkBtn" style="flex:1;padding:12px">🌙 Gelap</button>
-<button id="lightBtn" style="flex:1;padding:12px">☀️ Terang</button>
-</div>
-<hr style="margin:12px 0;border-color:#334155"/>
-<div style="color:#1da1f2;font-weight:bold;margin:10px 0">2. Background Foto</div>
-<div style="margin:10px 0">Pilih Gambar</div>
-<select id="bgSelect" style="width:100%;padding:16px;border-radius:22px;background:#2b3546;color:#fff;border:2px solid #1da1f2">
-<option value="">Default</option>
-<option value="background/Foto_V1.jpg">Foto 1</option>
-<option value="background/Foto_V2.jpg">Foto 2</option>
-<option value="background/Foto_V3.jpg">Foto 3</option>
-<option value="background/Foto_V4.jpg">Foto 4</option>
-<option value="background/Foto_V5.jpg">Foto 5</option>
-</select>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin-top:18px">
-<label>Kecerahan Foto</label><input id="bright" max="150" min="50" type="range" value="100"/>
-<label>Blur Foto</label><input id="blur" max="20" min="0" type="range" value="0"/>
-<label>Gelap Overlay</label><input id="overlay" max="80" min="0" type="range" value="0"/>
-</div>
-</div></div>
-<header>
-<h1 class="rainbow-text">Daftar Pemakaian Smartphone</h1>
-<p class="rainbow-text">Pilih aplikasi yang ingin kamu gunakan</p>
-</header>
-<div class="container"><div class="card">
-<div class="icon"><img alt="Pemakaian HP" src="img/pemakaian-hp.png"/></div>
-<h2 class="rainbow-text">Pemakaian HP</h2>
-<p class="rainbow-text">Catatan pemakaian HP secara umum.</p>
-<a class="open rainbow-text" href="Smartphone.html">            Buka →  
-        </a>
-</div>
-<div class="card">
-<div class="icon"><img alt="Catatan Waktu" src="img/waktu.png"/></div>
-<h2 class="rainbow-text">Catatan Waktu</h2>
-<p class="rainbow-text">
-            Catatan Jam Dan menit
-        </p>
-<a class="open rainbow-text" href="Catatan-Waktu.html">
-            Buka →
-        </a>
-</div>
-</div>
-<footer>
-<a class="green rainbow-text">
-    Data setiap aplikasi disimpan terpisah di perangkatmu.
-    </a>
-</footer>
-<script>
-const s=document.getElementById('settingsBtn'),pnl=document.getElementById('panel'),tg=document.getElementById('themeToggle');
-function sync(){let l=document.body.classList.contains('light');lightBtn.style.background=l?'#1da1f2':'transparent';darkBtn.style.background=!l?'#1da1f2':'transparent';}
-s.style.zIndex=1001;
-s.onclick=()=>{pnl.style.display=pnl.style.display==='flex'?'none':'flex';sync();};
-darkBtn.onclick=()=>{document.body.classList.remove('light');localStorage.theme='dark';sync();};
-lightBtn.onclick=()=>{document.body.classList.add('light');localStorage.theme='light';sync();};
-if(tg){
-tg.checked=document.body.classList.contains('light');
-tg.onchange=()=>{document.body.classList.toggle('light',tg.checked);localStorage.theme=tg.checked?'light':'dark';};
-}
+        /* Gradasi Deskripsi Kartu 2: Ungu hingga Merah Muda */
+        .grad-desc-pink {
+            background: linear-gradient(90deg, #C084FC 0%, #E879F9 55%, #F472B6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-const bg=document.getElementById('bgSelect'),
-br=document.getElementById('bright'),
-bl=document.getElementById('blur'),
-ov=document.getElementById('overlay');
-function applyBg(){
-const p=bg.value;
-if(p){document.body.style.backgroundImage=`url('${p}')`;}else{document.body.style.backgroundImage='none';}
-document.body.style.backgroundSize="cover";
-document.body.style.backgroundPosition="center";
-document.body.style.filter=`brightness(${br.value}%)`;
-document.documentElement.style.setProperty('--blur',bl.value+'px');
-document.documentElement.style.setProperty('--overlay',(ov.value/100).toString());
-localStorage.setItem('index',JSON.stringify({p,b:br.value,l:bl.value,o:ov.value}));
-}
-const cfg=JSON.parse(localStorage.getItem('index')||'{}');
-if(cfg.p)bg.value=cfg.p;
-if(cfg.b)br.value=cfg.b;
-if(cfg.l)bl.value=cfg.l;
-if(cfg.o)ov.value=cfg.o;
-[bg,br,bl,ov].forEach(e=>e&&e.addEventListener('input',applyBg));
-applyBg();
+        html:not(.dark) .grad-desc-pink {
+            background: linear-gradient(90deg, #7E22CE 0%, #C026D3 55%, #DB2777 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-</script></body>
+        /* =========================================================
+           DESAIN KARTU & PANEL FUTURISTIK (SUDUT MEMBULAT 38-40PX)
+           ========================================================= */
+        .card-hp {
+            border-radius: 40px;
+            background: linear-gradient(145deg, rgba(16, 30, 56, 0.92), rgba(11, 22, 43, 0.96));
+            border: 2px solid #38BDF8;
+            box-shadow: 0 12px 32px -8px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.3s ease;
+        }
+
+        .card-hp:active {
+            transform: scale(0.975);
+        }
+
+        html:not(.dark) .card-hp {
+            background: linear-gradient(145deg, #FFFFFF, #F0F9FF);
+            border: 2px solid #0EA5E9;
+            box-shadow: 0 14px 30px -10px rgba(14, 165, 233, 0.22);
+        }
+
+        .card-calc {
+            border-radius: 40px;
+            background: linear-gradient(145deg, rgba(16, 29, 54, 0.90), rgba(12, 22, 42, 0.94));
+            border: 1.5px solid rgba(100, 126, 173, 0.45);
+            box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.3s ease;
+        }
+
+        .card-calc:active {
+            transform: scale(0.975);
+        }
+
+        html:not(.dark) .card-calc {
+            background: linear-gradient(145deg, #FFFFFF, #F5F3FF);
+            border: 1.5px solid rgba(148, 163, 184, 0.45);
+            box-shadow: 0 14px 30px -10px rgba(99, 102, 241, 0.14);
+        }
+
+        .settings-panel {
+            border-radius: 38px;
+            background: linear-gradient(160deg, rgba(16, 30, 56, 0.94), rgba(10, 20, 40, 0.97));
+            border: 1.5px solid rgba(71, 102, 153, 0.42);
+            box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.55);
+        }
+
+        html:not(.dark) .settings-panel {
+            background: linear-gradient(160deg, #FFFFFF, #F8FAFC);
+            border: 1.5px solid rgba(203, 213, 225, 0.85);
+            box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.12);
+        }
+
+        /* Animasi perpindahan halaman */
+        .page-view {
+            animation: fadeSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#070F20] text-white min-h-screen selection:bg-sky-500 selection:text-white">
+
+    <!-- =========================================================
+         NOTIFIKASI TOAST (PENGGANTI ALERT)
+         ========================================================= -->
+    <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[90%] max-w-sm flex flex-col items-center gap-2"></div>
+
+    <!-- =========================================================
+         KONTAINER UTAMA APLIKASI (PRIORITAS TAMPILAN SMARTPHONE ANDROID)
+         ========================================================= -->
+    <main class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-10">
+
+        <!-- =====================================================
+             HALAMAN 1: MENU UTAMA
+             ===================================================== -->
+        <section id="view-home" class="page-view flex-1 flex flex-col">
+            <!-- Baris Atas: Ikon Pengaturan di Pojok Kanan Atas -->
+            <header class="relative z-20 w-full flex items-center justify-end mb-3">
+                <button
+                    type="button"
+                    id="btn-open-settings"
+                    aria-label="Buka Pengaturan"
+                    class="p-3.5 rounded-2xl bg-sky-400/15 hover:bg-sky-400/25 active:scale-90 border border-sky-400/35 text-sky-400 cursor-pointer transition-all duration-200 shadow-lg shadow-sky-500/10"
+                >
+                    <!-- Ikon Roda Gigi Biru Muda -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-[#38BDF8] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </header>
+
+            <!-- Judul & Subjudul di Tengah Bagian Atas -->
+            <div class="text-center px-2 mt-1 mb-9">
+                <h1 class="text-[31px] sm:text-[34px] font-extrabold italic leading-[1.18] tracking-tight grad-title-main drop-shadow-sm">
+                    Daftar Pemakaian<br>Smartphone
+                </h1>
+                <p class="mt-3 text-sm sm:text-[15px] font-medium grad-subtitle">
+                    Pilih aplikasi yang ingin kamu gunakan
+                </p>
+            </div>
+
+            <!-- Kontainer Kartu Menu Vertikal (Jarak Antar Kartu Cukup Lebar) -->
+            <div class="flex flex-col gap-7 my-auto">
+
+                <!-- KARTU PERTAMA: Pemakaian Smartphone -> Smartphone.html -->
+                <a
+                    href="Smartphone.html"
+                    class="card-hp block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
+                >
+                    <!-- Efek kilau halus di sudut kanan atas kartu -->
+                    <div class="absolute -right-10 -top-10 w-36 h-36 bg-sky-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-start gap-5">
+                        <!-- Ikon Logo HP Berwarna Biru -->
+                        <div class="w-16 h-16 rounded-[22px] bg-sky-500/15 border border-sky-400/40 flex items-center justify-center shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-[#38BDF8] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect>
+                                <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5"></line>
+                                <line x1="9" y1="5" x2="15" y2="5" stroke-width="1.8"></line>
+                            </svg>
+                        </div>
+
+                        <!-- Konten Teks Kartu Pertama -->
+                        <div class="flex-1 min-w-0">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-main">
+                                Pemakaian Smartphone
+                            </h2>
+                            <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-blue">
+                                Catatan pemakaian smartphone secara umum.
+                            </p>
+
+                            <!-- Tombol Teks "Buka →" -->
+                            <div class="mt-5 flex items-center justify-end">
+                                <span class="inline-flex items-center gap-1.5 text-[15px] font-bold text-[#38BDF8] group-hover:translate-x-1 transition-transform">
+                                    Buka <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- KARTU KEDUA: CATATAN WAKTU -> Catatan-Waktu.html -->
+                <a
+                    href="Catatan-Waktu.html"
+                    class="card-calc block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
+                >
+                    <!-- Efek kilau ungu halus di sudut kanan atas kartu -->
+                    <div class="absolute -right-10 -top-10 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-start gap-5">
+                        <!-- Ikon Catatan Waktu (Stopwatch / Jam) -->
+                        <div class="w-16 h-16 rounded-[22px] bg-indigo-500/15 border border-indigo-400/35 flex items-center justify-center shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-[#A78BFA] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="13" r="8"></circle>
+                                <path d="M12 9v4l2.5 2.5"></path>
+                                <path d="M9 2h6"></path>
+                                <path d="M12 2v3"></path>
+                                <path d="M19 5l1.5 1.5"></path>
+                            </svg>
+                        </div>
+
+                        <!-- Konten Teks Kartu Kedua -->
+                        <div class="flex-1 min-w-0">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-calc">
+                                Catatan Waktu
+                            </h2>
+                            <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-pink">
+                                Catatan durasi dan waktu pemakaian smartphone.
+                            </p>
+
+                            <!-- Tombol Teks "Buka →" -->
+                            <div class="mt-5 flex items-center justify-end">
+                                <span class="inline-flex items-center gap-1.5 text-[15px] font-bold text-[#C084FC] group-hover:translate-x-1 transition-transform">
+                                    Buka <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- =====================================================
+             HALAMAN 2: PENGATURAN
+             ===================================================== -->
+        <section id="view-settings" class="page-view hidden flex-1 flex flex-col">
+            <!-- Header Navigasi Kembali -->
+            <div class="flex items-center justify-between mb-4">
+                <button
+                    type="button"
+                    id="btn-back-home"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-800/80 border border-slate-600/40 text-sm font-semibold text-sky-400 cursor-pointer active:scale-95 transition-all"
+                >
+                    <span>←</span> Kembali
+                </button>
+                <span class="text-xs font-medium text-emerald-400 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Tersimpan Otomatis
+                </span>
+            </div>
+
+            <!-- Judul Halaman Pengaturan -->
+            <h1 class="text-2xl sm:text-[28px] font-bold mb-5 flex items-center gap-2.5">
+                <span>⚙️</span>
+                <span class="grad-title-main">Pengaturan</span>
+            </h1>
+
+            <!-- Panel Besar Biru Navy Keabu-abuan dengan Sudut Membulat -->
+            <div class="settings-panel p-6 sm:p-7 flex flex-col gap-6">
+
+                <!-- BAGIAN 1: TAMPILAN -->
+                <div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 text-xs font-bold flex items-center justify-center">1</span>
+                        <h2 id="settings-section-title" class="text-base font-bold tracking-wide text-sky-300">
+                            Tampilan
+                        </h2>
+                    </div>
+
+                    <label id="settings-mode-label" class="block text-xs font-medium text-slate-300 mb-3">
+                        Mode Tema
+                    </label>
+
+                    <!-- Dua Tombol Pilihan Berdampingan: Gelap & Terang -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            id="btn-theme-dark"
+                            class="py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border"
+                        >
+                            <span>🌙</span> Gelap
+                        </button>
+                        <button
+                            type="button"
+                            id="btn-theme-light"
+                            class="py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border"
+                        >
+                            <span>☀️</span> Terang
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- =========================================================
+         LOGIKA JAVASCRIPT & PENYIMPANAN LOCALSTORAGE
+         ========================================================= -->
+    <script>
+        (function () {
+            // Kunci penyimpanan LocalStorage
+            var STORAGE_KEY = 'dps_app_settings_v1';
+
+            // State aktif di memori
+            var appSettings = {
+                theme: 'dark' // 'dark' atau 'light'
+            };
+
+            /**
+             * Membaca pengaturan dari LocalStorage secara aman
+             */
+            function loadSettingsFromStorage() {
+                try {
+                    var saved = window.localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        var parsed = JSON.parse(saved);
+                        if (parsed && (parsed.theme === 'dark' || parsed.theme === 'light')) {
+                            appSettings.theme = parsed.theme;
+                        }
+                    }
+                } catch (err) {
+                    // Abaikan jika WebView membatasi LocalStorage
+                }
+            }
+
+            /**
+             * Menyimpan pengaturan ke LocalStorage secara aman
+             */
+            function saveSettingsToStorage() {
+                try {
+                    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(appSettings));
+                } catch (err) {
+                    // Abaikan jika WebView membatasi LocalStorage
+                }
+            }
+
+            /**
+             * Menampilkan notifikasi toast singkat tanpa alert()
+             */
+            function showToast(message) {
+                var container = document.getElementById('toast-container');
+                if (!container) return;
+
+                var toast = document.createElement('div');
+                toast.className = 'px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-xl border backdrop-blur-md transition-all duration-300 ' +
+                    (appSettings.theme === 'dark'
+                        ? 'bg-slate-900/90 text-sky-300 border-sky-400/35'
+                        : 'bg-white/95 text-sky-700 border-sky-300');
+                toast.textContent = message;
+
+                container.innerHTML = '';
+                container.appendChild(toast);
+
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-6px)';
+                    setTimeout(function () {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 280);
+                }, 1800);
+            }
+
+            /**
+             * Menerapkan tema Gelap / Terang ke seluruh tampilan
+             */
+            function applyThemeToUI() {
+                var isDark = appSettings.theme === 'dark';
+                var htmlEl = document.documentElement;
+                var bodyEl = document.body;
+
+                if (isDark) {
+                    htmlEl.classList.add('dark');
+                    bodyEl.style.backgroundColor = '#070F20';
+                    bodyEl.style.color = '#FFFFFF';
+                } else {
+                    htmlEl.classList.remove('dark');
+                    bodyEl.style.backgroundColor = '#EEF4FB';
+                    bodyEl.style.color = '#0F172A';
+                }
+
+                // Perbarui gaya tombol kembali & teks label di halaman Pengaturan
+                var btnBack = document.getElementById('btn-back-home');
+                var secTitle = document.getElementById('settings-section-title');
+                var modeLabel = document.getElementById('settings-mode-label');
+
+                if (btnBack) {
+                    btnBack.className = isDark
+                        ? 'inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-800/80 border border-slate-600/40 text-sm font-semibold text-sky-400 cursor-pointer active:scale-95 transition-all'
+                        : 'inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-slate-300 text-sm font-semibold text-sky-600 cursor-pointer active:scale-95 transition-all shadow-sm';
+                }
+
+                if (secTitle) {
+                    secTitle.className = isDark
+                        ? 'text-base font-bold tracking-wide text-sky-300'
+                        : 'text-base font-bold tracking-wide text-sky-700';
+                }
+
+                if (modeLabel) {
+                    modeLabel.className = isDark
+                        ? 'block text-xs font-medium text-slate-300 mb-3'
+                        : 'block text-xs font-medium text-slate-600 mb-3';
+                }
+
+                // Perbarui gaya tombol pilihan Tema (Gelap & Terang)
+                var btnDark = document.getElementById('btn-theme-dark');
+                var btnLight = document.getElementById('btn-theme-light');
+
+                if (btnDark && btnLight) {
+                    if (isDark) {
+                        btnDark.className = 'py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border bg-sky-500 text-white border-sky-400 shadow-lg shadow-sky-500/30';
+                        btnLight.className = 'py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border bg-slate-800/70 text-slate-300 border-slate-600/40 hover:bg-slate-800';
+                    } else {
+                        btnLight.className = 'py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border bg-sky-500 text-white border-sky-400 shadow-lg shadow-sky-500/30';
+                        btnDark.className = 'py-3.5 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 border bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+                    }
+                }
+            }
+
+            /**
+             * Berpindah antar tampilan ('home' atau 'settings')
+             */
+            function navigateTo(viewName) {
+                var viewHome = document.getElementById('view-home');
+                var viewSettings = document.getElementById('view-settings');
+
+                if (!viewHome || !viewSettings) return;
+
+                if (viewName === 'settings') {
+                    viewHome.classList.add('hidden');
+                    viewSettings.classList.remove('hidden');
+                } else {
+                    viewSettings.classList.add('hidden');
+                    viewHome.classList.remove('hidden');
+                }
+
+                try {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } catch (e) {
+                    window.scrollTo(0, 0);
+                }
+            }
+
+            /**
+             * Mengubah mode tema dan menyimpannya
+             */
+            function setTheme(theme) {
+                if (theme !== 'dark' && theme !== 'light') return;
+                appSettings.theme = theme;
+                applyThemeToUI();
+                saveSettingsToStorage();
+                showToast(theme === 'dark' ? 'Mode Gelap aktif' : 'Mode Terang aktif');
+            }
+
+            /**
+             * Inisialisasi seluruh event listener tombol
+             */
+            function initApp() {
+                loadSettingsFromStorage();
+                applyThemeToUI();
+
+                var btnOpenSettings = document.getElementById('btn-open-settings');
+                var btnBackHome = document.getElementById('btn-back-home');
+                var btnThemeDark = document.getElementById('btn-theme-dark');
+                var btnThemeLight = document.getElementById('btn-theme-light');
+
+                if (btnOpenSettings) {
+                    btnOpenSettings.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        navigateTo('settings');
+                    });
+                }
+
+                if (btnBackHome) {
+                    btnBackHome.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        navigateTo('home');
+                    });
+                }
+
+                if (btnThemeDark) {
+                    btnThemeDark.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        setTheme('dark');
+                    });
+                }
+
+                if (btnThemeLight) {
+                    btnThemeLight.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        setTheme('light');
+                    });
+                }
+            }
+
+            // Ekspor fungsi ke window untuk kompatibilitas penuh
+            window.navigateTo = navigateTo;
+            window.setTheme = setTheme;
+
+            // Jalankan inisialisasi segera setelah DOM siap
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initApp);
+            } else {
+                initApp();
+            }
+        })();
+    </script>
+</body>
 </html>
