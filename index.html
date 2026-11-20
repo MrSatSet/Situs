@@ -95,7 +95,7 @@
             background-clip: text;
         }
 
-        /* Gradasi Deskripsi Kartu 1: Biru */
+        /* Gradasi Deskripsi Kartu 1 (Pemakaian Smartphone): Biru */
         .grad-desc-blue {
             background: linear-gradient(90deg, #7DD3FC 0%, #38BDF8 50%, #60A5FA 100%);
             -webkit-background-clip: text;
@@ -110,7 +110,67 @@
             background-clip: text;
         }
 
-        /* Gradasi Judul Kartu 2 (Kalkulator): Biru hingga Ungu */
+        /* Gradasi Judul Kartu 2 (Aplikasi): Cyan -> Emerald -> Teal */
+        .grad-title-apps {
+            background: linear-gradient(95deg, #22D3EE 0%, #34D399 55%, #A7F3D0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        html:not(.dark) .grad-title-apps {
+            background: linear-gradient(95deg, #0891B2 0%, #059669 55%, #0D9488 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Gradasi Deskripsi Kartu 2 (Aplikasi): Emerald Lembut */
+        .grad-desc-emerald {
+            background: linear-gradient(90deg, #6EE7B7 0%, #5EEAD4 55%, #67E8F9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        html:not(.dark) .grad-desc-emerald {
+            background: linear-gradient(90deg, #047857 0%, #0F766E 55%, #0E7490 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Gradasi Judul Kartu 3 (Games): Amber -> Orange -> Rose */
+        .grad-title-games {
+            background: linear-gradient(95deg, #FBBF24 0%, #FB923C 50%, #F472B6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        html:not(.dark) .grad-title-games {
+            background: linear-gradient(95deg, #D97706 0%, #EA580C 50%, #DB2777 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Gradasi Deskripsi Kartu 3 (Games): Peach / Amber Hangat */
+        .grad-desc-amber {
+            background: linear-gradient(90deg, #FDE68A 0%, #FDBA74 55%, #F9A8D4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        html:not(.dark) .grad-desc-amber {
+            background: linear-gradient(90deg, #B45309 0%, #C2410C 55%, #BE185D 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Gradasi Judul Kartu 4 (Catatan Waktu): Biru hingga Ungu */
         .grad-title-calc {
             background: linear-gradient(95deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%);
             -webkit-background-clip: text;
@@ -125,7 +185,7 @@
             background-clip: text;
         }
 
-        /* Gradasi Deskripsi Kartu 2: Ungu hingga Merah Muda */
+        /* Gradasi Deskripsi Kartu 4 (Catatan Waktu): Ungu hingga Merah Muda */
         .grad-desc-pink {
             background: linear-gradient(90deg, #C084FC 0%, #E879F9 55%, #F472B6 100%);
             -webkit-background-clip: text;
@@ -143,6 +203,7 @@
         /* =========================================================
            DESAIN KARTU & PANEL FUTURISTIK (SUDUT MEMBULAT 38-40PX)
            ========================================================= */
+        /* Kartu 1: Pemakaian Smartphone */
         .card-hp {
             border-radius: 40px;
             background: linear-gradient(145deg, rgba(16, 30, 56, 0.92), rgba(11, 22, 43, 0.96));
@@ -161,6 +222,45 @@
             box-shadow: 0 14px 30px -10px rgba(14, 165, 233, 0.22);
         }
 
+        /* Kartu 2: Aplikasi */
+        .card-apps {
+            border-radius: 40px;
+            background: linear-gradient(145deg, rgba(16, 32, 54, 0.91), rgba(11, 24, 42, 0.95));
+            border: 1.5px solid rgba(52, 211, 153, 0.48);
+            box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.3s ease;
+        }
+
+        .card-apps:active {
+            transform: scale(0.975);
+        }
+
+        html:not(.dark) .card-apps {
+            background: linear-gradient(145deg, #FFFFFF, #ECFDF5);
+            border: 1.5px solid rgba(16, 185, 129, 0.45);
+            box-shadow: 0 14px 30px -10px rgba(16, 185, 129, 0.16);
+        }
+
+        /* Kartu 3: Games */
+        .card-games {
+            border-radius: 40px;
+            background: linear-gradient(145deg, rgba(22, 28, 54, 0.91), rgba(15, 20, 42, 0.95));
+            border: 1.5px solid rgba(251, 146, 60, 0.48);
+            box-shadow: 0 12px 30px -10px rgba(249, 115, 22, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, background 0.3s ease;
+        }
+
+        .card-games:active {
+            transform: scale(0.975);
+        }
+
+        html:not(.dark) .card-games {
+            background: linear-gradient(145deg, #FFFFFF, #FFF7ED);
+            border: 1.5px solid rgba(249, 115, 22, 0.45);
+            box-shadow: 0 14px 30px -10px rgba(249, 115, 22, 0.16);
+        }
+
+        /* Kartu 4: Catatan Waktu */
         .card-calc {
             border-radius: 40px;
             background: linear-gradient(145deg, rgba(16, 29, 54, 0.90), rgba(12, 22, 42, 0.94));
@@ -194,7 +294,7 @@
 
         /* Animasi perpindahan halaman */
         .page-view {
-            animation: fadeSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeSlideUp 0.26s cubic-bezier(0.16, 1, 0.36, 1);
         }
 
         @keyframes fadeSlideUp {
@@ -219,7 +319,7 @@
     <!-- =========================================================
          KONTAINER UTAMA APLIKASI (PRIORITAS TAMPILAN SMARTPHONE ANDROID)
          ========================================================= -->
-    <main class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-10">
+    <main class="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col px-5 pt-6 pb-12">
 
         <!-- =====================================================
              HALAMAN 1: MENU UTAMA
@@ -242,7 +342,7 @@
             </header>
 
             <!-- Judul & Subjudul di Tengah Bagian Atas -->
-            <div class="text-center px-2 mt-1 mb-9">
+            <div class="text-center px-2 mt-1 mb-8">
                 <h1 class="text-[31px] sm:text-[34px] font-extrabold italic leading-[1.18] tracking-tight grad-title-main drop-shadow-sm">
                     Daftar Pemakaian<br>Smartphone
                 </h1>
@@ -251,10 +351,10 @@
                 </p>
             </div>
 
-            <!-- Kontainer Kartu Menu Vertikal (Jarak Antar Kartu Cukup Lebar) -->
-            <div class="flex flex-col gap-7 my-auto">
+            <!-- Kontainer Kartu Menu Vertikal -->
+            <div class="flex flex-col gap-6 my-auto">
 
-                <!-- KARTU PERTAMA: Pemakaian Smartphone -> Smartphone.html -->
+                <!-- KARTU 1: Pemakaian Smartphone -> Smartphone.html -->
                 <a
                     href="Smartphone.html"
                     class="card-hp block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
@@ -274,7 +374,7 @@
 
                         <!-- Konten Teks Kartu Pertama -->
                         <div class="flex-1 min-w-0">
-                            <h2 class="text-[23px] font-bold tracking-tight grad-title-main">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-main leading-snug">
                                 Pemakaian Smartphone
                             </h2>
                             <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-blue">
@@ -291,7 +391,84 @@
                     </div>
                 </a>
 
-                <!-- KARTU KEDUA: CATATAN WAKTU -> Catatan-Waktu.html -->
+                <!-- KARTU 2 (BARU): Aplikasi -> Aplikasi.html -->
+                <a
+                    href="Aplikasi.html"
+                    class="card-apps block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
+                >
+                    <!-- Efek kilau emerald halus di sudut kanan atas kartu -->
+                    <div class="absolute -right-10 -top-10 w-36 h-36 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-start gap-5">
+                        <!-- Ikon Kotak Grid Aplikasi -->
+                        <div class="w-16 h-16 rounded-[22px] bg-emerald-500/15 border border-emerald-400/35 flex items-center justify-center shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-[#34D399] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7" rx="1.8"></rect>
+                                <rect x="14" y="3" width="7" height="7" rx="1.8"></rect>
+                                <rect x="14" y="14" width="7" height="7" rx="1.8"></rect>
+                                <rect x="3" y="14" width="7" height="7" rx="1.8"></rect>
+                            </svg>
+                        </div>
+
+                        <!-- Konten Teks Kartu Aplikasi -->
+                        <div class="flex-1 min-w-0">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-apps leading-snug">
+                                Aplikasi
+                            </h2>
+                            <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-emerald">
+                                Daftar dan catatan pemakaian aplikasi harian.
+                            </p>
+
+                            <!-- Tombol Teks "Buka →" -->
+                            <div class="mt-5 flex items-center justify-end">
+                                <span class="inline-flex items-center gap-1.5 text-[15px] font-bold text-[#34D399] group-hover:translate-x-1 transition-transform">
+                                    Buka <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- KARTU 3 (BARU): Games -> Games.html -->
+                <a
+                    href="Games.html"
+                    class="card-games block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
+                >
+                    <!-- Efek kilau oranye hangat halus di sudut kanan atas kartu -->
+                    <div class="absolute -right-10 -top-10 w-36 h-36 bg-orange-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-start gap-5">
+                        <!-- Ikon Gamepad / Stik Game -->
+                        <div class="w-16 h-16 rounded-[22px] bg-orange-500/15 border border-orange-400/35 flex items-center justify-center shrink-0 shadow-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9 text-[#FB923C] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="6" y1="12" x2="10" y2="12"></line>
+                                <line x1="8" y1="10" x2="8" y2="14"></line>
+                                <line x1="15" y1="13" x2="15.01" y2="13" stroke-width="2.5"></line>
+                                <line x1="18" y1="11" x2="18.01" y2="11" stroke-width="2.5"></line>
+                                <rect x="2" y="6" width="20" height="12" rx="4"></rect>
+                            </svg>
+                        </div>
+
+                        <!-- Konten Teks Kartu Games -->
+                        <div class="flex-1 min-w-0">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-games leading-snug">
+                                Games
+                            </h2>
+                            <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-amber">
+                                Catatan aktivitas bermain game di smartphone.
+                            </p>
+
+                            <!-- Tombol Teks "Buka →" -->
+                            <div class="mt-5 flex items-center justify-end">
+                                <span class="inline-flex items-center gap-1.5 text-[15px] font-bold text-[#FB923C] group-hover:translate-x-1 transition-transform">
+                                    Buka <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- KARTU 4: CATATAN WAKTU -> Catatan-Waktu.html -->
                 <a
                     href="Catatan-Waktu.html"
                     class="card-calc block no-underline p-7 cursor-pointer select-none group relative overflow-hidden"
@@ -311,9 +488,9 @@
                             </svg>
                         </div>
 
-                        <!-- Konten Teks Kartu Kedua -->
+                        <!-- Konten Teks Kartu Keempat -->
                         <div class="flex-1 min-w-0">
-                            <h2 class="text-[23px] font-bold tracking-tight grad-title-calc">
+                            <h2 class="text-[23px] font-bold tracking-tight grad-title-calc leading-snug">
                                 Catatan Waktu
                             </h2>
                             <p class="mt-1.5 text-[14px] leading-relaxed font-medium grad-desc-pink">
