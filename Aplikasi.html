@@ -6,8 +6,6 @@
     <title>Catatan Pemakaian Aplikasi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- JSZip untuk Kompresi & Dekompresi ZIP -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -215,7 +213,7 @@
                 <button 
                     id="btnBackupLocal" 
                     type="button" 
-                    title="Cadangkan data dalam format kompresi ZIP"
+                    title="Cadangkan data dalam format kompresi ZIP mandiri"
                     class="py-2.5 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
                 >
                     <span>🗜️</span>
@@ -357,7 +355,7 @@
                 <!-- 2. GitHub Backup -->
                 <div>
                     <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
-                        2. GitHub Backup (Kompresi ZIP)
+                        2. GitHub Backup (Kompresi ZIP Mandiri)
                     </h3>
                     <div class="space-y-3.5">
                         <!-- GitHub Token -->
@@ -412,7 +410,7 @@
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                                Backup otomatis dikompres ke arsip <strong>.zip</strong> (DEFLATE) untuk menghemat ukuran & mendekompres otomatis saat dipulihkan (mendukung file .zip maupun .json).
+                                Menggunakan mesin kompresi <strong>ZIP DEFLATE bawaan browser</strong> (100% mandiri tanpa CDN Cloudflare) dan mendukung pemulihan file .zip maupun .json.
                             </p>
                         </div>
 
@@ -541,7 +539,8 @@
          * Aplikasi Catatan Pemakaian Aplikasi
          * Penyimpanan: localStorage
          * Fitur: CRUD Riwayat, Hitung Durasi Otomatis,
-         *        Kompresi & Dekompresi ZIP (JSZip) untuk Backup/Restore Lokal & GitHub,
+         *        Kompresi & Dekompresi ZIP Mandiri (Native CompressionStream 'deflate-raw' + CRC32 + PKZIP Header)
+         *        tanpa ketergantungan Cloudflare/library eksternal,
          *        Konfirmasi Pemulihan Data (Gabungkan / Timpa Data Lama),
          *        Tema Gelap/Terang, GitHub API Backup/Restore
          */
@@ -639,12 +638,81 @@
         }
 
         // ==========================================
-        // 2. SISTEM KOMPRESI & DEKOMPRESI ZIP (JSZIP)
+        // 2. ENGINE KOMPRESI & DEKOMPRESI ZIP MANDIRI (100% NATIVE BROWSER, TANPA CLOUDFLARE)
         // ==========================================
-        function ensureJSZipReady() {
-            if (typeof window.JSZip === 'undefined') {
-                throw new Error('Pustaka JSZip belum termuat. Periksa koneksi internet Anda lalu muat ulang halaman.');
+        const CRC32_TABLE = (() => {
+            const table = new Uint32Array(256);
+            for (let i = 0; i < 256; i++) {
+                let c = i;
+                for (let k = 0; k < 8; k++) {
+                    c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                }
+                table[i] = c >>> 0;
             }
+            return table;
+        })();
+
+        function computeCrc32(uint8Array) {
+            let crc = 0xFFFFFFFF;
+            for (let i = 0; i < uint8Array.length; i++) {
+                crc = CRC32_TABLE[(crc ^ uint8Array[i]) & 0xFF] ^ (crc >>> 8);
+            }
+            return (crc ^ 0xFFFFFFFF) >>> 0;
+        }
+
+        function getDosDateTime(date = new Date()) {
+            const year = Math.max(1980, date.getFullYear());
+            const dosTime =
+                ((date.getHours() & 0x1F) << 11) |
+                ((date.getMinutes() & 0x3F) << 5) |
+                ((Math.floor(date.getSeconds() / 2)) & 0x1F);
+            const dosDate =
+                (((year - 1980) & 0x7F) << 9) |
+                (((date.getMonth() + 1) & 0x0F) << 5) |
+                (date.getDate() & 0x1F);
+            return { dosTime, dosDate };
+        }
+
+        async function runStreamTransform(uint8Array, streamInstance) {
+            const writer = streamInstance.writable.getWriter();
+            const writePromise = writer.write(uint8Array).then(() => writer.close());
+
+            const reader = streamInstance.readable.getReader();
+            const chunks = [];
+            let totalLength = 0;
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value && value.byteLength > 0) {
+                    chunks.push(value);
+                    totalLength += value.byteLength;
+                }
+            }
+
+            await writePromise;
+
+            const result = new Uint8Array(totalLength);
+            let offset = 0;
+            for (const chunk of chunks) {
+                result.set(chunk, offset);
+                offset += chunk.byteLength;
+            }
+            return result;
+        }
+
+        async function deflateRawBytes(uint8Array) {
+            if (typeof CompressionStream === 'undefined') {
+                throw new Error('Browser Anda belum mendukung API CompressionStream bawaan.');
+            }
+            return runStreamTransform(uint8Array, new CompressionStream('deflate-raw'));
+        }
+
+        async function inflateRawBytes(uint8Array) {
+            if (typeof DecompressionStream === 'undefined') {
+                throw new Error('Browser Anda belum mendukung API DecompressionStream bawaan.');
+            }
+            return runStreamTransform(uint8Array, new DecompressionStream('deflate-raw'));
         }
 
         function formatByteSize(bytes) {
@@ -655,36 +723,105 @@
         }
 
         /**
-         * Mengompres objek payload JSON menjadi arsip ZIP (DEFLATE level 9).
-         * Mengembalikan blob, uint8array, base64, serta statistik ukuran kompresi.
+         * Membangun arsip ZIP standar (PKZIP 2.0, metode DEFLATE = 8) secara mandiri
+         * menggunakan CompressionStream('deflate-raw') bawaan browser tanpa CDN luar.
          */
         async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
-            ensureJSZipReady();
+            const encoder = new TextEncoder();
             const jsonText = JSON.stringify(payloadObj, null, 2);
-            const rawBytes = new TextEncoder().encode(jsonText).length;
+            const rawData = encoder.encode(jsonText);
+            const fileNameBytes = encoder.encode(innerFileName);
 
-            const zip = new JSZip();
-            zip.file(innerFileName, jsonText, {
-                compression: 'DEFLATE',
-                compressionOptions: { level: 9 }
-            });
+            const rawBytes = rawData.byteLength;
+            const crc32 = computeCrc32(rawData);
+            const { dosTime, dosDate } = getDosDateTime(new Date());
 
-            const uint8Array = await zip.generateAsync({
-                type: 'uint8array',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 9 }
-            });
+            // Kompresi data mentah menggunakan DEFLATE-RAW bawaan browser
+            let compressedData;
+            let compressionMethod = 8; // 8 = DEFLATE
+            try {
+                compressedData = await deflateRawBytes(rawData);
+            } catch (e) {
+                // Fallback ke Store (tanpa kompresi, metode 0) jika browser sangat lawas
+                compressedData = rawData;
+                compressionMethod = 0;
+            }
 
-            const blob = new Blob([uint8Array], { type: 'application/zip' });
-            const base64 = uint8ArrayToBase64(uint8Array);
-            const compressedBytes = uint8Array.byteLength;
+            const compressedSize = compressedData.byteLength;
+            const uncompressedSize = rawData.byteLength;
+            const nameLen = fileNameBytes.byteLength;
+
+            // Ukuran header PKZIP standar:
+            // Local File Header (30 + nameLen) + Compressed Data + Central Directory (46 + nameLen) + EOCD (22)
+            const localHeaderSize = 30 + nameLen;
+            const centralDirOffset = localHeaderSize + compressedSize;
+            const centralDirSize = 46 + nameLen;
+            const eocdSize = 22;
+            const totalZipSize = centralDirOffset + centralDirSize + eocdSize;
+
+            const zipBuffer = new ArrayBuffer(totalZipSize);
+            const view = new DataView(zipBuffer);
+            const zipBytes = new Uint8Array(zipBuffer);
+
+            // 1. Local File Header (Signature 0x04034B50)
+            view.setUint32(0, 0x04034B50, true);
+            view.setUint16(4, 20, true);                  // Version needed to extract (2.0)
+            view.setUint16(6, 0x0800, true);              // General purpose bit flag (UTF-8 filename)
+            view.setUint16(8, compressionMethod, true);   // Compression method (8 = DEFLATE)
+            view.setUint16(10, dosTime, true);            // Last mod file time
+            view.setUint16(12, dosDate, true);            // Last mod file date
+            view.setUint32(14, crc32, true);              // CRC-32
+            view.setUint32(18, compressedSize, true);     // Compressed size
+            view.setUint32(22, uncompressedSize, true);   // Uncompressed size
+            view.setUint16(26, nameLen, true);            // File name length
+            view.setUint16(28, 0, true);                  // Extra field length
+            zipBytes.set(fileNameBytes, 30);
+
+            // 2. File Data (Compressed)
+            zipBytes.set(compressedData, localHeaderSize);
+
+            // 3. Central Directory File Header (Signature 0x02014B50)
+            let ptr = centralDirOffset;
+            view.setUint32(ptr, 0x02014B50, true);
+            view.setUint16(ptr + 4, 20, true);                // Version made by
+            view.setUint16(ptr + 6, 20, true);                // Version needed to extract
+            view.setUint16(ptr + 8, 0x0800, true);            // General purpose bit flag (UTF-8)
+            view.setUint16(ptr + 10, compressionMethod, true);// Compression method
+            view.setUint16(ptr + 12, dosTime, true);          // Last mod file time
+            view.setUint16(ptr + 14, dosDate, true);          // Last mod file date
+            view.setUint32(ptr + 16, crc32, true);            // CRC-32
+            view.setUint32(ptr + 20, compressedSize, true);   // Compressed size
+            view.setUint32(ptr + 24, uncompressedSize, true); // Uncompressed size
+            view.setUint16(ptr + 28, nameLen, true);          // File name length
+            view.setUint16(ptr + 30, 0, true);                // Extra field length
+            view.setUint16(ptr + 32, 0, true);                // File comment length
+            view.setUint16(ptr + 34, 0, true);                // Disk number start
+            view.setUint16(ptr + 36, 0, true);                // Internal file attributes
+            view.setUint32(ptr + 38, 0, true);                // External file attributes
+            view.setUint32(ptr + 42, 0, true);                // Relative offset of local header
+            zipBytes.set(fileNameBytes, ptr + 46);
+
+            // 4. End of Central Directory Record (Signature 0x06054B50)
+            ptr = centralDirOffset + centralDirSize;
+            view.setUint32(ptr, 0x06054B50, true);
+            view.setUint16(ptr + 4, 0, true);                 // Number of this disk
+            view.setUint16(ptr + 6, 0, true);                 // Disk where central directory starts
+            view.setUint16(ptr + 8, 1, true);                 // Number of central directory records on this disk
+            view.setUint16(ptr + 10, 1, true);                // Total number of central directory records
+            view.setUint32(ptr + 12, centralDirSize, true);   // Size of central directory
+            view.setUint32(ptr + 16, centralDirOffset, true); // Offset of start of central directory
+            view.setUint16(ptr + 20, 0, true);                // Comment length
+
+            const blob = new Blob([zipBytes], { type: 'application/zip' });
+            const base64 = uint8ArrayToBase64(zipBytes);
+            const compressedBytes = zipBytes.byteLength;
             const savedPercent = rawBytes > 0
                 ? Math.max(0, Math.round(((rawBytes - compressedBytes) / rawBytes) * 100))
                 : 0;
 
             return {
                 blob,
-                uint8Array,
+                uint8Array: zipBytes,
                 base64,
                 rawBytes,
                 compressedBytes,
@@ -693,7 +830,7 @@
         }
 
         /**
-         * Memeriksa apakah ArrayBuffer/Uint8Array diawali tanda tangan header file ZIP (PK\x03\x04 atau PK\x05\x06).
+         * Memeriksa apakah ArrayBuffer/Uint8Array diawali header file ZIP (PK\x03\x04 atau PK\x05\x06).
          */
         function isZipBinarySignature(bufferOrUint8) {
             const bytes = bufferOrUint8 instanceof Uint8Array
@@ -705,6 +842,115 @@
                 bytes[1] === 0x4B &&
                 ((bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06))
             );
+        }
+
+        /**
+         * Mengekstrak entri file .json dari dalam arsip ZIP secara mandiri
+         * membaca Central Directory / Local File Header serta mendekompres DEFLATE dengan DecompressionStream.
+         */
+        async function extractJsonTextFromZipBytes(bytes) {
+            const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            const decoder = new TextDecoder('utf-8');
+            const entries = [];
+
+            // Cari End of Central Directory (EOCD) dari belakang file (0x06054B50)
+            let eocdOffset = -1;
+            const minSearchOffset = Math.max(0, bytes.length - 65557);
+            for (let i = bytes.length - 22; i >= minSearchOffset; i--) {
+                if (view.getUint32(i, true) === 0x06054B50) {
+                    eocdOffset = i;
+                    break;
+                }
+            }
+
+            if (eocdOffset !== -1) {
+                const totalEntries = view.getUint16(eocdOffset + 10, true);
+                const centralDirOffset = view.getUint32(eocdOffset + 16, true);
+                let ptr = centralDirOffset;
+
+                for (let idx = 0; idx < totalEntries && ptr + 46 <= bytes.length; idx++) {
+                    if (view.getUint32(ptr, true) !== 0x02014B50) break;
+
+                    const method = view.getUint16(ptr + 10, true);
+                    const compressedSize = view.getUint32(ptr + 20, true);
+                    const fileNameLen = view.getUint16(ptr + 28, true);
+                    const extraLen = view.getUint16(ptr + 30, true);
+                    const commentLen = view.getUint16(ptr + 32, true);
+                    const localHeaderOffset = view.getUint32(ptr + 42, true);
+
+                    const fileName = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + fileNameLen));
+                    entries.push({
+                        fileName,
+                        method,
+                        compressedSize,
+                        localHeaderOffset
+                    });
+
+                    ptr += 46 + fileNameLen + extraLen + commentLen;
+                }
+            } else {
+                // Fallback: baca berurutan dari Local File Headers apabila EOCD tidak ditemukan
+                let ptr = 0;
+                while (ptr + 30 <= bytes.length && view.getUint32(ptr, true) === 0x04034B50) {
+                    const method = view.getUint16(ptr + 8, true);
+                    const compressedSize = view.getUint32(ptr + 18, true);
+                    const fileNameLen = view.getUint16(ptr + 26, true);
+                    const extraLen = view.getUint16(ptr + 28, true);
+                    const fileName = decoder.decode(bytes.subarray(ptr + 30, ptr + 30 + fileNameLen));
+
+                    entries.push({
+                        fileName,
+                        method,
+                        compressedSize,
+                        localHeaderOffset: ptr
+                    });
+
+                    ptr += 30 + fileNameLen + extraLen + compressedSize;
+                }
+            }
+
+            const jsonEntries = entries.filter((entry) =>
+                !entry.fileName.endsWith('/') &&
+                !entry.fileName.startsWith('__MACOSX/') &&
+                entry.fileName.toLowerCase().endsWith('.json')
+            );
+
+            if (jsonEntries.length === 0) {
+                throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
+            }
+
+            const target =
+                jsonEntries.find((e) => e.fileName.toLowerCase().endsWith('aplikasi.json')) ||
+                jsonEntries[0];
+
+            const lhOffset = target.localHeaderOffset;
+            if (lhOffset + 30 > bytes.length || view.getUint32(lhOffset, true) !== 0x04034B50) {
+                throw new Error('Header file lokal di dalam arsip ZIP rusak atau tidak valid.');
+            }
+
+            const lhNameLen = view.getUint16(lhOffset + 26, true);
+            const lhExtraLen = view.getUint16(lhOffset + 28, true);
+            const dataStart = lhOffset + 30 + lhNameLen + lhExtraLen;
+            const dataEnd = dataStart + target.compressedSize;
+
+            if (dataEnd > bytes.length) {
+                throw new Error('Ukuran data terkompresi di dalam ZIP terpotong.');
+            }
+
+            const compressedSlice = bytes.subarray(dataStart, dataEnd);
+            let rawJsonBytes;
+
+            if (target.method === 0) {
+                // Store (tanpa kompresi)
+                rawJsonBytes = compressedSlice;
+            } else if (target.method === 8) {
+                // DEFLATE
+                rawJsonBytes = await inflateRawBytes(compressedSlice);
+            } else {
+                throw new Error(`Metode kompresi ZIP (${target.method}) tidak didukung.`);
+            }
+
+            return decoder.decode(rawJsonBytes);
         }
 
         /**
@@ -720,25 +966,7 @@
             let wasCompressed = false;
 
             if (isZipBinarySignature(bytes)) {
-                ensureJSZipReady();
-                const zip = await JSZip.loadAsync(bytes);
-
-                // Cari file .json di dalam arsip ZIP (abaikan folder/metadata sistem)
-                const jsonEntryNames = Object.keys(zip.files).filter((name) => {
-                    const entry = zip.files[name];
-                    return !entry.dir && !name.startsWith('__MACOSX/') && name.toLowerCase().endsWith('.json');
-                });
-
-                if (jsonEntryNames.length === 0) {
-                    throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
-                }
-
-                // Prioritaskan Aplikasi.json jika ada, atau ambil file .json pertama
-                const targetEntryName =
-                    jsonEntryNames.find((n) => n.toLowerCase().endsWith('aplikasi.json')) ||
-                    jsonEntryNames[0];
-
-                jsonText = await zip.files[targetEntryName].async('string');
+                jsonText = await extractJsonTextFromZipBytes(bytes);
                 wasCompressed = true;
             } else {
                 // Fallback jika file cadangan masih berupa JSON biasa tanpa kompresi ZIP
@@ -1272,7 +1500,7 @@
         };
 
         /**
-         * Backup Lokal dengan Kompresi ZIP (DEFLATE level 9)
+         * Backup Lokal dengan Kompresi ZIP Mandiri (Native DEFLATE)
          */
         async function exportToZip() {
             if (usageRecords.length === 0) {
@@ -1288,7 +1516,7 @@
             try {
                 const exportData = {
                     app: 'Catatan Pemakaian Aplikasi',
-                    compressed: 'ZIP-DEFLATE',
+                    compressed: 'NATIVE-ZIP-DEFLATE',
                     exportedAt: new Date().toISOString(),
                     totalRecords: usageRecords.length,
                     records: usageRecords
@@ -1444,7 +1672,7 @@
         }
 
         /**
-         * Backup ke GitHub dengan Kompresi ZIP (DEFLATE)
+         * Backup ke GitHub dengan Kompresi ZIP Mandiri (Native DEFLATE)
          */
         async function backupToGithub() {
             if (!githubConfig.token || !githubConfig.repo) {
@@ -1457,7 +1685,6 @@
             }
 
             let filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
-            // Jika pengguna masih memakai nama lama berakhiran .json tanpa diubah, otomatis arahkan ke .zip
             if (filePath.toLowerCase().endsWith('.json')) {
                 filePath = filePath.replace(/\.json$/i, '.zip');
                 githubConfig.filePath = filePath;
@@ -1493,7 +1720,7 @@
 
                 const payloadObj = {
                     app: 'Catatan Pemakaian Aplikasi',
-                    compressed: 'ZIP-DEFLATE',
+                    compressed: 'NATIVE-ZIP-DEFLATE',
                     updatedAt: new Date().toISOString(),
                     totalRecords: usageRecords.length,
                     records: usageRecords
@@ -1535,7 +1762,7 @@
         }
 
         /**
-         * Restore dari GitHub dengan Dekompresi ZIP otomatis (dan fallback JSON lama)
+         * Restore dari GitHub dengan Dekompresi ZIP mandiri (dan fallback JSON lama)
          */
         async function restoreFromGithub() {
             if (!githubConfig.token || !githubConfig.repo) {
@@ -1570,8 +1797,6 @@
                 const fileData = await res.json();
                 let binaryBytes;
 
-                // GitHub Contents API menyertakan base64 `content` untuk file <= 1MB,
-                // atau Git Blob API (`git_url`) untuk file biner ZIP yang lebih besar.
                 if (fileData.content && fileData.encoding === 'base64') {
                     binaryBytes = base64ToUint8Array(fileData.content);
                 } else if (fileData.git_url) {
