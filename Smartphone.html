@@ -2,22 +2,15 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>📱 Waktu Pakai Smartphone</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- JSZip untuk Kompresi dan Dekompresi ZIP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <!-- Google Fonts: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
           colors: {
             navy: {
               900: '#141D32',
@@ -31,10 +24,48 @@
     }
   </script>
   <style>
+    /* Menghilangkan delay 300ms saat tap di HP & hilangkan highlight biru bawaan */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    button, a, select, input {
+      touch-action: manipulation;
+    }
+
+    /* Animasi tombol yang mulus & ringan (GPU accelerated) */
+    .btn-smooth {
+      transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), opacity 0.1s ease;
+      will-change: transform;
+    }
+    .btn-smooth:active {
+      transform: scale(0.96);
+      opacity: 0.9;
+    }
+
+    /* Animasi muncul modal ringan tanpa backdrop-blur yang berat */
+    @keyframes modalPopIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    .modal-card {
+      animation: modalPopIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
     /* Custom scrollbar untuk tabel responsif */
     .custom-scrollbar::-webkit-scrollbar {
-      height: 6px;
-      width: 6px;
+      height: 5px;
+      width: 5px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
       background: rgba(148, 163, 184, 0.1);
@@ -43,9 +74,6 @@
     .custom-scrollbar::-webkit-scrollbar-thumb {
       background: rgba(148, 163, 184, 0.4);
       border-radius: 9999px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.6);
     }
 
     /* Styling date picker agar ikon kalender terlihat jelas di mode gelap */
@@ -58,7 +86,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen font-sans transition-colors duration-200 bg-slate-100 text-slate-800 dark:bg-navy-900 dark:text-slate-100 antialiased selection:bg-blue-500 selection:text-white">
+<body class="min-h-screen bg-slate-100 text-slate-800 dark:bg-navy-900 dark:text-slate-100 antialiased selection:bg-blue-500 selection:text-white">
 
   <!-- Container Utama Mobile-First -->
   <div class="max-w-2xl mx-auto px-4 py-5 sm:py-8">
@@ -75,7 +103,7 @@
         id="btnOpenSettings"
         type="button"
         aria-label="Pengaturan"
-        class="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-navy-800 dark:hover:bg-navy-700 dark:text-slate-100 border border-slate-300 dark:border-slate-600 shadow-sm transition active:scale-95"
+        class="btn-smooth shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl font-semibold text-sm bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-navy-800 dark:hover:bg-navy-700 dark:text-slate-100 border border-slate-300 dark:border-slate-600 shadow-sm"
       >
         <span>⚙️</span>
         <span>Pengaturan</span>
@@ -83,7 +111,7 @@
     </header>
 
     <!-- KARTU FORMULIR PENCATATAN -->
-    <section class="bg-white dark:bg-navy-800 rounded-2xl p-4 sm:p-6 shadow-md border border-slate-200 dark:border-slate-700/80 mb-6">
+    <section class="bg-white dark:bg-navy-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700/80 mb-6">
       <form id="usageForm" novalidate class="space-y-4">
         
         <!-- Baris 1: Tanggal -->
@@ -95,7 +123,7 @@
             type="date"
             id="inputDate"
             required
-            class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
 
@@ -112,7 +140,7 @@
               max="24"
               placeholder="0"
               inputmode="numeric"
-              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
           </div>
           <div>
@@ -126,7 +154,7 @@
               max="59"
               placeholder="0"
               inputmode="numeric"
-              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
           </div>
         </div>
@@ -144,7 +172,7 @@
             placeholder="Contoh: 85"
             inputmode="numeric"
             required
-            class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
         </div>
 
@@ -156,7 +184,7 @@
             </label>
             <select
               id="inputCharging"
-              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="No">No</option>
               <option value="Yes">Yes</option>
@@ -168,7 +196,7 @@
             </label>
             <select
               id="inputConnection"
-              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="WiFi">WiFi</option>
               <option value="Data">Data</option>
@@ -181,7 +209,7 @@
           <button
             type="submit"
             id="btnSaveRecord"
-            class="w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            class="btn-smooth w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 shadow-sm flex items-center justify-center gap-1.5"
           >
             <span>💾</span>
             <span>Simpan Catatan</span>
@@ -190,7 +218,7 @@
           <button
             type="button"
             id="btnBackup"
-            class="w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            class="btn-smooth w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm flex items-center justify-center gap-1.5"
           >
             <span>🗜️</span>
             <span>Cadangan ZIP</span>
@@ -199,7 +227,7 @@
           <button
             type="button"
             id="btnRestore"
-            class="w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-orange-500 hover:bg-orange-400 active:bg-orange-600 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            class="btn-smooth w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-orange-500 hover:bg-orange-400 shadow-sm flex items-center justify-center gap-1.5"
           >
             <span>📂</span>
             <span>Pulihkan</span>
@@ -208,7 +236,7 @@
           <button
             type="button"
             id="btnDeleteAll"
-            class="w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-red-600 hover:bg-red-500 active:bg-red-700 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+            class="btn-smooth w-full py-3 px-3 rounded-xl font-bold text-sm text-white bg-red-600 hover:bg-red-500 shadow-sm flex items-center justify-center gap-1.5"
           >
             <span>🗑️</span>
             <span>Hapus Semua</span>
@@ -220,7 +248,7 @@
     </section>
 
     <!-- BAGIAN RIWAYAT CATATAN -->
-    <section class="bg-white dark:bg-navy-800 rounded-2xl p-4 sm:p-6 shadow-md border border-slate-200 dark:border-slate-700/80 mb-6">
+    <section class="bg-white dark:bg-navy-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700/80 mb-6">
       <!-- Header Riwayat & Pengurutan -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div class="flex items-center gap-2">
@@ -284,9 +312,9 @@
 
   </div>
 
-  <!-- MODAL / PANEL PENGATURAN -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm transition-opacity">
-    <div class="w-full max-w-lg bg-white dark:bg-navy-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-600 overflow-hidden">
+  <!-- MODAL / PANEL PENGATURAN (Tanpa backdrop-blur agar 60fps di HP) -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80">
+    <div class="modal-card w-full max-w-lg bg-white dark:bg-navy-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-600 overflow-hidden">
       
       <!-- Header Modal Pengaturan -->
       <div class="flex items-center justify-between px-5 py-4 bg-slate-100 dark:bg-navy-900 border-b border-slate-200 dark:border-slate-700">
@@ -298,13 +326,13 @@
           type="button"
           id="btnCloseSettings"
           aria-label="Tutup Pengaturan"
-          class="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-navy-700 transition"
+          class="btn-smooth p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-navy-700"
         >
           ✕
         </button>
       </div>
 
-      <!-- Konten Pengaturan (HANYA 1. Tampilan & 2. GitHub Backup) -->
+      <!-- Konten Pengaturan -->
       <div class="p-5 space-y-6 max-h-[82vh] overflow-y-auto custom-scrollbar">
         
         <!-- 1. TAMPILAN -->
@@ -316,7 +344,7 @@
             <button
               type="button"
               id="btnThemeDark"
-              class="py-3.5 px-4 rounded-xl font-bold text-base border-2 transition flex items-center justify-center gap-2 shadow-sm active:scale-95"
+              class="btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 flex items-center justify-center gap-2 shadow-sm"
             >
               <span>🌙</span>
               <span>Gelap</span>
@@ -325,7 +353,7 @@
             <button
               type="button"
               id="btnThemeLight"
-              class="py-3.5 px-4 rounded-xl font-bold text-base border-2 transition flex items-center justify-center gap-2 shadow-sm active:scale-95"
+              class="btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 flex items-center justify-center gap-2 shadow-sm"
             >
               <span>☀️</span>
               <span>Terang</span>
@@ -356,13 +384,13 @@
                   id="inputGithubToken"
                   placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
                   autocomplete="off"
-                  class="w-full pr-11 pl-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  class="w-full pr-11 pl-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                 <button
                   type="button"
                   id="btnToggleToken"
                   aria-label="Tampilkan atau Sembunyikan Token"
-                  class="absolute inset-y-0 right-0 px-3.5 flex items-center text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white"
+                  class="btn-smooth absolute inset-y-0 right-0 px-3.5 flex items-center text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white"
                 >
                   <span id="eyeIcon">👁️</span>
                 </button>
@@ -379,7 +407,7 @@
                 id="inputGithubRepo"
                 value="geminiveo600-byte/backup"
                 placeholder="geminiveo600-byte/backup"
-                class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                class="w-full px-3.5 py-2.5 rounded-xl text-sm font-medium bg-slate-50 dark:bg-navy-input text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
             </div>
 
@@ -388,7 +416,7 @@
               <button
                 type="button"
                 id="btnSaveGithub"
-                class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-sm transition active:scale-95 flex items-center justify-center gap-2"
+                class="btn-smooth w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 shadow-sm flex items-center justify-center gap-2"
               >
                 <span>💾</span>
                 <span>Simpan GitHub</span>
@@ -398,7 +426,7 @@
                 <button
                   type="button"
                   id="btnGithubUpload"
-                  class="w-full py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+                  class="btn-smooth w-full py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm flex items-center justify-center gap-1.5"
                 >
                   <span>☁️</span>
                   <span>Cadangkan ZIP</span>
@@ -407,7 +435,7 @@
                 <button
                   type="button"
                   id="btnGithubRestore"
-                  class="w-full py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm text-white bg-orange-500 hover:bg-orange-400 active:bg-orange-600 shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+                  class="btn-smooth w-full py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm text-white bg-orange-500 hover:bg-orange-400 shadow-sm flex items-center justify-center gap-1.5"
                 >
                   <span>📥</span>
                   <span>Pulihkan ZIP</span>
@@ -421,23 +449,23 @@
     </div>
   </div>
 
-  <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser) -->
-  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-slate-600">
+  <!-- MODAL KONFIRMASI KUSTOM -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80">
+    <div class="modal-card w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-xl border border-slate-200 dark:border-slate-600">
       <h3 id="confirmTitle" class="text-lg font-bold text-slate-900 dark:text-white mb-2">Konfirmasi</h3>
       <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-300 mb-5">Apakah Anda yakin?</p>
       <div class="flex items-center justify-end gap-2.5">
         <button
           type="button"
           id="btnConfirmCancel"
-          class="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-navy-700 dark:hover:bg-slate-600 dark:text-slate-200 transition"
+          class="btn-smooth px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-navy-700 dark:hover:bg-slate-600 dark:text-slate-200"
         >
           Batal
         </button>
         <button
           type="button"
           id="btnConfirmYes"
-          class="px-4 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-500 text-white transition"
+          class="btn-smooth px-4 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-500 text-white"
         >
           Ya, Lanjutkan
         </button>
@@ -446,8 +474,8 @@
   </div>
 
   <!-- MODAL KONFIRMASI PEMULIHAN DATA (Batal / Gabungkan / Timpa Data Lama) -->
-  <div id="restoreMergeModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="w-full max-w-md bg-white dark:bg-[#192231] rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-700/90">
+  <div id="restoreMergeModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80">
+    <div class="modal-card w-full max-w-md bg-white dark:bg-[#192231] rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-200 dark:border-slate-700/90">
       <div class="flex items-start gap-3.5 mb-5">
         <span class="text-2xl sm:text-3xl leading-none shrink-0 mt-0.5">📂</span>
         <div>
@@ -464,21 +492,21 @@
         <button
           type="button"
           id="btnRestoreMergeCancel"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-[#334155] dark:hover:bg-[#475569] dark:text-white border border-slate-300 dark:border-slate-500/70 transition active:scale-95"
+          class="btn-smooth px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-[#334155] dark:hover:bg-[#475569] dark:text-white border border-slate-300 dark:border-slate-500/70"
         >
           Batal
         </button>
         <button
           type="button"
           id="btnRestoreMergeCombine"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-sm transition active:scale-95"
+          class="btn-smooth px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm"
         >
           Gabungkan
         </button>
         <button
           type="button"
           id="btnRestoreMergeOverwrite"
-          class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#ea580c] hover:bg-[#f97316] active:bg-[#c2410c] text-white shadow-sm transition active:scale-95"
+          class="btn-smooth px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#ea580c] hover:bg-[#f97316] text-white shadow-sm"
         >
           Timpa Data Lama
         </button>
@@ -487,18 +515,18 @@
   </div>
 
   <!-- MODAL PILIHAN CADANGAN / PULIHKAN (Lokal ZIP atau GitHub ZIP) -->
-  <div id="backupChoiceModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-slate-600">
+  <div id="backupChoiceModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80">
+    <div class="modal-card w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-xl border border-slate-200 dark:border-slate-600">
       <div class="flex items-center justify-between mb-3">
         <h3 id="choiceModalTitle" class="text-lg font-bold text-slate-900 dark:text-white">Pilih Metode</h3>
-        <button type="button" id="btnCloseChoiceModal" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-navy-700">✕</button>
+        <button type="button" id="btnCloseChoiceModal" class="btn-smooth p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-navy-700">✕</button>
       </div>
       <p id="choiceModalDesc" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4"></p>
       <div class="space-y-2.5">
         <button
           type="button"
           id="btnChoiceLocal"
-          class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 transition flex items-center justify-center gap-2"
+          class="btn-smooth w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 flex items-center justify-center gap-2"
         >
           <span id="choiceLocalIcon">🗜️</span>
           <span id="choiceLocalText">File ZIP (Perangkat)</span>
@@ -506,7 +534,7 @@
         <button
           type="button"
           id="btnChoiceGithub"
-          class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-slate-800 hover:bg-slate-700 dark:bg-navy-input dark:hover:bg-slate-600 border border-slate-600 transition flex items-center justify-center gap-2"
+          class="btn-smooth w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-slate-800 hover:bg-slate-700 dark:bg-navy-input dark:hover:bg-slate-600 border border-slate-600 flex items-center justify-center gap-2"
         >
           <span>🐙</span>
           <span id="choiceGithubText">Repository GitHub (ZIP)</span>
@@ -515,15 +543,15 @@
     </div>
   </div>
 
-  <!-- MODAL SIAP SIMPAN FILE LOKAL (Kompatibel Penuh dengan WebView / Browser Android) -->
-  <div id="localDownloadModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-    <div class="w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-2xl border border-slate-200 dark:border-slate-600">
+  <!-- MODAL SIAP SIMPAN FILE LOKAL -->
+  <div id="localDownloadModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80">
+    <div class="modal-card w-full max-w-sm bg-white dark:bg-navy-800 rounded-2xl p-5 shadow-xl border border-slate-200 dark:border-slate-600">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <span>🗜️</span>
           <span>Arsip ZIP Siap Disimpan</span>
         </h3>
-        <button type="button" id="btnCloseLocalDownload" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-navy-700">✕</button>
+        <button type="button" id="btnCloseLocalDownload" class="btn-smooth p-1.5 rounded-lg text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-navy-700">✕</button>
       </div>
       <p id="localDownloadInfo" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-4">
         Arsip cadangan berhasil dikompres. Jika browser Anda tidak otomatis mengunduh, tekan tombol simpan di bawah ini:
@@ -533,7 +561,7 @@
           id="directZipDownloadLink"
           href="#"
           download="cadangan-waktu-pakai.zip"
-          class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 shadow-sm transition flex items-center justify-center gap-2"
+          class="btn-smooth w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-sm flex items-center justify-center gap-2"
         >
           <span>📥</span>
           <span>Simpan File ZIP ke HP</span>
@@ -541,7 +569,7 @@
         <button
           type="button"
           id="btnCopyBackupJson"
-          class="w-full py-2.5 px-4 rounded-xl font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 bg-slate-200 hover:bg-slate-300 dark:bg-navy-input dark:hover:bg-slate-600 transition flex items-center justify-center gap-2"
+          class="btn-smooth w-full py-2.5 px-4 rounded-xl font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 bg-slate-200 hover:bg-slate-300 dark:bg-navy-input dark:hover:bg-slate-600 flex items-center justify-center gap-2"
         >
           <span>📋</span>
           <span>Salin Teks Cadangan (Alternatif)</span>
@@ -555,11 +583,9 @@
 
   <script>
     /**
-     * APLIKASI WAKTU PAKAI SMARTPHONE
-     * Penyimpanan Lokal, Pengurutan, Tema Gelap/Terang, Kompresi/Dekompresi ZIP & GitHub API Backup
+     * APLIKASI WAKTU PAKAI SMARTPHONE (OPTIMIZED MOBILE PERFORMANCE)
      */
     (function () {
-      // Kunci LocalStorage
       const STORAGE_KEYS = {
         RECORDS: 'waktu_pakai_smartphone_records_v1',
         THEME: 'waktu_pakai_smartphone_theme_v1',
@@ -572,13 +598,13 @@
       const GITHUB_LEGACY_JSON_FILENAME = 'waktu-pakai-smartphone-backup.json';
       const INTERNAL_ZIP_JSON_NAME = 'waktu-pakai-smartphone-data.json';
 
-      // State Aplikasi
       let records = [];
       let currentSort = 'date_desc';
       let currentTheme = 'dark';
       let confirmCallback = null;
-      let choiceMode = 'backup'; // 'backup' atau 'restore'
-      let pendingRestoreContext = null; // Menyimpan data sementara saat modal Konfirmasi Pemulihan Data tampil
+      let choiceMode = 'backup';
+      let pendingRestoreContext = null;
+      let jsZipLoadingPromise = null;
 
       // Referensi Elemen DOM
       const htmlEl = document.documentElement;
@@ -601,7 +627,6 @@
       const emptyState = document.getElementById('emptyState');
       const recordCountBadge = document.getElementById('recordCountBadge');
 
-      // Elemen Pengaturan
       const settingsModal = document.getElementById('settingsModal');
       const btnOpenSettings = document.getElementById('btnOpenSettings');
       const btnCloseSettings = document.getElementById('btnCloseSettings');
@@ -615,14 +640,12 @@
       const btnGithubUpload = document.getElementById('btnGithubUpload');
       const btnGithubRestore = document.getElementById('btnGithubRestore');
 
-      // Elemen Modal Konfirmasi & Pilihan
       const confirmModal = document.getElementById('confirmModal');
       const confirmTitle = document.getElementById('confirmTitle');
       const confirmMessage = document.getElementById('confirmMessage');
       const btnConfirmCancel = document.getElementById('btnConfirmCancel');
       const btnConfirmYes = document.getElementById('btnConfirmYes');
 
-      // Elemen Modal Konfirmasi Pemulihan Data (Gabungkan / Timpa Data Lama)
       const restoreMergeModal = document.getElementById('restoreMergeModal');
       const restoreMergeMessage = document.getElementById('restoreMergeMessage');
       const btnRestoreMergeCancel = document.getElementById('btnRestoreMergeCancel');
@@ -638,7 +661,6 @@
       const btnChoiceGithub = document.getElementById('btnChoiceGithub');
       const choiceGithubText = document.getElementById('choiceGithubText');
 
-      // Elemen Modal Simpan Lokal (Anti-Blob Hang di Android WebView)
       const localDownloadModal = document.getElementById('localDownloadModal');
       const btnCloseLocalDownload = document.getElementById('btnCloseLocalDownload');
       const localDownloadInfo = document.getElementById('localDownloadInfo');
@@ -646,7 +668,37 @@
       const btnCopyBackupJson = document.getElementById('btnCopyBackupJson');
 
       /**
-       * Menampilkan Notifikasi Toast
+       * Lazy-load JSZip hanya saat dibutuhkan agar muat awal ringan
+       */
+      function ensureJSZip() {
+        if (typeof window.JSZip !== 'undefined') {
+          return Promise.resolve(window.JSZip);
+        }
+        if (jsZipLoadingPromise) {
+          return jsZipLoadingPromise;
+        }
+        jsZipLoadingPromise = new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          script.async = true;
+          script.onload = () => {
+            if (typeof window.JSZip !== 'undefined') {
+              resolve(window.JSZip);
+            } else {
+              reject(new Error('Pustaka kompresi ZIP gagal diinisialisasi.'));
+            }
+          };
+          script.onerror = () => {
+            jsZipLoadingPromise = null;
+            reject(new Error('Gagal memuat pustaka ZIP. Periksa koneksi internet Anda.'));
+          };
+          document.head.appendChild(script);
+        });
+        return jsZipLoadingPromise;
+      }
+
+      /**
+       * Notifikasi Toast Ringan
        */
       function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
@@ -666,28 +718,27 @@
           warning: '⚠️',
         };
 
-        toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+        toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-md border text-sm font-semibold transition-opacity duration-200 opacity-0 ${colors[type] || colors.info}`;
         toast.innerHTML = `<span class="text-base shrink-0">${icons[type] || 'ℹ️'}</span><span>${escapeHtml(message)}</span>`;
 
         container.appendChild(toast);
 
         requestAnimationFrame(() => {
-          toast.classList.remove('translate-y-2', 'opacity-0');
+          toast.classList.remove('opacity-0');
         });
 
         setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-2');
-          setTimeout(() => toast.remove(), 300);
-        }, 3800);
+          toast.classList.add('opacity-0');
+          setTimeout(() => toast.remove(), 220);
+        }, 3200);
       }
 
-      /**
-       * Sanitasi teks HTML
-       */
       function escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       }
 
       /**
@@ -715,9 +766,6 @@
         closeConfirmDialog();
       });
 
-      /**
-       * Format Tanggal YYYY-MM-DD -> DD/MM/YYYY
-       */
       function formatDateToDDMMYYYY(isoDate) {
         if (!isoDate || !isoDate.includes('-')) return isoDate || '-';
         const parts = isoDate.split('-');
@@ -725,9 +773,6 @@
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
 
-      /**
-       * Mendapatkan tanggal hari ini dalam format lokal YYYY-MM-DD
-       */
       function getTodayISO() {
         const now = new Date();
         const year = now.getFullYear();
@@ -737,11 +782,9 @@
       }
 
       function updateDatePreview() {
-        if (inputDate.value) {
-          formattedDatePreview.textContent = `(${formatDateToDDMMYYYY(inputDate.value)})`;
-        } else {
-          formattedDatePreview.textContent = '';
-        }
+        formattedDatePreview.textContent = inputDate.value
+          ? `(${formatDateToDDMMYYYY(inputDate.value)})`
+          : '';
       }
 
       /**
@@ -753,25 +796,21 @@
 
         if (currentTheme === 'dark') {
           htmlEl.classList.add('dark');
-          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-base border-2 border-blue-500 bg-navy-900 text-white transition flex items-center justify-center gap-2 shadow-md';
-          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-base border-2 border-slate-600 bg-navy-input text-slate-300 hover:bg-slate-700 transition flex items-center justify-center gap-2';
+          btnThemeDark.className = 'btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 border-blue-500 bg-navy-900 text-white flex items-center justify-center gap-2 shadow-sm';
+          btnThemeLight.className = 'btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 border-slate-600 bg-navy-input text-slate-300 hover:bg-slate-700 flex items-center justify-center gap-2';
         } else {
           htmlEl.classList.remove('dark');
-          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-base border-2 border-blue-600 bg-blue-50 text-blue-900 transition flex items-center justify-center gap-2 shadow-md';
-          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-base border-2 border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center justify-center gap-2';
+          btnThemeLight.className = 'btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 border-blue-600 bg-blue-50 text-blue-900 flex items-center justify-center gap-2 shadow-sm';
+          btnThemeDark.className = 'btn-smooth py-3.5 px-4 rounded-xl font-bold text-base border-2 border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center justify-center gap-2';
         }
       }
 
-      /**
-       * Penyimpanan & Pemuatan Data Catatan
-       */
       function loadRecords() {
         try {
           const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
           records = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(records)) records = [];
         } catch (err) {
-          console.error('Gagal memuat catatan:', err);
           records = [];
         }
       }
@@ -780,13 +819,10 @@
         try {
           localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
         } catch (err) {
-          showToast('Gagal menyimpan ke penyimpanan lokal browser.', 'error');
+          showToast('Gagal menyimpan ke penyimpanan lokal.', 'error');
         }
       }
 
-      /**
-       * Enkoding/Dekoding Token GitHub agar tidak tersimpan sebagai plaintext mentah
-       */
       function encodeToken(token) {
         if (!token) return '';
         try {
@@ -826,7 +862,6 @@
 
         emptyState.classList.add('hidden');
 
-        // Salin dan urutkan data
         const sortedRecords = [...records].sort((a, b) => {
           const totalMinA = (Number(a.hours) || 0) * 60 + (Number(a.minutes) || 0);
           const totalMinB = (Number(b.hours) || 0) * 60 + (Number(b.minutes) || 0);
@@ -848,65 +883,57 @@
           return 0;
         });
 
-        historyTableBody.innerHTML = sortedRecords
-          .map((item, index) => {
-            const formattedDate = formatDateToDDMMYYYY(item.date);
-            const totalMinutes = (Number(item.hours) || 0) * 60 + (Number(item.minutes) || 0);
-            const durationText = `${totalMinutes} menit`;
-            const isCharging = item.charging === 'Yes';
-            const isWifi = item.connection === 'WiFi';
+        const rowsHtml = new Array(sortedRecords.length);
+        for (let i = 0; i < sortedRecords.length; i++) {
+          const item = sortedRecords[i];
+          const formattedDate = formatDateToDDMMYYYY(item.date);
+          const totalMinutes = (Number(item.hours) || 0) * 60 + (Number(item.minutes) || 0);
+          const isCharging = item.charging === 'Yes';
+          const isWifi = item.connection === 'WiFi';
 
-            // Warna indikator baterai
-            let batteryBadgeClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
-            if (item.battery <= 20) {
-              batteryBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-            } else if (item.battery <= 50) {
-              batteryBadgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
-            }
+          let batteryBadgeClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300';
+          if (item.battery <= 20) {
+            batteryBadgeClass = 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+          } else if (item.battery <= 50) {
+            batteryBadgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
+          }
 
-            return `
-              <tr class="hover:bg-slate-50 dark:hover:bg-navy-700/60 transition-colors">
-                <td class="py-3 px-3 text-center font-bold text-slate-600 dark:text-slate-300">${index + 1}</td>
-                <td class="py-3 px-3 font-medium whitespace-nowrap text-slate-800 dark:text-slate-100">${escapeHtml(formattedDate)}</td>
-                <td class="py-3 px-3 font-semibold whitespace-nowrap text-blue-600 dark:text-blue-400">${escapeHtml(durationText)}</td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${batteryBadgeClass}">
-                    ${Number(item.battery)}%
-                  </span>
-                </td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
-                    isCharging
-                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                  }">
-                    ${escapeHtml(item.charging)}
-                  </span>
-                </td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
-                    isWifi
-                      ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300'
-                      : 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300'
-                  }">
-                    ${escapeHtml(item.connection)}
-                  </span>
-                </td>
-                <td class="py-3 px-3 text-center">
-                  <button
-                    type="button"
-                    data-id="${escapeHtml(item.id)}"
-                    aria-label="Hapus catatan"
-                    class="btn-delete-row p-1.5 rounded-lg text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/70 transition active:scale-90"
-                    title="Hapus catatan ini"
-                  >
-                    🗑️
-                  </button>
-                </td>
-              </tr>
-            `;
-          })
-          .join('');
+          rowsHtml[i] = `
+            <tr class="hover:bg-slate-50 dark:hover:bg-navy-700/60">
+              <td class="py-3 px-3 text-center font-bold text-slate-600 dark:text-slate-300">${i + 1}</td>
+              <td class="py-3 px-3 font-medium whitespace-nowrap text-slate-800 dark:text-slate-100">${escapeHtml(formattedDate)}</td>
+              <td class="py-3 px-3 font-semibold whitespace-nowrap text-blue-600 dark:text-blue-400">${totalMinutes} menit</td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${batteryBadgeClass}">${Number(item.battery)}%</span>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
+                  isCharging
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'
+                    : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                }">${escapeHtml(item.charging)}</span>
+              </td>
+              <td class="py-3 px-3 text-center whitespace-nowrap">
+                <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${
+                  isWifi
+                    ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300'
+                    : 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300'
+                }">${escapeHtml(item.connection)}</span>
+              </td>
+              <td class="py-3 px-3 text-center">
+                <button
+                  type="button"
+                  data-id="${escapeHtml(item.id)}"
+                  aria-label="Hapus catatan"
+                  class="btn-smooth btn-delete-row p-1.5 rounded-lg text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950/70"
+                  title="Hapus catatan ini"
+                >🗑️</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        historyTableBody.innerHTML = rowsHtml.join('');
       }
 
       /**
@@ -922,14 +949,12 @@
         const chargingVal = inputCharging.value;
         const connectionVal = inputConnection.value;
 
-        // Validasi Tanggal
         if (!dateVal) {
           showToast('Silakan pilih tanggal terlebih dahulu.', 'error');
           inputDate.focus();
           return;
         }
 
-        // Validasi Jam & Menit
         const hoursVal = hoursRaw === '' ? 0 : parseInt(hoursRaw, 10);
         const minutesVal = minutesRaw === '' ? 0 : parseInt(minutesRaw, 10);
 
@@ -957,7 +982,6 @@
           return;
         }
 
-        // Validasi Baterai (0 - 100)
         if (batteryRaw === '') {
           showToast('Silakan isi persentase baterai (0–100).', 'error');
           inputBattery.focus();
@@ -971,7 +995,6 @@
           return;
         }
 
-        // Buat objek catatan
         const newRecord = {
           id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
           date: dateVal,
@@ -987,7 +1010,6 @@
         saveRecords();
         renderHistory();
 
-        // Reset input angka (tanggal tetap hari ini agar mudah input lagi)
         inputHours.value = '';
         inputMinutes.value = '';
         inputBattery.value = '';
@@ -997,9 +1019,6 @@
         showToast('Catatan waktu pakai berhasil disimpan!', 'success');
       });
 
-      /**
-       * Hapus Satu Catatan (Event Delegation)
-       */
       historyTableBody.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.btn-delete-row');
         if (!deleteBtn) return;
@@ -1017,9 +1036,6 @@
         );
       });
 
-      /**
-       * Hapus Semua Catatan
-       */
       btnDeleteAll.addEventListener('click', () => {
         if (records.length === 0) {
           showToast('Tidak ada catatan untuk dihapus.', 'warning');
@@ -1038,9 +1054,6 @@
         );
       });
 
-      /**
-       * Pengurutan Riwayat
-       */
       sortSelect.addEventListener('change', (e) => {
         currentSort = e.target.value;
         renderHistory();
@@ -1048,12 +1061,8 @@
 
       /**
        * =========================================================================
-       * UTILITAS KOMPRESI & DEKOMPRESI ZIP (JSZip)
+       * UTILITAS KOMPRESI & DEKOMPRESI ZIP (On-Demand JSZip)
        * =========================================================================
-       */
-
-      /**
-       * Membuat objek payload JSON standar untuk cadangan
        */
       function createBackupPayload() {
         return {
@@ -1065,45 +1074,27 @@
         };
       }
 
-      /**
-       * Mengompres data catatan menjadi Blob ZIP atau Base64 ZIP
-       * @param {'blob' | 'base64'} outputType
-       */
       async function compressRecordsToZip(outputType = 'base64') {
-        if (typeof JSZip === 'undefined') {
-          throw new Error('Pustaka kompresi JSZip gagal dimuat. Periksa koneksi internet Anda.');
-        }
-
-        const zip = new JSZip();
+        const JSZipLib = await ensureJSZip();
+        const zip = new JSZipLib();
         const payload = createBackupPayload();
         const jsonString = JSON.stringify(payload, null, 2);
 
-        // Tambahkan file JSON utama ke dalam arsip ZIP
         zip.file(INTERNAL_ZIP_JSON_NAME, jsonString);
 
-        // Hasilkan file terkompresi DEFLATE level 9 (kompresi maksimal)
         return await zip.generateAsync({
           type: outputType,
           compression: 'DEFLATE',
           compressionOptions: {
-            level: 9,
+            level: 6, // Level 6 jauh lebih cepat di CPU HP dengan rasio kompresi hampir sama
           },
         });
       }
 
-      /**
-       * Mendekompres data ZIP (ArrayBuffer, Blob, atau Base64) dan mengekstrak JSON
-       * @param {ArrayBuffer | Uint8Array | Blob | string} zipSource
-       * @param {boolean} isBase64
-       */
       async function decompressZipToData(zipSource, isBase64 = false) {
-        if (typeof JSZip === 'undefined') {
-          throw new Error('Pustaka dekompresi JSZip gagal dimuat. Periksa koneksi internet Anda.');
-        }
+        const JSZipLib = await ensureJSZip();
+        const zip = await JSZipLib.loadAsync(zipSource, { base64: isBase64 });
 
-        const zip = await JSZip.loadAsync(zipSource, { base64: isBase64 });
-
-        // Cari file JSON utama atau file .json pertama di dalam arsip ZIP
         let targetFile = zip.file(INTERNAL_ZIP_JSON_NAME);
         if (!targetFile) {
           const jsonEntries = Object.keys(zip.files).filter(
@@ -1122,9 +1113,6 @@
         return JSON.parse(extractedText);
       }
 
-      /**
-       * Cadangan Lokal (Menggunakan Data URI Base64 agar tidak macet "Memproses data blob..." di Android WebView)
-       */
       async function downloadZipBackup() {
         if (records.length === 0) {
           showToast('Belum ada data catatan untuk dicadangkan.', 'warning');
@@ -1132,22 +1120,19 @@
         }
 
         try {
-          // Gunakan Base64 Data URI langsung (menghindari bug "Memproses data blob..." pada Android WebView)
+          showToast('Menyiapkan arsip ZIP...', 'info');
           const zipBase64 = await compressRecordsToZip('base64');
           const fileName = `cadangan-waktu-pakai-${getTodayISO()}.zip`;
           const dataUri = `data:application/zip;base64,${zipBase64}`;
           const approxSizeKB = ((zipBase64.length * 3) / 4 / 1024).toFixed(2);
 
-          // Pasang tautan unduhan pada modal siap simpan
           directZipDownloadLink.href = dataUri;
           directZipDownloadLink.setAttribute('download', fileName);
           localDownloadInfo.textContent = `File "${fileName}" (${approxSizeKB} KB) siap disimpan ke perangkat Anda.`;
 
-          // Tampilkan modal simpan lokal yang memiliki tombol <a> langsung (sangat andal di WebView mobile)
           localDownloadModal.classList.remove('hidden');
           localDownloadModal.classList.add('flex');
 
-          // Coba picu unduhan otomatis secara bersamaan
           const tempLink = document.createElement('a');
           tempLink.href = dataUri;
           tempLink.download = fileName;
@@ -1158,7 +1143,6 @@
 
           showToast(`Arsip ZIP siap disimpan (${approxSizeKB} KB)!`, 'success');
         } catch (err) {
-          console.error('ZIP Backup Error:', err);
           showToast('Gagal membuat file ZIP: ' + err.message, 'error');
         }
       }
@@ -1175,7 +1159,6 @@
         }
       });
 
-      // Tombol alternatif salin teks JSON ke clipboard jika download file diblokir oleh aplikasi pembuka HTML
       btnCopyBackupJson.addEventListener('click', () => {
         try {
           const jsonText = JSON.stringify(createBackupPayload(), null, 2);
@@ -1193,9 +1176,6 @@
         }
       });
 
-      /**
-       * Normalisasi & Validasi Array Catatan dari Sumber Pemulihan
-       */
       function parseIncomingRecords(parsedData) {
         let incomingList = [];
         if (Array.isArray(parsedData)) {
@@ -1220,18 +1200,12 @@
           }));
       }
 
-      /**
-       * Menutup Modal Konfirmasi Pemulihan Data
-       */
       function closeRestoreMergeModal() {
         restoreMergeModal.classList.add('hidden');
         restoreMergeModal.classList.remove('flex');
         pendingRestoreContext = null;
       }
 
-      /**
-       * Membuka Modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
-       */
       function openRestoreMergeModal(validRecords, sourceDescription, sourceLabel) {
         pendingRestoreContext = {
           validRecords,
@@ -1244,9 +1218,6 @@
         restoreMergeModal.classList.add('flex');
       }
 
-      /**
-       * Memproses Pemulihan: Cek apakah sudah ada data tersimpan; jika ada, tampilkan modal pilihan
-       */
       function handleRestoredData(parsedData, sourceDescription, sourceLabel) {
         const validRecords = parseIncomingRecords(parsedData);
 
@@ -1255,20 +1226,17 @@
           return;
         }
 
-        // Jika sudah ada catatan tersimpan di aplikasi, tampilkan Konfirmasi Pemulihan Data
         if (records.length > 0) {
           openRestoreMergeModal(validRecords, sourceDescription, sourceLabel);
           return;
         }
 
-        // Jika data lokal saat ini kosong, langsung terapkan
         records = validRecords;
         saveRecords();
         renderHistory();
         showToast(`Berhasil memulihkan ${validRecords.length} catatan (${sourceLabel})!`, 'success');
       }
 
-      // Event Listener untuk Modal Konfirmasi Pemulihan Data
       btnRestoreMergeCancel.addEventListener('click', () => {
         closeRestoreMergeModal();
         showToast('Pemulihan data dibatalkan.', 'info');
@@ -1278,7 +1246,6 @@
         if (!pendingRestoreContext) return;
         const { validRecords, sourceLabel } = pendingRestoreContext;
 
-        // Gabungkan data lama dengan data baru (hindari duplikat ID atau isi yang identik)
         const existingIds = new Set(records.map((r) => r.id));
         const existingSignatures = new Set(
           records.map((r) => `${r.date}|${r.hours}|${r.minutes}|${r.battery}|${r.charging}|${r.connection}`)
@@ -1287,15 +1254,13 @@
         let addedCount = 0;
         const merged = [...records];
 
-        validRecords.forEach((item, idx) => {
+        validRecords.forEach((item) => {
           const signature = `${item.date}|${item.hours}|${item.minutes}|${item.battery}|${item.charging}|${item.connection}`;
           if (!existingIds.has(item.id) && !existingSignatures.has(signature)) {
             merged.push(item);
             existingIds.add(item.id);
             existingSignatures.add(signature);
             addedCount++;
-          } else if (!existingIds.has(item.id)) {
-            // Jika ID berbeda namun isi sama, tetap tidak diduplikasi; jika ingin dipaksa unik gunakan ID baru bila diperlukan
           }
         });
 
@@ -1328,9 +1293,6 @@
         }
       });
 
-      /**
-       * Pembacaan & Dekompresi File ZIP (atau JSON) untuk Pemulihan Lokal
-       */
       fileRestoreInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1345,13 +1307,11 @@
             const parsed = await decompressZipToData(arrayBuffer, false);
             handleRestoredData(parsed, `file lokal (${rawFileName})`, 'ZIP Lokal');
           } else {
-            // Tetap mendukung file JSON mentah untuk kompatibilitas mundur
             const text = await file.text();
             const parsed = JSON.parse(text);
             handleRestoredData(parsed, `file lokal (${rawFileName})`, 'JSON Lokal');
           }
         } catch (err) {
-          console.error('Local Restore Error:', err);
           showToast('Gagal memulihkan file: ' + err.message, 'error');
         } finally {
           fileRestoreInput.value = '';
@@ -1360,7 +1320,7 @@
 
       /**
        * =========================================================================
-       * GITHUB API BACKUP & RESTORE (DENGAN KOMPRESI & DEKOMPRESI ZIP)
+       * GITHUB API BACKUP & RESTORE
        * =========================================================================
        */
       function getGithubCredentials() {
@@ -1394,7 +1354,6 @@
         };
 
         try {
-          // 1. Cek apakah file ZIP sudah ada di GitHub untuk mendapatkan SHA
           let existingSha = null;
           const getRes = await fetch(apiUrl, { method: 'GET', headers });
 
@@ -1406,7 +1365,6 @@
             throw new Error(errData.message || `HTTP ${getRes.status}`);
           }
 
-          // 2. Kompres data menjadi Base64 ZIP secara langsung
           const zipBase64Content = await compressRecordsToZip('base64');
 
           const bodyData = {
@@ -1417,7 +1375,6 @@
             bodyData.sha = existingSha;
           }
 
-          // 3. PUT arsip ZIP terkompresi ke GitHub Contents API
           const putRes = await fetch(apiUrl, {
             method: 'PUT',
             headers,
@@ -1431,7 +1388,6 @@
 
           showToast(`Cadangan ZIP berhasil disimpan ke GitHub (${repo})!`, 'success');
         } catch (err) {
-          console.error('GitHub ZIP Backup Error:', err);
           showToast(`Gagal cadangan GitHub: ${err.message}`, 'error');
         }
       }
@@ -1461,7 +1417,6 @@
         };
 
         try {
-          // 1. Prioritaskan mengunduh file cadangan terkompresi .zip
           const resZip = await fetch(zipApiUrl, { method: 'GET', headers });
 
           if (resZip.ok) {
@@ -1469,11 +1424,9 @@
             let parsedData = null;
 
             if (data.content && data.content.replace(/\s/g, '').length > 0) {
-              // Dekompres langsung dari string Base64
               const cleanBase64 = data.content.replace(/\s/g, '');
               parsedData = await decompressZipToData(cleanBase64, true);
             } else if (data.git_url) {
-              // Fallback jika ukuran file > 1MB sehingga GitHub mengembalikan git_url blob
               const blobRes = await fetch(data.git_url, { method: 'GET', headers });
               if (!blobRes.ok) throw new Error('Gagal mengunduh blob ZIP dari GitHub.');
               const blobData = await blobRes.json();
@@ -1487,7 +1440,6 @@
             return;
           }
 
-          // 2. Fallback: Jika file .zip belum ada, cek apakah ada file cadangan lama .json
           if (resZip.status === 404) {
             const resLegacy = await fetch(legacyJsonApiUrl, { method: 'GET', headers });
             if (resLegacy.ok) {
@@ -1504,19 +1456,14 @@
           const errData = await resZip.json().catch(() => ({}));
           throw new Error(errData.message || `HTTP ${resZip.status}`);
         } catch (err) {
-          console.error('GitHub ZIP Restore Error:', err);
           showToast(`Gagal pulihkan dari GitHub: ${err.message}`, 'error');
         }
       }
 
-      /**
-       * Modal Pilihan Cadangan / Pulihkan dari Tombol Utama
-       */
       function openChoiceModal(mode) {
         choiceMode = mode;
         const hasToken = Boolean(localStorage.getItem(STORAGE_KEYS.GH_TOKEN));
 
-        // Jika token GitHub belum diisi, langsung jalankan aksi lokal ZIP agar praktis
         if (!hasToken) {
           if (mode === 'backup') {
             downloadZipBackup();
@@ -1526,7 +1473,6 @@
           return;
         }
 
-        // Jika GitHub sudah dikonfigurasi, tawarkan pilihan File ZIP Lokal atau GitHub ZIP
         if (mode === 'backup') {
           choiceModalTitle.textContent = '🗜️ Cadangkan Data (ZIP)';
           choiceModalDesc.textContent = 'Pilih tujuan penyimpanan arsip ZIP cadangan catatan Anda:';
@@ -1570,9 +1516,6 @@
         }
       });
 
-      /**
-       * Kontrol Modal Pengaturan
-       */
       function openSettings() {
         loadGithubSettings();
         settingsModal.classList.remove('hidden');
@@ -1582,7 +1525,6 @@
       function closeSettings() {
         settingsModal.classList.add('hidden');
         settingsModal.classList.remove('flex');
-        // Pastikan token kembali disembunyikan saat modal ditutup
         inputGithubToken.type = 'password';
         eyeIcon.textContent = '👁️';
       }
@@ -1590,7 +1532,6 @@
       btnOpenSettings.addEventListener('click', openSettings);
       btnCloseSettings.addEventListener('click', closeSettings);
 
-      // Tutup modal jika klik area backdrop luar
       settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) closeSettings();
       });
@@ -1601,7 +1542,6 @@
         if (e.target === confirmModal) closeConfirmDialog();
       });
 
-      // Tombol Tema di Pengaturan
       btnThemeDark.addEventListener('click', () => {
         applyTheme('dark');
         showToast('Tema Gelap diaktifkan.', 'info');
@@ -1612,7 +1552,6 @@
         showToast('Tema Terang diaktifkan.', 'info');
       });
 
-      // Toggle Lihat / Sembunyikan GitHub Token
       btnToggleToken.addEventListener('click', () => {
         if (inputGithubToken.type === 'password') {
           inputGithubToken.type = 'text';
@@ -1623,7 +1562,6 @@
         }
       });
 
-      // Simpan Pengaturan GitHub
       btnSaveGithub.addEventListener('click', () => {
         const tokenVal = inputGithubToken.value.trim();
         const repoVal = inputGithubRepo.value.trim();
@@ -1644,7 +1582,6 @@
         showToast('Pengaturan GitHub berhasil disimpan!', 'success');
       });
 
-      // Tombol Cadangkan & Pulihkan ZIP langsung dari dalam panel Pengaturan
       btnGithubUpload.addEventListener('click', () => {
         const tokenVal = inputGithubToken.value.trim();
         const repoVal = inputGithubRepo.value.trim();
@@ -1661,23 +1598,15 @@
         restoreFromGithub();
       });
 
-      /**
-       * Inisialisasi Aplikasi saat Halaman Dimuat
-       */
       function init() {
-        // Set default tanggal hari ini
         inputDate.value = getTodayISO();
         updateDatePreview();
         inputDate.addEventListener('change', updateDatePreview);
 
-        // Muat tema tersimpan (default: dark)
         const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
         applyTheme(savedTheme);
 
-        // Muat pengaturan GitHub
         loadGithubSettings();
-
-        // Muat dan tampilkan riwayat catatan
         loadRecords();
         renderHistory();
       }
