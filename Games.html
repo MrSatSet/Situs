@@ -6,6 +6,8 @@
   <title>Catatan Pemakaian Game</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- JSZip untuk Kompresi & Dekompresi ZIP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -217,14 +219,16 @@
         <button 
           id="btnBackupJson" 
           type="button"
+          title="Cadangkan data dalam format kompresi ZIP"
           class="py-3 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
-          <span>📦</span>
-          <span>Cadangkan</span>
+          <span>🗜️</span>
+          <span>Cadangkan ZIP</span>
         </button>
 
         <button 
           id="btnRestoreJson" 
           type="button"
+          title="Pulihkan dari arsip ZIP terkompresi atau file JSON"
           class="py-3 px-2 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition active:scale-95 flex items-center justify-center gap-1.5">
           <span>📂</span>
           <span>Pulihkan</span>
@@ -238,8 +242,8 @@
           <span>Hapus Semua</span>
         </button>
 
-        <!-- Input file tersembunyi untuk Pulihkan JSON -->
-        <input type="file" id="restoreFileInput" accept=".json,application/json" class="hidden" />
+        <!-- Input file tersembunyi untuk Pulihkan ZIP maupun JSON -->
+        <input type="file" id="restoreFileInput" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" class="hidden" />
       </div>
 
       <!-- Header Tabel & Dropdown Urutan Riwayat -->
@@ -342,7 +346,7 @@
         <!-- BAGIAN 2: GITHUB BACKUP -->
         <div>
           <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-            2. GitHub Backup
+            2. GitHub Backup (Kompresi ZIP)
           </h4>
 
           <div class="space-y-3.5">
@@ -366,6 +370,9 @@
                   👁️
                 </button>
               </div>
+              <p id="tokenStatusHint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.
+              </p>
             </div>
 
             <!-- Repository (user/repo) -->
@@ -378,8 +385,20 @@
                 id="githubRepoInput" 
                 placeholder="geminiveo600-byte/backup"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <!-- Nama File Cadangan di GitHub -->
+            <div>
+              <label for="githubFilePathInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Nama File Cadangan di GitHub
+              </label>
+              <input 
+                type="text" 
+                id="githubFilePathInput" 
+                placeholder="Games.zip"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Gunakan repository <strong>Private</strong> demi keamanan data & token Anda.
+                Backup otomatis dikompres ke arsip <strong>.zip</strong> (DEFLATE) untuk menghemat ukuran &amp; mendekompres otomatis saat dipulihkan (mendukung file .zip maupun .json).
               </p>
             </div>
 
@@ -398,15 +417,15 @@
                   id="btnGithubPush" 
                   type="button"
                   class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
-                  <span>☁️⬆️</span>
-                  <span>Backup ke GitHub</span>
+                  <span>🗜️⬆️</span>
+                  <span>Backup ZIP ke GitHub</span>
                 </button>
 
                 <button 
                   id="btnGithubPull" 
                   type="button"
                   class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
-                  <span>☁️⬇️</span>
+                  <span>📦⬇️</span>
                   <span>Pulihkan GitHub</span>
                 </button>
               </div>
@@ -507,7 +526,9 @@
         GITHUB_CFG: 'cpg_github_cfg_v1'
       };
 
-      const GITHUB_BACKUP_FILENAME = 'Games.json';
+      const GITHUB_BACKUP_ZIP_FILENAME = 'Games.zip';
+      const DEFAULT_GITHUB_FILE = 'Games.zip';
+      const INTERNAL_ZIP_JSON_NAME = 'Games.json';
 
       // State Aplikasi
       let gameLogs = [];
@@ -545,7 +566,9 @@
       // Pengaturan GitHub
       const githubTokenInput = document.getElementById('githubTokenInput');
       const btnToggleTokenVisibility = document.getElementById('btnToggleTokenVisibility');
+      const tokenStatusHint = document.getElementById('tokenStatusHint');
       const githubRepoInput = document.getElementById('githubRepoInput');
+      const githubFilePathInput = document.getElementById('githubFilePathInput');
       const btnSaveGithub = document.getElementById('btnSaveGithub');
       const btnGithubPush = document.getElementById('btnGithubPush');
       const btnGithubPull = document.getElementById('btnGithubPull');
@@ -565,8 +588,139 @@
       const btnConfirmOk = document.getElementById('btnConfirmOk');
 
       // -------------------------------------------------------------------
-      // 1. SISTEM NOTIFIKASI TOAST & KONFIRMASI KUSTOM
+      // 1. SISTEM KOMPRESI & DEKOMPRESI ZIP (JSZIP) + NOTIFIKASI TOAST
       // -------------------------------------------------------------------
+      function ensureJSZipReady() {
+        if (typeof window.JSZip === 'undefined') {
+          throw new Error('Pustaka JSZip belum termuat. Periksa koneksi internet lalu muat ulang halaman.');
+        }
+      }
+
+      function formatByteSize(bytes) {
+        if (!bytes || bytes <= 0) return '0 B';
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+      }
+
+      function uint8ArrayToBase64(uint8Array) {
+        const CHUNK_SIZE = 0x8000;
+        let binary = '';
+        for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+          const chunk = uint8Array.subarray(i, i + CHUNK_SIZE);
+          binary += String.fromCharCode.apply(null, chunk);
+        }
+        return btoa(binary);
+      }
+
+      function base64ToUint8Array(base64) {
+        const cleanB64 = String(base64 || '').replace(/\s/g, '');
+        const binString = atob(cleanB64);
+        const len = binString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binString.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function isZipBinarySignature(bufferOrUint8) {
+        const bytes = bufferOrUint8 instanceof Uint8Array
+          ? bufferOrUint8
+          : new Uint8Array(bufferOrUint8);
+        if (bytes.length < 4) return false;
+        return (
+          bytes[0] === 0x50 &&
+          bytes[1] === 0x4B &&
+          ((bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06))
+        );
+      }
+
+      /**
+       * Mengompres objek payload JSON menjadi arsip ZIP (DEFLATE level 9).
+       */
+      async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
+        ensureJSZipReady();
+        const jsonStr = JSON.stringify(payloadObj, null, 2);
+        const rawBytes = new TextEncoder().encode(jsonStr).length;
+
+        const zip = new JSZip();
+        zip.file(innerFileName, jsonStr, {
+          compression: 'DEFLATE',
+          compressionOptions: { level: 9 }
+        });
+
+        const uint8Array = await zip.generateAsync({
+          type: 'uint8array',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 9 }
+        });
+
+        const blob = new Blob([uint8Array], { type: 'application/zip' });
+        const base64 = uint8ArrayToBase64(uint8Array);
+        const compressedBytes = uint8Array.byteLength;
+        const savedPercent = rawBytes > 0
+          ? Math.max(0, Math.round(((rawBytes - compressedBytes) / rawBytes) * 100))
+          : 0;
+
+        return {
+          blob,
+          uint8Array,
+          base64,
+          rawBytes,
+          compressedBytes,
+          savedPercent
+        };
+      }
+
+      /**
+       * Mendekompres arsip ZIP (atau membaca langsung JSON biasa jika bukan ZIP)
+       * dan mengembalikan daftar catatan permainan beserta status kompresinya.
+       */
+      async function decompressAndExtractLogs(bufferOrUint8) {
+        const bytes = bufferOrUint8 instanceof Uint8Array
+          ? bufferOrUint8
+          : new Uint8Array(bufferOrUint8);
+
+        let rawJson = '';
+        let wasCompressed = false;
+
+        if (isZipBinarySignature(bytes)) {
+          ensureJSZipReady();
+          const zip = await JSZip.loadAsync(bytes);
+
+          const jsonEntries = Object.keys(zip.files).filter((name) => {
+            const entry = zip.files[name];
+            return !entry.dir && !name.startsWith('__MACOSX/') && name.toLowerCase().endsWith('.json');
+          });
+
+          if (jsonEntries.length === 0) {
+            throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
+          }
+
+          const targetEntry =
+            jsonEntries.find((n) => n.toLowerCase().endsWith('games.json')) ||
+            jsonEntries[0];
+
+          rawJson = await zip.files[targetEntry].async('string');
+          wasCompressed = true;
+        } else {
+          rawJson = new TextDecoder('utf-8').decode(bytes);
+        }
+
+        const parsed = JSON.parse(rawJson);
+        const extractedLogs = Array.isArray(parsed) ? parsed : parsed.logs;
+
+        if (!Array.isArray(extractedLogs)) {
+          throw new Error('Struktur data cadangan tidak dikenali.');
+        }
+
+        return {
+          logs: extractedLogs,
+          wasCompressed
+        };
+      }
+
       function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -595,7 +749,7 @@
         setTimeout(() => {
           toast.classList.add('opacity-0', 'translate-y-2');
           setTimeout(() => toast.remove(), 300);
-        }, 3200);
+        }, 3500);
       }
 
       function openConfirm(title, message, okText, onConfirm) {
@@ -657,7 +811,7 @@
           return;
         }
 
-        // Jika sudah ada catatan tersimpan di lokal, tampilkan dialog konfirmasi seperti gambar
+        // Jika sudah ada catatan tersimpan di lokal, tampilkan dialog konfirmasi
         pendingRestoreData = {
           logs: validLogs,
           sourceLabel: sourceLabel
@@ -679,7 +833,6 @@
         showToast('Pemulihan data dibatalkan.', 'info');
       });
 
-      // Tutup jika klik area backdrop di luar modal
       restoreConfirmModal.addEventListener('click', (e) => {
         if (e.target === restoreConfirmModal) {
           closeRestoreConfirmModal();
@@ -1021,47 +1174,56 @@
       }
 
       // -------------------------------------------------------------------
-      // 6. BACKUP & PULIHKAN JSON LOKAL + HAPUS SEMUA
+      // 6. BACKUP & PULIHKAN ZIP/JSON LOKAL + HAPUS SEMUA
       // -------------------------------------------------------------------
-      btnBackupJson.addEventListener('click', () => {
+      btnBackupJson.addEventListener('click', async () => {
         if (gameLogs.length === 0) {
           showToast('Tidak ada data riwayat untuk dicadangkan!', 'warning');
           return;
         }
 
-        const payload = {
-          appName: 'Catatan Pemakaian Game',
-          exportedAt: new Date().toISOString(),
-          totalRecords: gameLogs.length,
-          logs: gameLogs
-        };
-
-        const jsonStr = JSON.stringify(payload, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-
-        const dateTag = new Date().toISOString().slice(0, 10);
-        const fileName = `catatan-pemakaian-game-${dateTag}.json`;
-        const a = document.createElement('a');
-
-        a.href = url;
-        a.download = fileName;
-        a.style.display = 'none';
-        a.setAttribute('target', '_self');
-        document.body.appendChild(a);
+        btnBackupJson.disabled = true;
+        btnBackupJson.classList.add('opacity-60');
 
         try {
-          a.click();
-          showToast('Permintaan unduh dikirim. Periksa folder Download.', 'success');
-        } catch (err) {
-          console.error('Unduhan cadangan gagal:', err);
-          showToast('Browser gagal memulai unduhan. Coba buka halaman ini di Chrome.', 'error');
-        }
+          const payload = {
+            appName: 'Catatan Pemakaian Game',
+            compressed: 'ZIP-DEFLATE',
+            exportedAt: new Date().toISOString(),
+            totalRecords: gameLogs.length,
+            logs: gameLogs
+          };
 
-        setTimeout(() => {
-          URL.revokeObjectURL(url);
-          a.remove();
-        }, 60000);
+          const zipResult = await compressPayloadToZip(payload, INTERNAL_ZIP_JSON_NAME);
+          const url = URL.createObjectURL(zipResult.blob);
+
+          const dateTag = new Date().toISOString().slice(0, 10);
+          const fileName = `catatan-pemakaian-game-${dateTag}.zip`;
+          const a = document.createElement('a');
+
+          a.href = url;
+          a.download = fileName;
+          a.style.display = 'none';
+          a.setAttribute('target', '_self');
+          document.body.appendChild(a);
+
+          a.click();
+          showToast(
+            `Backup ZIP ${gameLogs.length} catatan diunduh (${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%).`,
+            'success'
+          );
+
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+            a.remove();
+          }, 60000);
+        } catch (err) {
+          console.error('Unduhan cadangan ZIP gagal:', err);
+          showToast('Gagal membuat cadangan ZIP: ' + err.message, 'error');
+        } finally {
+          btnBackupJson.disabled = false;
+          btnBackupJson.classList.remove('opacity-60');
+        }
       });
 
       btnRestoreJson.addEventListener('click', () => {
@@ -1074,25 +1236,24 @@
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           try {
-            const parsed = JSON.parse(event.target.result);
-            const importedLogs = Array.isArray(parsed) ? parsed : parsed.logs;
-
-            if (!Array.isArray(importedLogs)) {
-              throw new Error('Format file JSON tidak dikenali.');
-            }
+            const { logs: importedLogs, wasCompressed } = await decompressAndExtractLogs(event.target.result);
+            const sourceType = wasCompressed ? 'arsip ZIP' : 'file JSON';
 
             // Tampilkan konfirmasi metode pemulihan (Gabungkan vs Timpa Data Lama)
-            promptRestoreMethod(importedLogs, `file lokal (${file.name})`);
+            promptRestoreMethod(importedLogs, `${sourceType} (${file.name})`);
           } catch (err) {
-            showToast('Gagal memulihkan file JSON: ' + err.message, 'error');
+            showToast('Gagal memulihkan cadangan lokal: ' + err.message, 'error');
           }
         };
-        reader.readAsText(file);
+        reader.onerror = () => {
+          showToast('Gagal membaca file dari perangkat.', 'error');
+        };
+        reader.readAsArrayBuffer(file);
       });
 
-      // Mencegah data ganda saat penggabungan (baik dari JSON maupun GitHub)
+      // Mencegah data ganda saat penggabungan (baik dari ZIP/JSON maupun GitHub)
       function mergeLogsWithoutDuplicates(incomingLogs) {
         const existingIds = new Set(gameLogs.map((l) => l.id));
         const existingSignatures = new Set(
@@ -1138,32 +1299,48 @@
       });
 
       // -------------------------------------------------------------------
-      // 7. PENGATURAN MODAL & GITHUB BACKUP API
+      // 7. PENGATURAN MODAL & GITHUB BACKUP API (ZIP)
       // -------------------------------------------------------------------
       function loadGithubConfig() {
         try {
           const raw = localStorage.getItem(STORAGE_KEYS.GITHUB_CFG);
-          if (!raw) return { token: '', repo: '' };
+          if (!raw) return { token: '', repo: '', filePath: DEFAULT_GITHUB_FILE };
           const decoded = JSON.parse(atob(raw));
           return {
             token: decoded.token || '',
-            repo: decoded.repo || ''
+            repo: decoded.repo || '',
+            filePath: decoded.filePath || DEFAULT_GITHUB_FILE
           };
         } catch (e) {
-          return { token: '', repo: '' };
+          return { token: '', repo: '', filePath: DEFAULT_GITHUB_FILE };
         }
       }
 
-      function saveGithubConfig(token, repo) {
-        const encoded = btoa(JSON.stringify({ token, repo }));
+      function saveGithubConfig(token, repo, filePath) {
+        const cleanFilePath = (filePath || '').trim() || DEFAULT_GITHUB_FILE;
+        const encoded = btoa(JSON.stringify({ token, repo, filePath: cleanFilePath }));
         localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, encoded);
       }
 
-      btnOpenSettings.addEventListener('click', () => {
+      function refreshGithubFormUI() {
         const cfg = loadGithubConfig();
         githubTokenInput.value = cfg.token;
         githubRepoInput.value = cfg.repo;
+        githubFilePathInput.value = cfg.filePath || DEFAULT_GITHUB_FILE;
         githubTokenInput.type = 'password';
+        btnToggleTokenVisibility.textContent = '👁️';
+
+        if (cfg.token) {
+          tokenStatusHint.textContent = '🔒 Token tersimpan dengan aman di perangkat (tersembunyi).';
+          tokenStatusHint.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 mt-1';
+        } else {
+          tokenStatusHint.textContent = 'Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.';
+          tokenStatusHint.className = 'text-[11px] text-slate-500 dark:text-slate-400 mt-1';
+        }
+      }
+
+      btnOpenSettings.addEventListener('click', () => {
+        refreshGithubFormUI();
         settingsModal.classList.remove('hidden');
         settingsModal.classList.add('flex');
       });
@@ -1196,6 +1373,7 @@
       btnSaveGithub.addEventListener('click', () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
+        const filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
 
         if (!token || !repo) {
           showToast('Harap isi GitHub Token dan Repository (user/repo)!', 'error');
@@ -1207,46 +1385,55 @@
           return;
         }
 
-        saveGithubConfig(token, repo);
-        showToast('Konfigurasi GitHub berhasil disimpan di perangkat. Belum ada data yang diunggah.', 'success');
+        saveGithubConfig(token, repo, filePath);
+        refreshGithubFormUI();
+        showToast('Konfigurasi GitHub berhasil disimpan di perangkat!', 'success');
       });
 
       btnGithubPush.addEventListener('click', async () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
+        let filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
         if (!token || !repo) {
           showToast('Isi GitHub Token dan Repository terlebih dahulu!', 'error');
           return;
         }
-        saveGithubConfig(token, repo);
-        await pushBackupToGithub(token, repo);
+        if (filePath.toLowerCase().endsWith('.json')) {
+          filePath = filePath.replace(/\.json$/i, '.zip');
+          githubFilePathInput.value = filePath;
+        } else if (!filePath.toLowerCase().endsWith('.zip')) {
+          filePath = `${filePath}.zip`;
+          githubFilePathInput.value = filePath;
+        }
+        saveGithubConfig(token, repo, filePath);
+        await pushBackupToGithub(token, repo, filePath);
       });
 
       btnGithubPull.addEventListener('click', async () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
+        const filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
         if (!token || !repo) {
           showToast('Isi GitHub Token dan Repository terlebih dahulu!', 'error');
           return;
         }
-        saveGithubConfig(token, repo);
-        await pullBackupFromGithub(token, repo);
+        saveGithubConfig(token, repo, filePath);
+        await pullBackupFromGithub(token, repo, filePath);
       });
 
-      // Helper Base64 Unicode-safe untuk GitHub Contents API
-      function utf8ToBase64(str) {
-        return btoa(unescape(encodeURIComponent(str)));
-      }
+      async function pushBackupToGithub(token, repo, filePath = DEFAULT_GITHUB_FILE) {
+        if (gameLogs.length === 0) {
+          showToast('Tidak ada data riwayat untuk dicadangkan ke GitHub!', 'warning');
+          return;
+        }
 
-      function base64ToUtf8(str) {
-        return decodeURIComponent(escape(atob(str)));
-      }
-
-      async function pushBackupToGithub(token, repo) {
         btnSaveGithub.disabled = true;
         btnGithubPush.disabled = true;
+        btnGithubPush.classList.add('opacity-60');
+        showToast('Mengompres data ke ZIP & mengunggah ke GitHub...', 'info');
 
-        const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_FILENAME}`;
+        const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
+        const apiUrl = `https://api.github.com/repos/${repo}/contents/${encodedPath}`;
         const headers = {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.github+json',
@@ -1254,7 +1441,7 @@
         };
 
         try {
-          // 1. Cek apakah file sudah ada untuk mendapatkan SHA terbaru
+          // 1. Cek apakah file ZIP sudah ada untuk mendapatkan SHA terbaru
           let fileSha = null;
           const getRes = await fetch(apiUrl, { method: 'GET', headers });
           if (getRes.ok) {
@@ -1265,23 +1452,26 @@
             throw new Error(errData.message || `HTTP ${getRes.status}`);
           }
 
-          // 2. Siapkan payload JSON
-          const backupContent = JSON.stringify({
+          // 2. Siapkan payload & kompres menjadi arsip ZIP (DEFLATE level 9)
+          const backupPayload = {
             appName: 'Catatan Pemakaian Game',
+            compressed: 'ZIP-DEFLATE',
             updatedAt: new Date().toISOString(),
             totalRecords: gameLogs.length,
             logs: gameLogs
-          }, null, 2);
+          };
+
+          const zipResult = await compressPayloadToZip(backupPayload, INTERNAL_ZIP_JSON_NAME);
 
           const bodyPayload = {
-            message: `Backup Catatan Pemakaian Game (${new Date().toLocaleString('id-ID')})`,
-            content: utf8ToBase64(backupContent)
+            message: `Backup ZIP Catatan Pemakaian Game (${new Date().toLocaleString('id-ID')})`,
+            content: zipResult.base64
           };
           if (fileSha) {
             bodyPayload.sha = fileSha;
           }
 
-          // 3. Unggah (PUT) ke GitHub Repository
+          // 3. Unggah arsip ZIP (PUT) ke GitHub Repository
           const putRes = await fetch(apiUrl, {
             method: 'PUT',
             headers,
@@ -1293,53 +1483,71 @@
             throw new Error(errPut.message || `Gagal mengunggah (HTTP ${putRes.status})`);
           }
 
-          showToast('Berhasil backup seluruh data ke GitHub!', 'success');
+          showToast(
+            `Berhasil backup ZIP ${gameLogs.length} catatan ke GitHub (${repo}/${filePath}, ${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%)!`,
+            'success'
+          );
         } catch (err) {
-          showToast('GitHub Backup gagal: ' + err.message, 'error');
+          showToast('GitHub Backup ZIP gagal: ' + err.message, 'error');
         } finally {
           btnSaveGithub.disabled = false;
           btnGithubPush.disabled = false;
+          btnGithubPush.classList.remove('opacity-60');
         }
       }
 
-      async function pullBackupFromGithub(token, repo) {
-        btnGithubPull.disabled = true;
+      async function fetchGithubFileBinaryBytes(repo, filename, headers) {
+        const encodedPath = filename.split('/').map(encodeURIComponent).join('/');
+        const apiUrl = `https://api.github.com/repos/${repo}/contents/${encodedPath}`;
+        const res = await fetch(apiUrl, { method: 'GET', headers });
 
-        const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_FILENAME}`;
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error(`File "${filename}" belum ditemukan di repository ini.`);
+          }
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (data.content && data.encoding === 'base64') {
+          return base64ToUint8Array(data.content);
+        }
+
+        if (data.git_url) {
+          const blobRes = await fetch(data.git_url, { method: 'GET', headers });
+          if (!blobRes.ok) {
+            throw new Error(`Gagal mengunduh blob cadangan dari GitHub (HTTP ${blobRes.status})`);
+          }
+          const blobJson = await blobRes.json();
+          return base64ToUint8Array(blobJson.content);
+        }
+
+        throw new Error('Konten file cadangan GitHub kosong.');
+      }
+
+      async function pullBackupFromGithub(token, repo, filePath = DEFAULT_GITHUB_FILE) {
+        btnGithubPull.disabled = true;
+        btnGithubPull.classList.add('opacity-60');
+        showToast('Mengunduh & mendekompres data cadangan dari GitHub...', 'info');
+
         const headers = {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.github+json'
         };
 
         try {
-          const res = await fetch(apiUrl, { method: 'GET', headers });
-          if (!res.ok) {
-            if (res.status === 404) {
-              throw new Error('File backup belum ditemukan di repository ini.');
-            }
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `HTTP ${res.status}`);
-          }
-
-          const data = await res.json();
-          if (!data.content) {
-            throw new Error('Isi file backup kosong.');
-          }
-
-          const rawJson = base64ToUtf8(data.content.replace(/\n/g, ''));
-          const parsed = JSON.parse(rawJson);
-          const remoteLogs = Array.isArray(parsed) ? parsed : parsed.logs;
-
-          if (!Array.isArray(remoteLogs)) {
-            throw new Error('Struktur data backup GitHub tidak valid.');
-          }
+          const binaryBytes = await fetchGithubFileBinaryBytes(repo, filePath, headers);
+          const { logs: remoteLogs, wasCompressed } = await decompressAndExtractLogs(binaryBytes);
+          const formatLabel = wasCompressed ? 'ZIP GitHub' : 'JSON GitHub';
 
           // Tampilkan modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
-          promptRestoreMethod(remoteLogs, `GitHub (${repo})`);
+          promptRestoreMethod(remoteLogs, `${formatLabel} (${repo}/${filePath})`);
         } catch (err) {
-          showToast('Gagal memulihkan dari GitHub: ' + err.message, 'error');
+          showToast(`Gagal memulihkan dari GitHub: ${err.message}`, 'error');
         } finally {
           btnGithubPull.disabled = false;
+          btnGithubPull.classList.remove('opacity-60');
         }
       }
 
