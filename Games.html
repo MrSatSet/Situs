@@ -6,8 +6,6 @@
   <title>Catatan Pemakaian Game</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- JSZip untuk Kompresi & Dekompresi ZIP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -219,7 +217,7 @@
         <button 
           id="btnBackupJson" 
           type="button"
-          title="Cadangkan data dalam format kompresi ZIP"
+          title="Cadangkan data dalam format kompresi ZIP mandiri"
           class="py-3 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
           <span>🗜️</span>
           <span>Cadangkan ZIP</span>
@@ -346,7 +344,7 @@
         <!-- BAGIAN 2: GITHUB BACKUP -->
         <div>
           <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-            2. GitHub Backup (Kompresi ZIP)
+            2. GitHub Backup (Kompresi ZIP Mandiri)
           </h4>
 
           <div class="space-y-3.5">
@@ -398,7 +396,7 @@
                 placeholder="Games.zip"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Backup otomatis dikompres ke arsip <strong>.zip</strong> (DEFLATE) untuk menghemat ukuran &amp; mendekompres otomatis saat dipulihkan (mendukung file .zip maupun .json).
+                Menggunakan mesin kompresi <strong>ZIP DEFLATE bawaan browser</strong> (100% mandiri tanpa CDN Cloudflare) dan mendukung pemulihan file .zip maupun .json.
               </p>
             </div>
 
@@ -438,7 +436,7 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL KONFIRMASI PEMULIHAN DATA (Sesuai Desain Gambar)                -->
+  <!-- MODAL KONFIRMASI PEMULIHAN DATA (Batal / Gabungkan / Timpa Data Lama) -->
   <!-- ===================================================================== -->
   <div id="restoreConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-[#192336] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/80 p-6 animate-modal">
@@ -526,7 +524,6 @@
         GITHUB_CFG: 'cpg_github_cfg_v1'
       };
 
-      const GITHUB_BACKUP_ZIP_FILENAME = 'Games.zip';
       const DEFAULT_GITHUB_FILE = 'Games.zip';
       const INTERNAL_ZIP_JSON_NAME = 'Games.json';
 
@@ -534,7 +531,7 @@
       let gameLogs = [];
       let sortOrder = 'newest'; // 'newest' | 'oldest'
       let confirmCallback = null;
-      let pendingRestoreData = null; // Menyimpan data sementara saat menunggu konfirmasi pemulihan
+      let pendingRestoreData = null;
 
       // Referensi Elemen DOM
       const htmlEl = document.documentElement;
@@ -573,7 +570,7 @@
       const btnGithubPush = document.getElementById('btnGithubPush');
       const btnGithubPull = document.getElementById('btnGithubPull');
 
-      // Modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
+      // Modal Konfirmasi Pemulihan Data
       const restoreConfirmModal = document.getElementById('restoreConfirmModal');
       const restoreConfirmMessage = document.getElementById('restoreConfirmMessage');
       const btnRestoreCancel = document.getElementById('btnRestoreCancel');
@@ -588,12 +585,81 @@
       const btnConfirmOk = document.getElementById('btnConfirmOk');
 
       // -------------------------------------------------------------------
-      // 1. SISTEM KOMPRESI & DEKOMPRESI ZIP (JSZIP) + NOTIFIKASI TOAST
+      // 1. SISTEM KOMPRESI & DEKOMPRESI ZIP MANDIRI (100% NATIVE BROWSER)
       // -------------------------------------------------------------------
-      function ensureJSZipReady() {
-        if (typeof window.JSZip === 'undefined') {
-          throw new Error('Pustaka JSZip belum termuat. Periksa koneksi internet lalu muat ulang halaman.');
+      const CRC32_TABLE = (() => {
+        const table = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+          let c = i;
+          for (let k = 0; k < 8; k++) {
+            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          }
+          table[i] = c >>> 0;
         }
+        return table;
+      })();
+
+      function computeCrc32(uint8Array) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < uint8Array.length; i++) {
+          crc = CRC32_TABLE[(crc ^ uint8Array[i]) & 0xFF] ^ (crc >>> 8);
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      function getDosDateTime(date = new Date()) {
+        const year = Math.max(1980, date.getFullYear());
+        const dosTime =
+          ((date.getHours() & 0x1F) << 11) |
+          ((date.getMinutes() & 0x3F) << 5) |
+          ((Math.floor(date.getSeconds() / 2)) & 0x1F);
+        const dosDate =
+          (((year - 1980) & 0x7F) << 9) |
+          (((date.getMonth() + 1) & 0x0F) << 5) |
+          (date.getDate() & 0x1F);
+        return { dosTime, dosDate };
+      }
+
+      async function runStreamTransform(uint8Array, streamInstance) {
+        const writer = streamInstance.writable.getWriter();
+        const writePromise = writer.write(uint8Array).then(() => writer.close());
+
+        const reader = streamInstance.readable.getReader();
+        const chunks = [];
+        let totalLength = 0;
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value && value.byteLength > 0) {
+            chunks.push(value);
+            totalLength += value.byteLength;
+          }
+        }
+
+        await writePromise;
+
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+          result.set(chunk, offset);
+          offset += chunk.byteLength;
+        }
+        return result;
+      }
+
+      async function deflateRawBytes(uint8Array) {
+        if (typeof CompressionStream === 'undefined') {
+          throw new Error('Browser Anda belum mendukung API CompressionStream bawaan.');
+        }
+        return runStreamTransform(uint8Array, new CompressionStream('deflate-raw'));
+      }
+
+      async function inflateRawBytes(uint8Array) {
+        if (typeof DecompressionStream === 'undefined') {
+          throw new Error('Browser Anda belum mendukung API DecompressionStream bawaan.');
+        }
+        return runStreamTransform(uint8Array, new DecompressionStream('deflate-raw'));
       }
 
       function formatByteSize(bytes) {
@@ -637,40 +703,200 @@
       }
 
       /**
-       * Mengompres objek payload JSON menjadi arsip ZIP (DEFLATE level 9).
+       * Mengompres objek payload JSON menjadi arsip ZIP standar (PKZIP 2.0, DEFLATE)
+       * secara mandiri tanpa ketergantungan Cloudflare/library eksternal.
        */
       async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
-        ensureJSZipReady();
+        const encoder = new TextEncoder();
         const jsonStr = JSON.stringify(payloadObj, null, 2);
-        const rawBytes = new TextEncoder().encode(jsonStr).length;
+        const rawData = encoder.encode(jsonStr);
+        const fileNameBytes = encoder.encode(innerFileName);
 
-        const zip = new JSZip();
-        zip.file(innerFileName, jsonStr, {
-          compression: 'DEFLATE',
-          compressionOptions: { level: 9 }
-        });
+        const rawBytes = rawData.byteLength;
+        const crc32 = computeCrc32(rawData);
+        const { dosTime, dosDate } = getDosDateTime(new Date());
 
-        const uint8Array = await zip.generateAsync({
-          type: 'uint8array',
-          compression: 'DEFLATE',
-          compressionOptions: { level: 9 }
-        });
+        let compressedData;
+        let compressionMethod = 8; // 8 = DEFLATE
+        try {
+          compressedData = await deflateRawBytes(rawData);
+        } catch (e) {
+          compressedData = rawData;
+          compressionMethod = 0; // Fallback Store (tanpa kompresi)
+        }
 
-        const blob = new Blob([uint8Array], { type: 'application/zip' });
-        const base64 = uint8ArrayToBase64(uint8Array);
-        const compressedBytes = uint8Array.byteLength;
+        const compressedSize = compressedData.byteLength;
+        const uncompressedSize = rawData.byteLength;
+        const nameLen = fileNameBytes.byteLength;
+
+        const localHeaderSize = 30 + nameLen;
+        const centralDirOffset = localHeaderSize + compressedSize;
+        const centralDirSize = 46 + nameLen;
+        const eocdSize = 22;
+        const totalZipSize = centralDirOffset + centralDirSize + eocdSize;
+
+        const zipBuffer = new ArrayBuffer(totalZipSize);
+        const view = new DataView(zipBuffer);
+        const zipBytes = new Uint8Array(zipBuffer);
+
+        // 1. Local File Header (0x04034B50)
+        view.setUint32(0, 0x04034B50, true);
+        view.setUint16(4, 20, true);
+        view.setUint16(6, 0x0800, true);
+        view.setUint16(8, compressionMethod, true);
+        view.setUint16(10, dosTime, true);
+        view.setUint16(12, dosDate, true);
+        view.setUint32(14, crc32, true);
+        view.setUint32(18, compressedSize, true);
+        view.setUint32(22, uncompressedSize, true);
+        view.setUint16(26, nameLen, true);
+        view.setUint16(28, 0, true);
+        zipBytes.set(fileNameBytes, 30);
+
+        // 2. Compressed File Data
+        zipBytes.set(compressedData, localHeaderSize);
+
+        // 3. Central Directory File Header (0x02014B50)
+        let ptr = centralDirOffset;
+        view.setUint32(ptr, 0x02014B50, true);
+        view.setUint16(ptr + 4, 20, true);
+        view.setUint16(ptr + 6, 20, true);
+        view.setUint16(ptr + 8, 0x0800, true);
+        view.setUint16(ptr + 10, compressionMethod, true);
+        view.setUint16(ptr + 12, dosTime, true);
+        view.setUint16(ptr + 14, dosDate, true);
+        view.setUint32(ptr + 16, crc32, true);
+        view.setUint32(ptr + 20, compressedSize, true);
+        view.setUint32(ptr + 24, uncompressedSize, true);
+        view.setUint16(ptr + 28, nameLen, true);
+        view.setUint16(ptr + 30, 0, true);
+        view.setUint16(ptr + 32, 0, true);
+        view.setUint16(ptr + 34, 0, true);
+        view.setUint16(ptr + 36, 0, true);
+        view.setUint32(ptr + 38, 0, true);
+        view.setUint32(ptr + 42, 0, true);
+        zipBytes.set(fileNameBytes, ptr + 46);
+
+        // 4. End of Central Directory Record (0x06054B50)
+        ptr = centralDirOffset + centralDirSize;
+        view.setUint32(ptr, 0x06054B50, true);
+        view.setUint16(ptr + 4, 0, true);
+        view.setUint16(ptr + 6, 0, true);
+        view.setUint16(ptr + 8, 1, true);
+        view.setUint16(ptr + 10, 1, true);
+        view.setUint32(ptr + 12, centralDirSize, true);
+        view.setUint32(ptr + 16, centralDirOffset, true);
+        view.setUint16(ptr + 20, 0, true);
+
+        const blob = new Blob([zipBytes], { type: 'application/zip' });
+        const base64 = uint8ArrayToBase64(zipBytes);
+        const compressedBytes = zipBytes.byteLength;
         const savedPercent = rawBytes > 0
           ? Math.max(0, Math.round(((rawBytes - compressedBytes) / rawBytes) * 100))
           : 0;
 
         return {
           blob,
-          uint8Array,
+          uint8Array: zipBytes,
           base64,
           rawBytes,
           compressedBytes,
           savedPercent
         };
+      }
+
+      /**
+       * Mengekstrak entri file .json dari arsip ZIP secara mandiri
+       * menggunakan DecompressionStream('deflate-raw').
+       */
+      async function extractJsonTextFromZipBytes(bytes) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const decoder = new TextDecoder('utf-8');
+        const entries = [];
+
+        let eocdOffset = -1;
+        const minSearchOffset = Math.max(0, bytes.length - 65557);
+        for (let i = bytes.length - 22; i >= minSearchOffset; i--) {
+          if (view.getUint32(i, true) === 0x06054B50) {
+            eocdOffset = i;
+            break;
+          }
+        }
+
+        if (eocdOffset !== -1) {
+          const totalEntries = view.getUint16(eocdOffset + 10, true);
+          const centralDirOffset = view.getUint32(eocdOffset + 16, true);
+          let ptr = centralDirOffset;
+
+          for (let idx = 0; idx < totalEntries && ptr + 46 <= bytes.length; idx++) {
+            if (view.getUint32(ptr, true) !== 0x02014B50) break;
+
+            const method = view.getUint16(ptr + 10, true);
+            const compressedSize = view.getUint32(ptr + 20, true);
+            const fileNameLen = view.getUint16(ptr + 28, true);
+            const extraLen = view.getUint16(ptr + 30, true);
+            const commentLen = view.getUint16(ptr + 32, true);
+            const localHeaderOffset = view.getUint32(ptr + 42, true);
+
+            const fileName = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + fileNameLen));
+            entries.push({ fileName, method, compressedSize, localHeaderOffset });
+
+            ptr += 46 + fileNameLen + extraLen + commentLen;
+          }
+        } else {
+          let ptr = 0;
+          while (ptr + 30 <= bytes.length && view.getUint32(ptr, true) === 0x04034B50) {
+            const method = view.getUint16(ptr + 8, true);
+            const compressedSize = view.getUint32(ptr + 18, true);
+            const fileNameLen = view.getUint16(ptr + 26, true);
+            const extraLen = view.getUint16(ptr + 28, true);
+            const fileName = decoder.decode(bytes.subarray(ptr + 30, ptr + 30 + fileNameLen));
+
+            entries.push({ fileName, method, compressedSize, localHeaderOffset: ptr });
+            ptr += 30 + fileNameLen + extraLen + compressedSize;
+          }
+        }
+
+        const jsonEntries = entries.filter((entry) =>
+          !entry.fileName.endsWith('/') &&
+          !entry.fileName.startsWith('__MACOSX/') &&
+          entry.fileName.toLowerCase().endsWith('.json')
+        );
+
+        if (jsonEntries.length === 0) {
+          throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
+        }
+
+        const target =
+          jsonEntries.find((e) => e.fileName.toLowerCase().endsWith('games.json')) ||
+          jsonEntries[0];
+
+        const lhOffset = target.localHeaderOffset;
+        if (lhOffset + 30 > bytes.length || view.getUint32(lhOffset, true) !== 0x04034B50) {
+          throw new Error('Header file lokal di dalam arsip ZIP rusak atau tidak valid.');
+        }
+
+        const lhNameLen = view.getUint16(lhOffset + 26, true);
+        const lhExtraLen = view.getUint16(lhOffset + 28, true);
+        const dataStart = lhOffset + 30 + lhNameLen + lhExtraLen;
+        const dataEnd = dataStart + target.compressedSize;
+
+        if (dataEnd > bytes.length) {
+          throw new Error('Ukuran data terkompresi di dalam ZIP terpotong.');
+        }
+
+        const compressedSlice = bytes.subarray(dataStart, dataEnd);
+        let rawJsonBytes;
+
+        if (target.method === 0) {
+          rawJsonBytes = compressedSlice;
+        } else if (target.method === 8) {
+          rawJsonBytes = await inflateRawBytes(compressedSlice);
+        } else {
+          throw new Error(`Metode kompresi ZIP (${target.method}) tidak didukung.`);
+        }
+
+        return decoder.decode(rawJsonBytes);
       }
 
       /**
@@ -686,23 +912,7 @@
         let wasCompressed = false;
 
         if (isZipBinarySignature(bytes)) {
-          ensureJSZipReady();
-          const zip = await JSZip.loadAsync(bytes);
-
-          const jsonEntries = Object.keys(zip.files).filter((name) => {
-            const entry = zip.files[name];
-            return !entry.dir && !name.startsWith('__MACOSX/') && name.toLowerCase().endsWith('.json');
-          });
-
-          if (jsonEntries.length === 0) {
-            throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
-          }
-
-          const targetEntry =
-            jsonEntries.find((n) => n.toLowerCase().endsWith('games.json')) ||
-            jsonEntries[0];
-
-          rawJson = await zip.files[targetEntry].async('string');
+          rawJson = await extractJsonTextFromZipBytes(bytes);
           wasCompressed = true;
         } else {
           rawJson = new TextDecoder('utf-8').decode(bytes);
@@ -721,6 +931,9 @@
         };
       }
 
+      // -------------------------------------------------------------------
+      // 1B. NOTIFIKASI TOAST & MODAL KONFIRMASI
+      // -------------------------------------------------------------------
       function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -776,7 +989,7 @@
       });
 
       // -------------------------------------------------------------------
-      // 1B. MODAL KONFIRMASI PEMULIHAN DATA (GABUNGKAN VS TIMPA DATA LAMA)
+      // 1C. MODAL KONFIRMASI PEMULIHAN DATA (GABUNGKAN VS TIMPA DATA LAMA)
       // -------------------------------------------------------------------
       function normalizeLogItem(item) {
         if (!item || !item.gameName || !item.startTime || !item.endTime) return null;
@@ -802,7 +1015,6 @@
           return;
         }
 
-        // Jika penyimpanan lokal masih kosong, langsung pulihkan tanpa perlu memilih Gabungkan/Timpa
         if (gameLogs.length === 0) {
           gameLogs = validLogs;
           saveLogsToStorage();
@@ -811,7 +1023,6 @@
           return;
         }
 
-        // Jika sudah ada catatan tersimpan di lokal, tampilkan dialog konfirmasi
         pendingRestoreData = {
           logs: validLogs,
           sourceLabel: sourceLabel
@@ -839,7 +1050,6 @@
         }
       });
 
-      // Pilihan 1: Gabungkan (menggabungkan tanpa menduplikasi data yang sama)
       btnRestoreMerge.addEventListener('click', () => {
         if (!pendingRestoreData) return;
         const { logs, sourceLabel } = pendingRestoreData;
@@ -850,7 +1060,6 @@
         showToast(`Data digabungkan dari ${sourceLabel}! ${addedCount} catatan baru ditambahkan.`, 'success');
       });
 
-      // Pilihan 2: Timpa Data Lama (mengganti seluruh data lokal dengan data cadangan)
       btnRestoreOverwrite.addEventListener('click', () => {
         if (!pendingRestoreData) return;
         const { logs, sourceLabel } = pendingRestoreData;
@@ -994,7 +1203,6 @@
       gameLogForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // 1. Validasi Nama Game
         let gameName = gameSelect.value;
         if (gameName === 'Game Lainnya') {
           gameName = customGameInput.value.trim();
@@ -1005,7 +1213,6 @@
           }
         }
 
-        // 2. Validasi Tanggal & Jam
         const startVal = startTimeInput.value;
         const endVal = endTimeInput.value;
         if (!startVal || !endVal) {
@@ -1019,7 +1226,6 @@
           return;
         }
 
-        // 3. Validasi Baterai (0 - 100)
         const batteryRaw = batteryInput.value.trim();
         const batteryNum = Number(batteryRaw);
         if (batteryRaw === '' || isNaN(batteryNum) || batteryNum < 0 || batteryNum > 100) {
@@ -1028,10 +1234,8 @@
           return;
         }
 
-        // 4. Koneksi
         const connectionVal = connectionSelect.value;
 
-        // Buat objek catatan
         const newEntry = {
           id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
           gameName: gameName,
@@ -1047,7 +1251,6 @@
         saveLogsToStorage();
         renderHistoryTable();
 
-        // Reset sebagian input
         batteryInput.value = '';
         if (gameSelect.value === 'Game Lainnya') {
           customGameInput.value = '';
@@ -1074,7 +1277,6 @@
       }
 
       function renderHistoryTable() {
-        // Urutkan data sesuai pilihan
         const sortedLogs = [...gameLogs].sort((a, b) => {
           const timeA = new Date(a.startTime).getTime();
           const timeB = new Date(b.startTime).getTime();
@@ -1100,14 +1302,12 @@
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-50 dark:hover:bg-navy-700/50 transition';
 
-          // Cek apakah melewati tengah malam / beda hari
           const startDateStr = formatDisplayDate(log.startTime);
           const endDateStr = formatDisplayDate(log.endTime);
           const dateDisplay = startDateStr === endDateStr 
             ? startDateStr 
             : `${startDateStr} → ${endDateStr}`;
 
-          // Badge warna koneksi
           let connBadgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
           if (log.connection === 'Data Seluler') {
             connBadgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300';
@@ -1115,7 +1315,6 @@
             connBadgeClass = 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-300';
           }
 
-          // Warna indikator baterai
           let batColorClass = 'text-emerald-600 dark:text-emerald-400';
           if (log.battery <= 20) batColorClass = 'text-rose-600 dark:text-rose-400';
           else if (log.battery <= 50) batColorClass = 'text-amber-600 dark:text-amber-400';
@@ -1147,7 +1346,6 @@
           historyTableBody.appendChild(tr);
         });
 
-        // Event listener hapus satu per satu
         document.querySelectorAll('.btn-delete-row').forEach((btn) => {
           btn.addEventListener('click', () => {
             const idToDelete = btn.getAttribute('data-id');
@@ -1188,7 +1386,7 @@
         try {
           const payload = {
             appName: 'Catatan Pemakaian Game',
-            compressed: 'ZIP-DEFLATE',
+            compressed: 'NATIVE-ZIP-DEFLATE',
             exportedAt: new Date().toISOString(),
             totalRecords: gameLogs.length,
             logs: gameLogs
@@ -1241,7 +1439,6 @@
             const { logs: importedLogs, wasCompressed } = await decompressAndExtractLogs(event.target.result);
             const sourceType = wasCompressed ? 'arsip ZIP' : 'file JSON';
 
-            // Tampilkan konfirmasi metode pemulihan (Gabungkan vs Timpa Data Lama)
             promptRestoreMethod(importedLogs, `${sourceType} (${file.name})`);
           } catch (err) {
             showToast('Gagal memulihkan cadangan lokal: ' + err.message, 'error');
@@ -1253,7 +1450,6 @@
         reader.readAsArrayBuffer(file);
       });
 
-      // Mencegah data ganda saat penggabungan (baik dari ZIP/JSON maupun GitHub)
       function mergeLogsWithoutDuplicates(incomingLogs) {
         const existingIds = new Set(gameLogs.map((l) => l.id));
         const existingSignatures = new Set(
@@ -1267,7 +1463,7 @@
 
           const sig = `${cleanItem.gameName}|${cleanItem.startTime}|${cleanItem.endTime}|${cleanItem.battery}|${cleanItem.connection}`;
           if ((item.id && existingIds.has(item.id)) || existingSignatures.has(sig)) {
-            return; // Lewati data duplikat
+            return;
           }
 
           gameLogs.push(cleanItem);
@@ -1299,7 +1495,7 @@
       });
 
       // -------------------------------------------------------------------
-      // 7. PENGATURAN MODAL & GITHUB BACKUP API (ZIP)
+      // 7. PENGATURAN MODAL & GITHUB BACKUP API (ZIP MANDIRI)
       // -------------------------------------------------------------------
       function loadGithubConfig() {
         try {
@@ -1350,7 +1546,6 @@
         settingsModal.classList.remove('flex');
       });
 
-      // Tutup modal jika klik di luar area dialog
       settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) {
           settingsModal.classList.add('hidden');
@@ -1358,7 +1553,6 @@
         }
       });
 
-      // Toggle tampilkan / sembunyikan token
       btnToggleTokenVisibility.addEventListener('click', () => {
         if (githubTokenInput.type === 'password') {
           githubTokenInput.type = 'text';
@@ -1369,7 +1563,6 @@
         }
       });
 
-      // Tombol Simpan GitHub: hanya menyimpan konfigurasi secara lokal.
       btnSaveGithub.addEventListener('click', () => {
         const token = githubTokenInput.value.trim();
         const repo = githubRepoInput.value.trim();
@@ -1441,7 +1634,6 @@
         };
 
         try {
-          // 1. Cek apakah file ZIP sudah ada untuk mendapatkan SHA terbaru
           let fileSha = null;
           const getRes = await fetch(apiUrl, { method: 'GET', headers });
           if (getRes.ok) {
@@ -1452,10 +1644,9 @@
             throw new Error(errData.message || `HTTP ${getRes.status}`);
           }
 
-          // 2. Siapkan payload & kompres menjadi arsip ZIP (DEFLATE level 9)
           const backupPayload = {
             appName: 'Catatan Pemakaian Game',
-            compressed: 'ZIP-DEFLATE',
+            compressed: 'NATIVE-ZIP-DEFLATE',
             updatedAt: new Date().toISOString(),
             totalRecords: gameLogs.length,
             logs: gameLogs
@@ -1471,7 +1662,6 @@
             bodyPayload.sha = fileSha;
           }
 
-          // 3. Unggah arsip ZIP (PUT) ke GitHub Repository
           const putRes = await fetch(apiUrl, {
             method: 'PUT',
             headers,
@@ -1541,7 +1731,6 @@
           const { logs: remoteLogs, wasCompressed } = await decompressAndExtractLogs(binaryBytes);
           const formatLabel = wasCompressed ? 'ZIP GitHub' : 'JSON GitHub';
 
-          // Tampilkan modal Konfirmasi Pemulihan Data (Batal / Gabungkan / Timpa Data Lama)
           promptRestoreMethod(remoteLogs, `${formatLabel} (${repo}/${filePath})`);
         } catch (err) {
           showToast(`Gagal memulihkan dari GitHub: ${err.message}`, 'error');
