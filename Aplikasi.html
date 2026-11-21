@@ -6,6 +6,8 @@
     <title>Catatan Pemakaian Aplikasi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip untuk Kompresi & Dekompresi ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -211,24 +213,26 @@
             <!-- Tombol Pengelolaan Data (3 Tombol Sejajar) -->
             <div class="mt-4 pt-4 border-t border-slate-200 dark:border-navy-800 grid grid-cols-3 gap-2.5 sm:gap-3">
                 <button 
-                    id="btnBackupJson" 
+                    id="btnBackupLocal" 
                     type="button" 
+                    title="Cadangkan data dalam format kompresi ZIP"
                     class="py-2.5 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
                 >
-                    <span>📦</span>
-                    <span>Cadangkan</span>
+                    <span>🗜️</span>
+                    <span>Cadangkan ZIP</span>
                 </button>
                 
                 <button 
-                    id="btnRestoreJson" 
+                    id="btnRestoreLocal" 
                     type="button" 
+                    title="Pulihkan dari file ZIP terkompresi atau JSON"
                     class="py-2.5 px-2 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95"
                 >
                     <span>📂</span>
                     <span>Pulihkan</span>
                 </button>
-                <!-- Input file tersembunyi untuk pulihkan JSON -->
-                <input type="file" id="jsonFileInput" accept=".json,application/json" class="hidden">
+                <!-- Input file tersembunyi untuk pulihkan ZIP maupun JSON -->
+                <input type="file" id="backupFileInput" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" class="hidden">
 
                 <button 
                     id="btnDeleteAll" 
@@ -353,7 +357,7 @@
                 <!-- 2. GitHub Backup -->
                 <div>
                     <h3 class="text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
-                        2. GitHub Backup
+                        2. GitHub Backup (Kompresi ZIP)
                     </h3>
                     <div class="space-y-3.5">
                         <!-- GitHub Token -->
@@ -404,11 +408,11 @@
                             <input 
                                 type="text" 
                                 id="githubFilePath" 
-                                placeholder="Aplikasi.json" 
+                                placeholder="Aplikasi.zip" 
                                 class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                             <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                                Gunakan file cadangan berformat JSON biasa.
+                                Backup otomatis dikompres ke arsip <strong>.zip</strong> (DEFLATE) untuk menghemat ukuran & mendekompres otomatis saat dipulihkan (mendukung file .zip maupun .json).
                             </p>
                         </div>
 
@@ -429,15 +433,15 @@
                                 type="button" 
                                 class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 transition active:scale-95"
                             >
-                                <span>☁️⬆️</span>
-                                <span>Backup ke GitHub</span>
+                                <span>🗜️⬆️</span>
+                                <span>Backup ZIP ke GitHub</span>
                             </button>
                             <button 
                                 id="btnGithubPull" 
                                 type="button" 
                                 class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-1.5 transition active:scale-95"
                             >
-                                <span>☁️⬇️</span>
+                                <span>📦⬇️</span>
                                 <span>Pulihkan GitHub</span>
                             </button>
                         </div>
@@ -536,7 +540,8 @@
         /**
          * Aplikasi Catatan Pemakaian Aplikasi
          * Penyimpanan: localStorage
-         * Fitur: CRUD Riwayat, Hitung Durasi Otomatis, Ekspor/Impor JSON biasa,
+         * Fitur: CRUD Riwayat, Hitung Durasi Otomatis,
+         *        Kompresi & Dekompresi ZIP (JSZip) untuk Backup/Restore Lokal & GitHub,
          *        Konfirmasi Pemulihan Data (Gabungkan / Timpa Data Lama),
          *        Tema Gelap/Terang, GitHub API Backup/Restore
          */
@@ -548,7 +553,8 @@
             GITHUB_CFG: 'app_usage_github_cfg_v1'
         };
 
-        const DEFAULT_GITHUB_FILE = 'Aplikasi.json';
+        const DEFAULT_GITHUB_FILE = 'Aplikasi.zip';
+        const INTERNAL_ZIP_JSON_NAME = 'Aplikasi.json';
 
         // State Aplikasi
         let usageRecords = [];
@@ -574,9 +580,9 @@
         const recordCountBadge = document.getElementById('recordCountBadge');
 
         // Elemen DOM Pengelolaan Data
-        const btnBackupJson = document.getElementById('btnBackupJson');
-        const btnRestoreJson = document.getElementById('btnRestoreJson');
-        const jsonFileInput = document.getElementById('jsonFileInput');
+        const btnBackupLocal = document.getElementById('btnBackupLocal');
+        const btnRestoreLocal = document.getElementById('btnRestoreLocal');
+        const backupFileInput = document.getElementById('backupFileInput');
         const btnDeleteAll = document.getElementById('btnDeleteAll');
 
         // Elemen DOM Pengaturan
@@ -633,7 +639,144 @@
         }
 
         // ==========================================
-        // 2. SISTEM NOTIFIKASI & KONFIRMASI KUSTOM
+        // 2. SISTEM KOMPRESI & DEKOMPRESI ZIP (JSZIP)
+        // ==========================================
+        function ensureJSZipReady() {
+            if (typeof window.JSZip === 'undefined') {
+                throw new Error('Pustaka JSZip belum termuat. Periksa koneksi internet Anda lalu muat ulang halaman.');
+            }
+        }
+
+        function formatByteSize(bytes) {
+            if (!bytes || bytes <= 0) return '0 B';
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+        }
+
+        /**
+         * Mengompres objek payload JSON menjadi arsip ZIP (DEFLATE level 9).
+         * Mengembalikan blob, uint8array, base64, serta statistik ukuran kompresi.
+         */
+        async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
+            ensureJSZipReady();
+            const jsonText = JSON.stringify(payloadObj, null, 2);
+            const rawBytes = new TextEncoder().encode(jsonText).length;
+
+            const zip = new JSZip();
+            zip.file(innerFileName, jsonText, {
+                compression: 'DEFLATE',
+                compressionOptions: { level: 9 }
+            });
+
+            const uint8Array = await zip.generateAsync({
+                type: 'uint8array',
+                compression: 'DEFLATE',
+                compressionOptions: { level: 9 }
+            });
+
+            const blob = new Blob([uint8Array], { type: 'application/zip' });
+            const base64 = uint8ArrayToBase64(uint8Array);
+            const compressedBytes = uint8Array.byteLength;
+            const savedPercent = rawBytes > 0
+                ? Math.max(0, Math.round(((rawBytes - compressedBytes) / rawBytes) * 100))
+                : 0;
+
+            return {
+                blob,
+                uint8Array,
+                base64,
+                rawBytes,
+                compressedBytes,
+                savedPercent
+            };
+        }
+
+        /**
+         * Memeriksa apakah ArrayBuffer/Uint8Array diawali tanda tangan header file ZIP (PK\x03\x04 atau PK\x05\x06).
+         */
+        function isZipBinarySignature(bufferOrUint8) {
+            const bytes = bufferOrUint8 instanceof Uint8Array
+                ? bufferOrUint8
+                : new Uint8Array(bufferOrUint8);
+            if (bytes.length < 4) return false;
+            return (
+                bytes[0] === 0x50 &&
+                bytes[1] === 0x4B &&
+                ((bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06))
+            );
+        }
+
+        /**
+         * Mendekompres data biner (ArrayBuffer / Uint8Array) baik berupa arsip ZIP
+         * maupun file JSON biasa (backward-compatible), lalu mengembalikan daftar catatan valid.
+         */
+        async function decompressAndParseBackupBytes(arrayBufferOrUint8) {
+            const bytes = arrayBufferOrUint8 instanceof Uint8Array
+                ? arrayBufferOrUint8
+                : new Uint8Array(arrayBufferOrUint8);
+
+            let jsonText = '';
+            let wasCompressed = false;
+
+            if (isZipBinarySignature(bytes)) {
+                ensureJSZipReady();
+                const zip = await JSZip.loadAsync(bytes);
+
+                // Cari file .json di dalam arsip ZIP (abaikan folder/metadata sistem)
+                const jsonEntryNames = Object.keys(zip.files).filter((name) => {
+                    const entry = zip.files[name];
+                    return !entry.dir && !name.startsWith('__MACOSX/') && name.toLowerCase().endsWith('.json');
+                });
+
+                if (jsonEntryNames.length === 0) {
+                    throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
+                }
+
+                // Prioritaskan Aplikasi.json jika ada, atau ambil file .json pertama
+                const targetEntryName =
+                    jsonEntryNames.find((n) => n.toLowerCase().endsWith('aplikasi.json')) ||
+                    jsonEntryNames[0];
+
+                jsonText = await zip.files[targetEntryName].async('string');
+                wasCompressed = true;
+            } else {
+                // Fallback jika file cadangan masih berupa JSON biasa tanpa kompresi ZIP
+                jsonText = new TextDecoder('utf-8').decode(bytes);
+            }
+
+            const parsed = JSON.parse(jsonText);
+            const records = parseAndNormalizeBackupPayload(parsed);
+
+            return {
+                records,
+                wasCompressed
+            };
+        }
+
+        function uint8ArrayToBase64(uint8Array) {
+            const CHUNK_SIZE = 0x8000;
+            let binary = '';
+            for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+                const chunk = uint8Array.subarray(i, i + CHUNK_SIZE);
+                binary += String.fromCharCode.apply(null, chunk);
+            }
+            return btoa(binary);
+        }
+
+        function base64ToUint8Array(base64) {
+            const cleanB64 = String(base64 || '').replace(/\s/g, '');
+            const binString = atob(cleanB64);
+            const len = binString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binString.charCodeAt(i);
+            }
+            return bytes;
+        }
+
+        // ==========================================
+        // 3. SISTEM NOTIFIKASI & KONFIRMASI KUSTOM
         // ==========================================
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -666,7 +809,7 @@
                 toast.style.transform = 'translateY(8px)';
                 toast.style.transition = 'all 0.25s ease';
                 setTimeout(() => toast.remove(), 250);
-            }, 3500);
+            }, 3800);
         }
 
         function openConfirm(title, message, onConfirm) {
@@ -772,7 +915,7 @@
         }
 
         // ==========================================
-        // 3. MANAJEMEN TEMA (GELAP & TERANG)
+        // 4. MANAJEMEN TEMA (GELAP & TERANG)
         // ==========================================
         function loadTheme() {
             const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
@@ -797,7 +940,7 @@
         }
 
         // ==========================================
-        // 4. LOGIKA DATA, PERHITUNGAN & PARSER BACKUP LAMA
+        // 5. LOGIKA DATA, PERHITUNGAN & PARSER BACKUP
         // ==========================================
         function loadRecords() {
             try {
@@ -890,7 +1033,7 @@
             } else if (rawParsed && Array.isArray(rawParsed.records)) {
                 rawItems = rawParsed.records;
             } else {
-                throw new Error('Struktur JSON cadangan tidak dikenali. Gunakan file JSON biasa.');
+                throw new Error('Struktur JSON cadangan tidak dikenali.');
             }
 
             if (!Array.isArray(rawItems)) {
@@ -971,7 +1114,7 @@
         }
 
         // ==========================================
-        // 5. RENDER TABEL RIWAYAT
+        // 6. RENDER TABEL RIWAYAT
         // ==========================================
         function renderTable() {
             const sortType = sortOrderSelect.value;
@@ -1041,7 +1184,7 @@
         }
 
         // ==========================================
-        // 6. AKSI FORMULIR & PENGELOLAAN DATA LOKAL
+        // 7. AKSI FORMULIR & PENGELOLAAN DATA LOKAL (ZIP)
         // ==========================================
         function handleFormSubmit(e) {
             e.preventDefault();
@@ -1128,7 +1271,10 @@
             );
         };
 
-        function exportToJson() {
+        /**
+         * Backup Lokal dengan Kompresi ZIP (DEFLATE level 9)
+         */
+        async function exportToZip() {
             if (usageRecords.length === 0) {
                 showToast('Tidak ada data untuk dicadangkan.', 'warning');
                 return;
@@ -1136,25 +1282,25 @@
 
             let downloadUrl = null;
             let downloadLink = null;
+            btnBackupLocal.disabled = true;
+            btnBackupLocal.classList.add('opacity-60');
 
             try {
                 const exportData = {
                     app: 'Catatan Pemakaian Aplikasi',
+                    compressed: 'ZIP-DEFLATE',
                     exportedAt: new Date().toISOString(),
                     totalRecords: usageRecords.length,
                     records: usageRecords
                 };
 
-                const backupText = JSON.stringify(exportData, null, 2);
-                const backupBlob = new Blob([backupText], {
-                    type: 'application/json;charset=utf-8'
-                });
+                const zipResult = await compressPayloadToZip(exportData, INTERNAL_ZIP_JSON_NAME);
 
                 if (window.URL && typeof URL.createObjectURL === 'function') {
-                    downloadUrl = URL.createObjectURL(backupBlob);
+                    downloadUrl = URL.createObjectURL(zipResult.blob);
                     downloadLink = document.createElement('a');
                     downloadLink.href = downloadUrl;
-                    downloadLink.download = `cadangan-pemakaian-aplikasi-${new Date().toISOString().slice(0, 10)}.json`;
+                    downloadLink.download = `cadangan-pemakaian-aplikasi-${new Date().toISOString().slice(0, 10)}.zip`;
                     downloadLink.style.display = 'none';
                     downloadLink.setAttribute('aria-hidden', 'true');
                     document.body.appendChild(downloadLink);
@@ -1171,7 +1317,7 @@
                     }, 30000);
 
                     showToast(
-                        `Cadangan JSON ${usageRecords.length} catatan sedang diunduh. Periksa folder Download.`,
+                        `Backup ZIP ${usageRecords.length} catatan diunduh (${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%).`,
                         'success'
                     );
                     return;
@@ -1185,34 +1331,44 @@
                 if (downloadUrl) {
                     URL.revokeObjectURL(downloadUrl);
                 }
-                console.error('Gagal mengunduh cadangan:', err);
-                showToast('Gagal memulai unduhan cadangan. Coba buka file ini melalui Chrome.', 'error');
+                console.error('Gagal mengunduh cadangan ZIP:', err);
+                showToast(`Gagal membuat cadangan ZIP: ${err.message}`, 'error');
+            } finally {
+                btnBackupLocal.disabled = false;
+                btnBackupLocal.classList.remove('opacity-60');
             }
         }
 
-        function importFromJson(event) {
+        /**
+         * Restore Lokal dengan Dekompresi ZIP otomatis (juga tetap mendukung .json lama)
+         */
+        function importFromLocalBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
-                    const parsed = JSON.parse(e.target.result);
-                    const validRecords = parseAndNormalizeBackupPayload(parsed);
+                    const { records: validRecords, wasCompressed } = await decompressAndParseBackupBytes(e.target.result);
 
                     if (validRecords.length === 0) {
-                        showToast('File JSON tidak berisi catatan yang valid.', 'error');
+                        showToast('File cadangan tidak berisi catatan yang valid.', 'error');
                         return;
                     }
 
-                    promptRestoreStrategy(validRecords, `file JSON (${file.name})`);
+                    const labelType = wasCompressed ? 'arsip ZIP' : 'file JSON';
+                    promptRestoreStrategy(validRecords, `${labelType} (${file.name})`);
                 } catch (err) {
-                    showToast('Gagal membaca file JSON: ' + err.message, 'error');
+                    showToast('Gagal memulihkan cadangan lokal: ' + err.message, 'error');
                 } finally {
-                    jsonFileInput.value = '';
+                    backupFileInput.value = '';
                 }
             };
-            reader.readAsText(file);
+            reader.onerror = function() {
+                showToast('Gagal membaca file dari perangkat.', 'error');
+                backupFileInput.value = '';
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function handleDeleteAll() {
@@ -1234,7 +1390,7 @@
         }
 
         // ==========================================
-        // 7. PENGATURAN & INTEGRASI GITHUB BACKUP
+        // 8. PENGATURAN & INTEGRASI GITHUB BACKUP (ZIP)
         // ==========================================
         function loadGithubConfig() {
             try {
@@ -1270,7 +1426,7 @@
         function handleSaveGithub() {
             const token = githubTokenInput.value.trim();
             const repo = githubRepoInput.value.trim();
-            const filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
+            let filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
 
             if (!token) {
                 showToast('Masukkan GitHub Personal Access Token terlebih dahulu.', 'error');
@@ -1287,19 +1443,9 @@
             showToast('Konfigurasi GitHub berhasil disimpan!', 'success');
         }
 
-        function utf8ToBase64(str) {
-            const bytes = new TextEncoder().encode(str);
-            let binString = '';
-            bytes.forEach((b) => { binString += String.fromCharCode(b); });
-            return btoa(binString);
-        }
-
-        function base64ToUtf8(base64) {
-            const binString = atob(base64.replace(/\s/g, ''));
-            const bytes = Uint8Array.from(binString, (m) => m.charCodeAt(0));
-            return new TextDecoder().decode(bytes);
-        }
-
+        /**
+         * Backup ke GitHub dengan Kompresi ZIP (DEFLATE)
+         */
         async function backupToGithub() {
             if (!githubConfig.token || !githubConfig.repo) {
                 showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
@@ -1310,13 +1456,23 @@
                 return;
             }
 
-            const filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
+            let filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
+            // Jika pengguna masih memakai nama lama berakhiran .json tanpa diubah, otomatis arahkan ke .zip
+            if (filePath.toLowerCase().endsWith('.json')) {
+                filePath = filePath.replace(/\.json$/i, '.zip');
+                githubConfig.filePath = filePath;
+                localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, JSON.stringify(githubConfig));
+                refreshGithubFormUI();
+            } else if (!filePath.toLowerCase().endsWith('.zip')) {
+                filePath = `${filePath}.zip`;
+            }
+
             const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
             const apiUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${encodedPath}`;
 
             btnGithubPush.disabled = true;
             btnGithubPush.classList.add('opacity-60');
-            showToast('Menghubungkan ke GitHub untuk mencadangkan data...', 'info');
+            showToast('Mengompres data ke ZIP & mengunggah ke GitHub...', 'info');
 
             try {
                 let sha = null;
@@ -1337,14 +1493,17 @@
 
                 const payloadObj = {
                     app: 'Catatan Pemakaian Aplikasi',
+                    compressed: 'ZIP-DEFLATE',
                     updatedAt: new Date().toISOString(),
                     totalRecords: usageRecords.length,
                     records: usageRecords
                 };
 
+                const zipResult = await compressPayloadToZip(payloadObj, INTERNAL_ZIP_JSON_NAME);
+
                 const bodyData = {
-                    message: `Backup Catatan Pemakaian Aplikasi (${new Date().toLocaleString('id-ID')})`,
-                    content: utf8ToBase64(JSON.stringify(payloadObj, null, 2))
+                    message: `Backup ZIP Catatan Pemakaian Aplikasi (${new Date().toLocaleString('id-ID')})`,
+                    content: zipResult.base64
                 };
                 if (sha) bodyData.sha = sha;
 
@@ -1363,15 +1522,21 @@
                     throw new Error(errPut.message || `Gagal mengunggah (HTTP ${putRes.status})`);
                 }
 
-                showToast(`Berhasil backup ${usageRecords.length} catatan ke GitHub (${githubConfig.repo}/${filePath})!`, 'success');
+                showToast(
+                    `Berhasil backup ZIP ${usageRecords.length} catatan ke GitHub (${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%)!`,
+                    'success'
+                );
             } catch (error) {
-                showToast(`Gagal backup ke GitHub: ${error.message}`, 'error');
+                showToast(`Gagal backup ZIP ke GitHub: ${error.message}`, 'error');
             } finally {
                 btnGithubPush.disabled = false;
                 btnGithubPush.classList.remove('opacity-60');
             }
         }
 
+        /**
+         * Restore dari GitHub dengan Dekompresi ZIP otomatis (dan fallback JSON lama)
+         */
         async function restoreFromGithub() {
             if (!githubConfig.token || !githubConfig.repo) {
                 showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
@@ -1384,7 +1549,7 @@
 
             btnGithubPull.disabled = true;
             btnGithubPull.classList.add('opacity-60');
-            showToast('Mengambil data cadangan dari GitHub...', 'info');
+            showToast('Mengunduh & mendekompres data cadangan dari GitHub...', 'info');
 
             try {
                 const res = await fetch(apiUrl, {
@@ -1403,15 +1568,36 @@
                 }
 
                 const fileData = await res.json();
-                const decodedText = base64ToUtf8(fileData.content);
-                const parsed = JSON.parse(decodedText);
-                const validRecords = parseAndNormalizeBackupPayload(parsed);
+                let binaryBytes;
+
+                // GitHub Contents API menyertakan base64 `content` untuk file <= 1MB,
+                // atau Git Blob API (`git_url`) untuk file biner ZIP yang lebih besar.
+                if (fileData.content && fileData.encoding === 'base64') {
+                    binaryBytes = base64ToUint8Array(fileData.content);
+                } else if (fileData.git_url) {
+                    const blobRes = await fetch(fileData.git_url, {
+                        headers: {
+                            'Authorization': `Bearer ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github+json'
+                        }
+                    });
+                    if (!blobRes.ok) {
+                        throw new Error(`Gagal mengunduh blob arsip dari GitHub (HTTP ${blobRes.status})`);
+                    }
+                    const blobJson = await blobRes.json();
+                    binaryBytes = base64ToUint8Array(blobJson.content);
+                } else {
+                    throw new Error('Konten file dari GitHub kosong atau tidak dapat dibaca.');
+                }
+
+                const { records: validRecords, wasCompressed } = await decompressAndParseBackupBytes(binaryBytes);
 
                 if (validRecords.length === 0) {
                     throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
                 }
 
-                promptRestoreStrategy(validRecords, `GitHub (${githubConfig.repo})`);
+                const formatNote = wasCompressed ? 'ZIP GitHub' : 'JSON GitHub';
+                promptRestoreStrategy(validRecords, `${formatNote} (${githubConfig.repo}/${filePath})`);
             } catch (error) {
                 showToast(`Gagal memulihkan dari GitHub: ${error.message}`, 'error');
             } finally {
@@ -1421,7 +1607,7 @@
         }
 
         // ==========================================
-        // 8. EVENT LISTENERS & UTILITAS
+        // 9. EVENT LISTENERS & UTILITAS
         // ==========================================
         function setupEventListeners() {
             // Form & Tabel
@@ -1434,10 +1620,10 @@
             });
             sortOrderSelect.addEventListener('change', renderTable);
 
-            // Tombol Pengelolaan Data
-            btnBackupJson.addEventListener('click', exportToJson);
-            btnRestoreJson.addEventListener('click', () => jsonFileInput.click());
-            jsonFileInput.addEventListener('change', importFromJson);
+            // Tombol Pengelolaan Data (Kompres ZIP & Dekompres ZIP)
+            btnBackupLocal.addEventListener('click', exportToZip);
+            btnRestoreLocal.addEventListener('click', () => backupFileInput.click());
+            backupFileInput.addEventListener('change', importFromLocalBackup);
             btnDeleteAll.addEventListener('click', handleDeleteAll);
 
             // Modal Pengaturan
