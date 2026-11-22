@@ -1,2602 +1,803 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0f1c">
-    <title>Catatan Pemakaian Aplikasi</title>
-    <script>
-        // Terapkan tema sebelum render pertama agar tidak berkedip (zero-FOUC)
-        (function () {
-            try {
-                var t = localStorage.getItem('app_usage_theme_v1');
-                if (t === 'light') {
-                    document.documentElement.classList.remove('dark');
-                } else {
-                    document.documentElement.classList.add('dark');
-                }
-            } catch (e) {}
-        })();
-    </script>
-    <style>
-        /* ==========================================================================
-           DESIGN TOKENS & 100% OFFLINE CSS (TANPA TAILWIND CDN & GOOGLE FONTS)
-           ========================================================================== */
-        :root {
-            --bg-page: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-input: #f8fafc;
-            --bg-sub: #f1f5f9;
-            --bg-hover: #f8fafc;
-            --bg-btn-sec: #e2e8f0;
-            --bg-btn-sec-hover: #cbd5e1;
-            --text-main: #0f172a;
-            --text-heading: #0f172a;
-            --text-sub: #334155;
-            --text-muted: #64748b;
-            --border-main: #e2e8f0;
-            --border-strong: #cbd5e1;
-            --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05);
-            --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
-        }
-
-        html.dark {
-            --bg-page: #0a0f1c;
-            --bg-card: #0f172a;
-            --bg-input: #1e293b;
-            --bg-sub: rgba(30, 41, 59, 0.9);
-            --bg-hover: rgba(30, 41, 59, 0.5);
-            --bg-btn-sec: #1e293b;
-            --bg-btn-sec-hover: #334155;
-            --text-main: #f1f5f9;
-            --text-heading: #ffffff;
-            --text-sub: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-main: #1e293b;
-            --border-strong: #334155;
-            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
-            --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.5;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background-color: var(--bg-page);
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        ::selection {
-            background-color: #2563eb;
-            color: #ffffff;
-        }
-
-        button, select, input {
-            font-family: inherit;
-            touch-action: manipulation;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(100, 116, 139, 0.4);
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(100, 116, 139, 0.7);
-        }
-
-        html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-        html:not(.dark) input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-toast {
-            animation: slideUp 0.22s ease-out forwards;
-        }
-
-        /* Layout */
-        .container {
-            max-width: 48rem;
-            margin: 0 auto;
-            padding: 1.5rem 1rem 2.5rem;
-        }
-        @media (min-width: 640px) {
-            .container { padding: 2rem 1rem 3rem; }
-        }
-
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-main);
-            border-radius: 1rem;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-card);
-        }
-        @media (min-width: 640px) {
-            .card { padding: 1.5rem; }
-        }
-
-        /* Header */
-        .app-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            padding: 1rem;
-        }
-        @media (min-width: 640px) {
-            .app-header { padding: 1.25rem; }
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .header-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 0.75rem;
-            background: rgba(37, 99, 235, 0.14);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-        html.dark .header-icon {
-            background: rgba(59, 130, 246, 0.2);
-        }
-
-        .app-title {
-            margin: 0;
-            font-size: 1.125rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            color: var(--text-heading);
-        }
-        @media (min-width: 640px) {
-            .app-title { font-size: 1.25rem; }
-        }
-
-        .app-subtitle {
-            margin: 0.125rem 0 0;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: none;
-        }
-        @media (min-width: 640px) {
-            .app-subtitle { display: block; }
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.45rem;
-            border: none;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.08s ease-out, background-color 0.15s ease, opacity 0.15s ease;
-        }
-        .btn:active { transform: scale(0.97); }
-        .btn:disabled { opacity: 0.6; pointer-events: none; }
-
-        .btn-icon-settings {
-            padding: 0.75rem;
-            font-size: 1.25rem;
-            line-height: 1;
-            background-color: var(--bg-sub);
-            color: var(--text-main);
-            border: 1px solid var(--border-main);
-        }
-        .btn-icon-settings:hover { background-color: var(--bg-btn-sec-hover); }
-
-        .btn-primary {
-            background-color: #2563eb;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
-        }
-        .btn-primary:hover { background-color: #1d4ed8; }
-
-        .btn-emerald {
-            background-color: #059669;
-            color: #ffffff;
-        }
-        .btn-emerald:hover { background-color: #047857; }
-
-        .btn-amber {
-            background-color: #f59e0b;
-            color: #ffffff;
-        }
-        .btn-amber:hover { background-color: #d97706; }
-
-        .btn-orange {
-            background-color: #ea580c;
-            color: #ffffff;
-        }
-        .btn-orange:hover { background-color: #c2410c; }
-
-        .btn-rose {
-            background-color: #e11d48;
-            color: #ffffff;
-        }
-        .btn-rose:hover { background-color: #be123c; }
-
-        .btn-secondary {
-            background-color: var(--bg-btn-sec);
-            color: var(--text-main);
-            border: 1px solid var(--border-strong);
-        }
-        .btn-secondary:hover { background-color: var(--bg-btn-sec-hover); }
-
-        /* Form */
-        .form-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .grid-2-sm {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-        @media (min-width: 640px) {
-            .grid-2-sm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.75rem;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.625rem;
-        }
-        @media (min-width: 640px) {
-            .grid-3 { gap: 0.75rem; }
-        }
-
-        .field-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.375rem;
-            color: var(--text-sub);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 0.875rem;
-            border-radius: 0.75rem;
-            font-size: 0.9375rem;
-            background-color: var(--bg-input);
-            color: var(--text-heading);
-            border: 1px solid var(--border-strong);
-            outline: none;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-        .form-control::placeholder { color: #94a3b8; }
-        .form-control:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
-        }
-
-        .form-control-sm {
-            padding: 0.625rem 0.875rem;
-            font-size: 0.875rem;
-        }
-
-        .toolbar-divider {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-main);
-        }
-
-        /* History & Table */
-        .history-header {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-        @media (min-width: 640px) {
-            .history-header {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-        }
-
-        .badge-count {
-            display: inline-block;
-            padding: 0.125rem 0.625rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 9999px;
-            background-color: #dbeafe;
-            color: #1d4ed8;
-        }
-        html.dark .badge-count {
-            background-color: #1e293b;
-            color: #60a5fa;
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-main);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        thead tr {
-            background-color: var(--bg-sub);
-            color: var(--text-sub);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            border-bottom: 1px solid var(--border-strong);
-        }
-
-        th, td {
-            padding: 0.75rem 0.875rem;
-        }
-        th { font-weight: 600; }
-
-        tbody tr {
-            border-bottom: 1px solid var(--border-main);
-            font-size: 0.875rem;
-            transition: background-color 0.12s ease;
-        }
-        tbody tr:last-child { border-bottom: none; }
-        tbody tr:hover { background-color: var(--bg-hover); }
-
-        .font-mono {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.8125rem;
-        }
-
-        .pill {
-            display: inline-block;
-            padding: 0.25rem 0.625rem;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .pill-blue { background: #eff6ff; color: #1d4ed8; }
-        html.dark .pill-blue { background: rgba(23, 37, 84, 0.7); color: #93c5fd; }
-
-        .pill-green { background: #ecfdf5; color: #047857; }
-        html.dark .pill-green { background: rgba(6, 78, 59, 0.55); color: #34d399; }
-
-        .pill-amber { background: #fffbeb; color: #b45309; }
-        html.dark .pill-amber { background: rgba(120, 53, 15, 0.55); color: #fbbf24; }
-
-        .pill-rose { background: #fff1f2; color: #be123c; }
-        html.dark .pill-rose { background: rgba(136, 19, 55, 0.55); color: #fb7185; }
-
-        .btn-del-row {
-            background: transparent;
-            border: none;
-            padding: 0.45rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 0.95rem;
-            line-height: 1;
-            color: #e11d48;
-            transition: background-color 0.12s ease, transform 0.08s ease;
-        }
-        .btn-del-row:hover { background: rgba(244, 63, 94, 0.15); }
-        .btn-del-row:active { transform: scale(0.9); }
-
-        /* Modals */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            z-index: 50;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            background-color: rgba(2, 6, 23, 0.78);
-        }
-        .modal-backdrop.open { display: flex; }
-
-        .modal-box {
-            width: 100%;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-strong);
-            border-radius: 1rem;
-            box-shadow: var(--shadow-modal);
-            overflow: hidden;
-        }
-        .modal-sm { max-width: 24rem; padding: 1.25rem; }
-        .modal-md { max-width: 28rem; padding: 1.375rem; }
-        .modal-lg {
-            max-width: 32rem;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--border-main);
-        }
-
-        .modal-body {
-            padding: 1.25rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1.35rem;
-        }
-
-        .section-heading {
-            margin: 0 0 0.75rem;
-            font-size: 0.8125rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #2563eb;
-        }
-        html.dark .section-heading { color: #60a5fa; }
-
-        .theme-btn {
-            padding: 0.85rem 1rem;
-            border-radius: 0.75rem;
-            border: 2px solid var(--border-strong);
-            background-color: var(--bg-input);
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .theme-btn.active-dark {
-            border-color: #3b82f6;
-            background-color: #1e293b;
-            color: #ffffff;
-        }
-        .theme-btn.active-light {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-            color: #1d4ed8;
-        }
-
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 1.25rem;
-            right: 1rem;
-            left: 1rem;
-            z-index: 70;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            pointer-events: none;
-        }
-        @media (min-width: 640px) {
-            .toast-container {
-                left: auto;
-                width: 24rem;
-            }
-        }
-        .toast-item {
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #ffffff;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
-        }
-
-        /* Utilities */
-        .hidden { display: none !important; }
-        .w-full { width: 100%; }
-        .text-center { text-align: center; }
-        .text-xs { font-size: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
+<meta name="theme-color" content="#0b111e">
+<title>Catatan Pemakaian Aplikasi</title>
+<script>try{if(localStorage.getItem('app_usage_theme_v1')==='light')document.documentElement.classList.remove('dark')}catch(e){}</script>
+<style>
+:root{--bg-page:#f1f5f9;--bg-card:#fff;--bg-input:#f8fafc;--bg-sub:#f1f5f9;--bg-hover:#f8fafc;--bg-btn-sec:#e2e8f0;--bg-btn-sec-hover:#cbd5e1;--bg-table-head:#e2e8f0;--bg-table-body:#f8fafc;--text-main:#0f172a;--text-heading:#0f172a;--text-sub:#334155;--text-muted:#64748b;--border-main:#e2e8f0;--border-strong:#cbd5e1;--shadow-card:0 2px 6px rgba(15,23,42,.06);--shadow-modal:0 25px 50px -12px rgba(0,0,0,.35);--accent-blue-text:#1d4ed8}
+html.dark{--bg-page:#0b111e;--bg-card:#151d2e;--bg-input:#1e283b;--bg-sub:#0f172a;--bg-hover:rgba(30,41,59,.55);--bg-btn-sec:#1e293b;--bg-btn-sec-hover:#33456b;--bg-table-head:#0d1321;--bg-table-body:#111827;--text-main:#f1f5f9;--text-heading:#fff;--text-sub:#cbd5e1;--text-muted:#94a3b8;--border-main:#232f46;--border-strong:#2d3b55;--shadow-card:0 4px 14px rgba(0,0,0,.32);--shadow-modal:0 25px 50px -12px rgba(0,0,0,.75);--accent-blue-text:#38bdf8}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--bg-page);color:var(--text-main);-webkit-font-smoothing:antialiased;transition:background-color .2s,color .2s}
+::selection{background:#2563eb;color:#fff}
+button,select,input{font-family:inherit;touch-action:manipulation}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(100,116,139,.45);border-radius:9999px}
+::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.75)}
+html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8;cursor:pointer}
+html:not(.dark) input[type="datetime-local"]::-webkit-calendar-picker-indicator{cursor:pointer}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.animate-toast{animation:slideUp .22s ease-out forwards}
+.container{max-width:34rem;margin:0 auto;padding:1rem .875rem 2.25rem}
+.card{background:var(--bg-card);border:1px solid var(--border-main);border-radius:1.125rem;padding:1.125rem;margin-bottom:1.125rem;box-shadow:var(--shadow-card)}
+@media(min-width:640px){.container{max-width:44rem;padding:1.5rem 1rem 3rem}.card{padding:1.375rem;margin-bottom:1.25rem}}
+.app-header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.875rem 1rem}
+.header-left{display:flex;align-items:center;gap:.75rem;min-width:0}
+.header-icon{width:2.625rem;height:2.625rem;border-radius:.75rem;background:var(--bg-input);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.app-title{margin:0;font-size:1.025rem;font-weight:700;letter-spacing:-.02em;color:var(--text-heading);line-height:1.25}
+@media(min-width:640px){.app-title{font-size:1.15rem}}
+.app-subtitle{margin:.15rem 0 0;font-size:.75rem;color:var(--text-muted);line-height:1.3}
+.section-title-row{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1.125rem}
+.section-title-left{display:flex;align-items:center;gap:.625rem}
+.section-accent-bar{width:.275rem;height:1.25rem;border-radius:9999px;flex-shrink:0}
+.accent-blue{background:#2563eb}.accent-emerald{background:#10b981}
+.section-title-text{margin:0;font-size:1rem;font-weight:700;color:var(--text-heading);letter-spacing:-.015em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border:none;border-radius:.75rem;font-weight:600;cursor:pointer;user-select:none;transition:transform .08s ease-out,background-color .15s,opacity .15s}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.6;pointer-events:none}
+.btn-icon-settings{width:2.625rem;height:2.625rem;padding:0;font-size:1.2rem;line-height:1;background:var(--bg-input);color:var(--text-main);border:1px solid var(--border-strong);flex-shrink:0}
+.btn-icon-settings:hover{background:var(--bg-btn-sec-hover)}
+.btn-primary{background:#1d63dc;color:#fff;box-shadow:0 4px 12px rgba(29,99,220,.25)}.btn-primary:hover{background:#1a56c2}
+.btn-emerald{background:#0d8a5e;color:#fff}.btn-emerald:hover{background:#0a734e}
+.btn-amber{background:#c98316;color:#fff}.btn-amber:hover{background:#b07110}
+.btn-orange{background:#ea580c;color:#fff}.btn-orange:hover{background:#c2410c}
+.btn-rose{background:#c8233c;color:#fff}.btn-rose:hover{background:#ad1c32}
+.btn-secondary{background:var(--bg-btn-sec);color:var(--text-main);border:1px solid var(--border-strong)}.btn-secondary:hover{background:var(--bg-btn-sec-hover)}
+.action-bar-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;margin-bottom:1.125rem}
+.action-bar-btn{padding:.625rem .5rem;font-size:.78rem;font-weight:600;border-radius:.65rem;line-height:1.25;text-align:center}
+.form-stack{display:flex;flex-direction:column;gap:.95rem}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.field-label{display:block;font-size:.8125rem;font-weight:500;margin-bottom:.4rem;color:var(--text-sub)}
+.form-control{width:100%;padding:.725rem .875rem;border-radius:.6875rem;font-size:.9rem;background:var(--bg-input);color:var(--text-heading);border:1px solid var(--border-strong);outline:none;transition:border-color .15s,box-shadow .15s}
+.form-control::placeholder{color:#64748b}
+.form-control:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.3)}
+select.form-control{appearance:none;-webkit-appearance:none;padding-right:2.25rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .85rem center;background-size:.9rem}
+.form-control-sm{padding:.55rem .8rem;font-size:.84rem}
+select.form-control-sm{padding-right:2rem;background-position:right .65rem center}
+.input-suffix-wrap{position:relative;display:flex;align-items:center}
+.input-suffix-wrap .form-control{padding-right:2.25rem}
+.input-suffix-text{position:absolute;right:.875rem;font-size:.875rem;font-weight:500;color:var(--text-muted);pointer-events:none}
+.duration-preview-box{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.725rem .95rem;border-radius:.6875rem;background:var(--bg-sub);border:1px solid var(--border-main);font-size:.84rem}
+.duration-preview-label{color:var(--text-muted);font-weight:500}
+.duration-preview-value{color:var(--accent-blue-text);font-weight:700;text-align:right}
+.duration-preview-value.invalid{color:#f43f5e}
+.sort-row{display:flex;align-items:center;gap:.625rem;margin-bottom:.95rem}
+.badge-count{display:inline-block;padding:.125rem .55rem;font-size:.72rem;font-weight:600;border-radius:9999px;background:#dbeafe;color:#1d4ed8}
+html.dark .badge-count{background:#1e293b;color:#60a5fa}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:.75rem;border:1px solid var(--border-main);background:var(--bg-table-body)}
+table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap}
+thead tr{background:var(--bg-table-head);color:var(--text-muted);font-size:.71rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-main)}
+th,td{padding:.75rem .875rem}th{font-weight:700}
+tbody tr{border-bottom:1px solid var(--border-main);font-size:.85rem;transition:background-color .12s}
+tbody tr:last-child{border-bottom:none}tbody tr:hover{background:var(--bg-hover)}
+.table-swipe-hint{margin:.65rem 0 0;text-align:center;font-size:.72rem;color:var(--text-muted)}
+.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.8125rem}
+.pill{display:inline-block;padding:.22rem .58rem;border-radius:.45rem;font-size:.74rem;font-weight:600}
+.pill-blue{background:#eff6ff;color:#1d4ed8}html.dark .pill-blue{background:rgba(23,37,84,.75);color:#93c5fd}
+.pill-green{background:#ecfdf5;color:#047857}html.dark .pill-green{background:rgba(6,78,59,.6);color:#34d399}
+.pill-amber{background:#fffbeb;color:#b45309}html.dark .pill-amber{background:rgba(120,53,15,.6);color:#fbbf24}
+.pill-rose{background:#fff1f2;color:#be123c}html.dark .pill-rose{background:rgba(136,19,55,.6);color:#fb7185}
+.btn-del-row{background:transparent;border:none;padding:.45rem;border-radius:.5rem;cursor:pointer;font-size:.95rem;line-height:1;color:#e11d48;transition:background-color .12s,transform .08s}
+.btn-del-row:hover{background:rgba(244,63,94,.15)}.btn-del-row:active{transform:scale(.9)}
+.modal-backdrop{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(2,6,23,.78)}
+.modal-backdrop.open{display:flex}
+.modal-box{width:100%;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:1rem;box-shadow:var(--shadow-modal);overflow:hidden}
+.modal-sm{max-width:24rem;padding:1.25rem}.modal-md{max-width:28rem;padding:1.375rem}
+.modal-lg{max-width:32rem;max-height:90vh;display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border-main)}
+.modal-body{padding:1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.35rem}
+.section-heading{margin:0 0 .75rem;font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2563eb}
+html.dark .section-heading{color:#60a5fa}
+.theme-btn{padding:.85rem 1rem;border-radius:.75rem;border:2px solid var(--border-strong);background:var(--bg-input);color:var(--text-muted);font-weight:600;font-size:.875rem;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;transition:all .15s}
+.theme-btn.active-dark{border-color:#3b82f6;background:#1e293b;color:#fff}
+.theme-btn.active-light{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}
+.toast-container{position:fixed;bottom:1.25rem;right:1rem;left:1rem;z-index:70;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+@media(min-width:640px){.toast-container{left:auto;width:24rem}}
+.toast-item{pointer-events:auto;display:flex;align-items:center;gap:.625rem;padding:.75rem 1rem;border-radius:.75rem;border:1px solid rgba(255,255,255,.18);font-size:.875rem;font-weight:500;color:#fff;box-shadow:0 10px 15px -3px rgba(0,0,0,.35)}
+.hidden{display:none!important}.w-full{width:100%}.text-center{text-align:center}.text-xs{font-size:.75rem}.text-sm{font-size:.875rem}.font-medium{font-weight:500}.font-semibold{font-weight:600}
+</style>
 </head>
 <body>
+<div class="container">
+    <header class="card app-header">
+        <div class="header-left">
+            <div class="header-icon">📱</div>
+            <div>
+                <h1 class="app-title">Catatan Pemakaian Aplikasi</h1>
+                <p class="app-subtitle">Pantau durasi &amp; riwayat pemakaianmu</p>
+            </div>
+        </div>
+        <button id="btnOpenSettings" type="button" aria-label="Pengaturan Aplikasi" title="Pengaturan Aplikasi" class="btn btn-icon-settings">⚙️</button>
+    </header>
 
-    <!-- Container Utama -->
-    <div class="container">
-        
-        <!-- Header Aplikasi -->
-        <header class="card app-header">
-            <div class="header-left">
-                <div class="header-icon">📱</div>
-                <div>
-                    <h1 class="app-title">Catatan Pemakaian Aplikasi</h1>
-                    <p class="app-subtitle">Pantau durasi, baterai, dan aktivitas aplikasi harian Anda</p>
+    <section class="card">
+        <div class="section-title-row">
+            <div class="section-title-left">
+                <span class="section-accent-bar accent-blue" aria-hidden="true"></span>
+                <h2 class="section-title-text">Tambah Catatan Pemakaian</h2>
+            </div>
+        </div>
+        <form id="usageForm" class="form-stack" novalidate>
+            <div>
+                <label for="appName" class="field-label">Nama Aplikasi</label>
+                <select id="appName" class="form-control">
+                    <option value="YouTube" selected>YouTube</option>
+                    <option value="TikTok Biasa">TikTok Biasa</option>
+                    <option value="TikTok Lite">TikTok Lite</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="X (Twitter)">X (Twitter)</option>
+                    <option value="Shopee">Shopee</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <div id="customAppNameWrapper" class="hidden">
+                <label for="customAppName" class="field-label">Masukkan Nama Aplikasi</label>
+                <input type="text" id="customAppName" maxlength="60" placeholder="Masukkan nama aplikasi secara manual..." autocomplete="off" class="form-control">
+            </div>
+            <div>
+                <label for="startTime" class="field-label">Tanggal &amp; Jam Mulai</label>
+                <input type="datetime-local" id="startTime" required class="form-control">
+            </div>
+            <div>
+                <label for="endTime" class="field-label">Tanggal &amp; Jam Berakhir</label>
+                <input type="datetime-local" id="endTime" required class="form-control">
+            </div>
+            <div class="duration-preview-box">
+                <span class="duration-preview-label">Estimasi Durasi Pemakaian:</span>
+                <span id="durationEstimateText" class="duration-preview-value">30 menit</span>
+            </div>
+            <div>
+                <label for="batteryLevel" class="field-label">Baterai (%)</label>
+                <div class="input-suffix-wrap">
+                    <input type="number" id="batteryLevel" min="0" max="100" placeholder="80" inputmode="numeric" required class="form-control">
+                    <span class="input-suffix-text">%</span>
                 </div>
             </div>
-            <button 
-                id="btnOpenSettings" 
-                type="button" 
-                aria-label="Pengaturan Aplikasi"
-                title="Pengaturan Aplikasi"
-                class="btn btn-icon-settings"
-            >
-                ⚙️
+            <div>
+                <label for="connectionType" class="field-label">Koneksi</label>
+                <select id="connectionType" class="form-control">
+                    <option value="WiFi" selected>WiFi</option>
+                    <option value="Data Seluler">Data Seluler</option>
+                    <option value="Offline">Offline</option>
+                </select>
+            </div>
+            <div style="padding-top:.25rem">
+                <button type="submit" class="btn btn-primary w-full" style="padding:.85rem 1.25rem;font-size:.95rem">
+                    <span>💾</span><span>Simpan Catatan</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="card" style="margin-bottom:0">
+        <div class="action-bar-3">
+            <button id="btnBackupLocal" type="button" title="Cadangkan data dalam format kompresi ZIP mandiri (Offline)" class="btn btn-emerald action-bar-btn">
+                <span>🗜️</span><span>Cadangkan ZIP</span>
             </button>
-        </header>
+            <button id="btnRestoreLocal" type="button" title="Pulihkan dari file ZIP terkompresi atau JSON (Offline)" class="btn btn-amber action-bar-btn">
+                <span>📂</span><span>Pulihkan</span>
+            </button>
+            <input type="file" id="backupFileInput" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" class="hidden">
+            <button id="btnDeleteAll" type="button" class="btn btn-rose action-bar-btn">
+                <span>🗑️</span><span>Hapus Semua</span>
+            </button>
+        </div>
+        <div class="section-title-row" style="margin-bottom:.85rem">
+            <div class="section-title-left">
+                <span class="section-accent-bar accent-emerald" aria-hidden="true"></span>
+                <h2 class="section-title-text">Riwayat Pemakaian</h2>
+            </div>
+            <span id="recordCountBadge" class="badge-count">0 catatan</span>
+        </div>
+        <div class="sort-row">
+            <label for="sortOrder" class="text-xs font-medium" style="color:var(--text-muted);white-space:nowrap">Urutan:</label>
+            <select id="sortOrder" class="form-control form-control-sm" style="flex:1">
+                <option value="newest" selected>Tanggal terbaru → terlama</option>
+                <option value="oldest">Tanggal terlama → terbaru</option>
+            </select>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>NO</th><th>TANGGAL</th><th>NAMA APLIKASI</th><th>JAM MULAI</th><th>JAM AKHIR</th><th>DURASI</th><th>BATERAI</th><th>KONEKSI</th><th class="text-center">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+        <p class="table-swipe-hint">← Geser tabel ke kiri/kanan untuk melihat semua kolom →</p>
+    </section>
+</div>
 
-        <!-- Bagian 1: Formulir Pencatatan -->
-        <section class="card">
-            <form id="usageForm" class="form-stack" novalidate>
-                
-                <!-- 1. Nama Aplikasi -->
-                <div>
-                    <label for="appName" class="field-label">Nama Aplikasi</label>
-                    <select id="appName" class="form-control">
-                        <option value="YouTube" selected>▶️ YouTube</option>
-                        <option value="TikTok Biasa">🎵 TikTok Biasa</option>
-                        <option value="TikTok Lite">🎵 TikTok Lite</option>
-                        <option value="Facebook">📘 Facebook</option>
-                        <option value="Instagram">📸 Instagram</option>
-                        <option value="X (Twitter)">🐦 X (Twitter)</option>
-                        <option value="Shopee">🛍️ Shopee</option>
-                        <option value="Lainnya">📦 Lainnya</option>
-                    </select>
+<div id="settingsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-box modal-lg">
+        <div class="modal-header">
+            <h2 id="settingsTitle" style="margin:0;font-size:1.125rem;font-weight:700;color:var(--text-heading);display:flex;align-items:center;gap:.5rem">
+                <span>⚙️</span><span>Pengaturan Aplikasi</span>
+            </h2>
+            <button id="btnCloseSettings" type="button" aria-label="Tutup Pengaturan" class="btn btn-secondary" style="padding:.4rem .65rem">✕</button>
+        </div>
+        <div class="modal-body">
+            <div>
+                <h3 class="section-heading">1. Tampilan</h3>
+                <p class="text-xs" style="margin:0 0 .75rem;color:var(--text-muted)">Pilih Mode Tema yang nyaman untuk mata Anda:</p>
+                <div class="grid-2">
+                    <button id="btnThemeDark" type="button" class="theme-btn"><span>🌙</span><span>Gelap</span></button>
+                    <button id="btnThemeLight" type="button" class="theme-btn"><span>☀️</span><span>Terang</span></button>
                 </div>
-
-                <!-- Kolom nama aplikasi khusus, muncul saat memilih Lainnya -->
-                <div id="customAppNameWrapper" class="hidden">
-                    <label for="customAppName" class="field-label">Masukkan Nama Aplikasi</label>
-                    <input
-                        type="text"
-                        id="customAppName"
-                        maxlength="60"
-                        placeholder="Masukkan nama aplikasi secara manual..."
-                        autocomplete="off"
-                        class="form-control"
-                    >
-                </div>
-
-                <!-- 2 & 3. Tanggal & Jam Mulai + Berakhir -->
-                <div class="grid-2-sm">
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border-main);margin:0">
+            <div>
+                <h3 class="section-heading">2. GitHub Backup (Kompresi ZIP Mandiri)</h3>
+                <div class="form-stack" style="gap:.875rem">
                     <div>
-                        <label for="startTime" class="field-label">Tanggal & Jam Mulai</label>
-                        <input type="datetime-local" id="startTime" required class="form-control">
+                        <label for="githubToken" class="field-label text-xs">GitHub Token (Personal Access Token)</label>
+                        <div style="position:relative;display:flex;align-items:center">
+                            <input type="password" id="githubToken" autocomplete="off" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="form-control form-control-sm" style="padding-right:2.75rem">
+                            <button id="btnToggleToken" type="button" title="Tampilkan/Sembunyikan Token" style="position:absolute;right:.4rem;padding:.35rem .5rem;background:transparent;border:none;cursor:pointer;font-size:.95rem">👁️</button>
+                        </div>
+                        <p id="tokenStatusHint" style="font-size:11px;color:var(--text-muted);margin:.35rem 0 0">Token disimpan secara lokal di perangkat Anda dan hanya digunakan saat backup/restore GitHub.</p>
                     </div>
                     <div>
-                        <label for="endTime" class="field-label">Tanggal & Jam Berakhir</label>
-                        <input type="datetime-local" id="endTime" required class="form-control">
-                    </div>
-                </div>
-
-                <!-- 4 & 5. Baterai (%) + Koneksi -->
-                <div class="grid-2-sm">
-                    <div>
-                        <label for="batteryLevel" class="field-label">Baterai (%)</label>
-                        <input 
-                            type="number" 
-                            id="batteryLevel" 
-                            min="0" 
-                            max="100" 
-                            placeholder="80" 
-                            inputmode="numeric"
-                            required
-                            class="form-control"
-                        >
+                        <label for="githubRepo" class="field-label text-xs">Repository (user/repo)</label>
+                        <input type="text" id="githubRepo" placeholder="geminiveo600-byte/backup" class="form-control form-control-sm">
                     </div>
                     <div>
-                        <label for="connectionType" class="field-label">Koneksi</label>
-                        <select id="connectionType" class="form-control">
-                            <option value="WiFi" selected>📶 WiFi</option>
-                            <option value="Data Seluler">📡 Data Seluler</option>
-                            <option value="Offline">📴 Offline</option>
-                        </select>
+                        <label for="githubFilePath" class="field-label text-xs">Nama File Cadangan di GitHub</label>
+                        <input type="text" id="githubFilePath" placeholder="Aplikasi.zip" class="form-control form-control-sm">
+                        <p style="font-size:11px;color:var(--text-muted);margin:.35rem 0 0">Menggunakan mesin kompresi <strong>ZIP DEFLATE lokal</strong> (100% tanpa CDN) dan mendukung pemulihan file .zip maupun .json.</p>
                     </div>
-                </div>
-
-                <!-- Tombol Utama Simpan -->
-                <div style="padding-top: 0.35rem;">
-                    <button 
-                        type="submit" 
-                        class="btn btn-primary w-full"
-                        style="padding: 0.875rem 1.25rem; font-size: 1rem;"
-                    >
-                        <span>💾</span>
-                        <span>Simpan Catatan</span>
+                    <button id="btnSaveGithub" type="button" class="btn btn-primary w-full text-sm" style="padding:.65rem 1rem">
+                        <span>💾</span><span>Simpan GitHub</span>
                     </button>
-                </div>
-            </form>
-
-            <!-- Tombol Pengelolaan Data (3 Tombol Sejajar - 100% Offline) -->
-            <div class="toolbar-divider grid-3">
-                <button 
-                    id="btnBackupLocal" 
-                    type="button" 
-                    title="Cadangkan data dalam format kompresi ZIP mandiri (Offline)"
-                    class="btn btn-emerald text-xs"
-                    style="padding: 0.65rem 0.5rem;"
-                >
-                    <span>🗜️</span>
-                    <span>Cadangkan ZIP</span>
-                </button>
-                
-                <button 
-                    id="btnRestoreLocal" 
-                    type="button" 
-                    title="Pulihkan dari file ZIP terkompresi atau JSON (Offline)"
-                    class="btn btn-amber text-xs"
-                    style="padding: 0.65rem 0.5rem;"
-                >
-                    <span>📂</span>
-                    <span>Pulihkan</span>
-                </button>
-                <input type="file" id="backupFileInput" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" class="hidden">
-
-                <button 
-                    id="btnDeleteAll" 
-                    type="button" 
-                    class="btn btn-rose text-xs"
-                    style="padding: 0.65rem 0.5rem;"
-                >
-                    <span>🗑️</span>
-                    <span>Hapus Semua</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Bagian 2: Riwayat Pemakaian -->
-        <section class="card" style="margin-bottom: 0;">
-            <div class="history-header">
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <h2 style="margin:0; font-size:1.0625rem; font-weight:700; color:var(--text-heading);">
-                        📋 Riwayat Pemakaian
-                    </h2>
-                    <span id="recordCountBadge" class="badge-count">0</span>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <label for="sortOrder" class="text-xs font-medium" style="color:var(--text-muted); white-space:nowrap;">
-                        Urutan:
-                    </label>
-                    <select 
-                        id="sortOrder" 
-                        class="form-control form-control-sm"
-                        style="width:auto; flex:1;"
-                    >
-                        <option value="newest" selected>Tanggal terbaru → terlama</option>
-                        <option value="oldest">Tanggal terlama → terbaru</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Tanggal</th>
-                            <th>Aplikasi</th>
-                            <th>Jam Mulai</th>
-                            <th>Jam Akhir</th>
-                            <th>Durasi</th>
-                            <th>Baterai</th>
-                            <th>Koneksi</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody"></tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-
-    <!-- MODAL PENGATURAN APLIKASI -->
-    <div 
-        id="settingsModal" 
-        class="modal-backdrop"
-        role="dialog" 
-        aria-modal="true" 
-        aria-labelledby="settingsTitle"
-    >
-        <div class="modal-box modal-lg">
-            <div class="modal-header">
-                <h2 id="settingsTitle" style="margin:0; font-size:1.125rem; font-weight:700; color:var(--text-heading); display:flex; align-items:center; gap:0.5rem;">
-                    <span>⚙️</span>
-                    <span>Pengaturan Aplikasi</span>
-                </h2>
-                <button 
-                    id="btnCloseSettings" 
-                    type="button" 
-                    aria-label="Tutup Pengaturan"
-                    class="btn btn-secondary"
-                    style="padding: 0.4rem 0.65rem;"
-                >
-                    ✕
-                </button>
-            </div>
-
-            <div class="modal-body">
-                <!-- 1. Tampilan -->
-                <div>
-                    <h3 class="section-heading">1. Tampilan</h3>
-                    <p class="text-xs" style="margin:0 0 0.75rem; color:var(--text-muted);">
-                        Pilih Mode Tema yang nyaman untuk mata Anda:
-                    </p>
-                    <div class="grid-2">
-                        <button id="btnThemeDark" type="button" class="theme-btn">
-                            <span>🌙</span>
-                            <span>Gelap</span>
+                    <div class="grid-2" style="padding-top:.25rem">
+                        <button id="btnGithubPush" type="button" class="btn btn-emerald text-xs" style="padding:.65rem .75rem">
+                            <span>🗜️⬆️</span><span>Backup ZIP ke GitHub</span>
                         </button>
-                        <button id="btnThemeLight" type="button" class="theme-btn">
-                            <span>☀️</span>
-                            <span>Terang</span>
+                        <button id="btnGithubPull" type="button" class="btn btn-amber text-xs" style="padding:.65rem .75rem">
+                            <span>📦⬇️</span><span>Pulihkan GitHub</span>
                         </button>
                     </div>
                 </div>
-
-                <hr style="border:none; border-top:1px solid var(--border-main); margin:0;">
-
-                <!-- 2. GitHub Backup (Hanya fitur ini yang memakai internet) -->
-                <div>
-                    <h3 class="section-heading">2. GitHub Backup (Kompresi ZIP Mandiri)</h3>
-                    <div class="form-stack" style="gap: 0.875rem;">
-                        <div>
-                            <label for="githubToken" class="field-label text-xs">
-                                GitHub Token (Personal Access Token)
-                            </label>
-                            <div style="position:relative; display:flex; align-items:center;">
-                                <input 
-                                    type="password" 
-                                    id="githubToken" 
-                                    autocomplete="off"
-                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" 
-                                    class="form-control form-control-sm"
-                                    style="padding-right: 2.75rem;"
-                                >
-                                <button 
-                                    id="btnToggleToken" 
-                                    type="button" 
-                                    title="Tampilkan/Sembunyikan Token"
-                                    style="position:absolute; right:0.4rem; padding:0.35rem 0.5rem; background:transparent; border:none; cursor:pointer; font-size:0.95rem;"
-                                >
-                                    👁️
-                                </button>
-                            </div>
-                            <p id="tokenStatusHint" style="font-size:11px; color:var(--text-muted); margin:0.35rem 0 0;">
-                                Token disimpan secara lokal di perangkat Anda dan hanya digunakan saat backup/restore GitHub.
-                            </p>
-                        </div>
-
-                        <div>
-                            <label for="githubRepo" class="field-label text-xs">
-                                Repository (user/repo)
-                            </label>
-                            <input 
-                                type="text" 
-                                id="githubRepo" 
-                                placeholder="geminiveo600-byte/backup" 
-                                class="form-control form-control-sm"
-                            >
-                        </div>
-
-                        <div>
-                            <label for="githubFilePath" class="field-label text-xs">
-                                Nama File Cadangan di GitHub
-                            </label>
-                            <input 
-                                type="text" 
-                                id="githubFilePath" 
-                                placeholder="Aplikasi.zip" 
-                                class="form-control form-control-sm"
-                            >
-                            <p style="font-size:11px; color:var(--text-muted); margin:0.35rem 0 0;">
-                                Menggunakan mesin kompresi <strong>ZIP DEFLATE lokal</strong> (100% tanpa CDN) dan mendukung pemulihan file .zip maupun .json.
-                            </p>
-                        </div>
-
-                        <button 
-                            id="btnSaveGithub" 
-                            type="button" 
-                            class="btn btn-primary w-full text-sm"
-                            style="padding: 0.65rem 1rem;"
-                        >
-                            <span>💾</span>
-                            <span>Simpan GitHub</span>
-                        </button>
-
-                        <div class="grid-2" style="padding-top: 0.25rem;">
-                            <button 
-                                id="btnGithubPush" 
-                                type="button" 
-                                class="btn btn-emerald text-xs"
-                                style="padding: 0.65rem 0.75rem;"
-                            >
-                                <span>🗜️⬆️</span>
-                                <span>Backup ZIP ke GitHub</span>
-                            </button>
-                            <button 
-                                id="btnGithubPull" 
-                                type="button" 
-                                class="btn btn-amber text-xs"
-                                style="padding: 0.65rem 0.75rem;"
-                            >
-                                <span>📦⬇️</span>
-                                <span>Pulihkan GitHub</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- MODAL KONFIRMASI KUSTOM (Hapus Data) -->
-    <div id="confirmModal" class="modal-backdrop" role="dialog" aria-modal="true">
-        <div class="modal-box modal-sm">
-            <h3 id="confirmTitle" style="margin:0 0 0.5rem; font-size:1rem; font-weight:700; color:var(--text-heading);">
-                Konfirmasi Tindakan
-            </h3>
-            <p id="confirmMessage" class="text-sm" style="margin:0 0 1.25rem; color:var(--text-sub);">
-                Apakah Anda yakin ingin melanjutkan?
-            </p>
-            <div style="display:flex; justify-content:flex-end; gap:0.625rem;">
-                <button 
-                    id="btnConfirmCancel" 
-                    type="button" 
-                    class="btn btn-secondary text-sm"
-                    style="padding: 0.55rem 1rem;"
-                >
-                    Batal
-                </button>
-                <button 
-                    id="btnConfirmOk" 
-                    type="button" 
-                    class="btn btn-rose text-sm"
-                    style="padding: 0.55rem 1rem;"
-                >
-                    Ya, Lanjutkan
-                </button>
-            </div>
+<div id="confirmModal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box modal-sm">
+        <h3 id="confirmTitle" style="margin:0 0 .5rem;font-size:1rem;font-weight:700;color:var(--text-heading)">Konfirmasi Tindakan</h3>
+        <p id="confirmMessage" class="text-sm" style="margin:0 0 1.25rem;color:var(--text-sub)">Apakah Anda yakin ingin melanjutkan?</p>
+        <div style="display:flex;justify-content:flex-end;gap:.625rem">
+            <button id="btnConfirmCancel" type="button" class="btn btn-secondary text-sm" style="padding:.55rem 1rem">Batal</button>
+            <button id="btnConfirmOk" type="button" class="btn btn-rose text-sm" style="padding:.55rem 1rem">Ya, Lanjutkan</button>
         </div>
     </div>
+</div>
 
-    <!-- MODAL KONFIRMASI PEMULIHAN DATA (Batal / Gabungkan / Timpa Data Lama) -->
-    <div 
-        id="restoreChoiceModal" 
-        class="modal-backdrop"
-        style="z-index: 60;"
-        role="dialog" 
-        aria-modal="true"
-        aria-labelledby="restoreChoiceTitle"
-    >
-        <div class="modal-box modal-md animate-toast">
-            <div style="display:flex; align-items:flex-start; gap:0.875rem; margin-bottom:1.25rem;">
-                <div style="font-size:1.75rem; line-height:1; flex-shrink:0; margin-top:0.125rem; user-select:none;">
-                    📂
-                </div>
-                <div>
-                    <h3 id="restoreChoiceTitle" style="margin:0 0 0.375rem; font-size:1.0625rem; font-weight:700; color:var(--text-heading);">
-                        Konfirmasi Pemulihan Data
-                    </h3>
-                    <p id="restoreChoiceMessage" class="text-sm" style="margin:0; color:var(--text-sub); line-height:1.55;">
-                        Ditemukan 0 catatan pada sumber cadangan, sementara saat ini sudah ada 0 catatan tersimpan. Pilih metode pemulihan:
-                    </p>
-                </div>
-            </div>
-
-            <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:0.625rem;">
-                <button 
-                    id="btnRestoreChoiceCancel" 
-                    type="button" 
-                    class="btn btn-secondary text-xs"
-                    style="padding: 0.625rem 0.9rem;"
-                >
-                    Batal
-                </button>
-                <button 
-                    id="btnRestoreChoiceMerge" 
-                    type="button" 
-                    class="btn btn-primary text-xs"
-                    style="padding: 0.625rem 0.9rem;"
-                >
-                    Gabungkan
-                </button>
-                <button 
-                    id="btnRestoreChoiceOverwrite" 
-                    type="button" 
-                    class="btn btn-orange text-xs"
-                    style="padding: 0.625rem 0.9rem;"
-                >
-                    Timpa Data Lama
-                </button>
+<div id="restoreChoiceModal" class="modal-backdrop" style="z-index:60" role="dialog" aria-modal="true" aria-labelledby="restoreChoiceTitle">
+    <div class="modal-box modal-md animate-toast">
+        <div style="display:flex;align-items:flex-start;gap:.875rem;margin-bottom:1.25rem">
+            <div style="font-size:1.75rem;line-height:1;flex-shrink:0;margin-top:.125rem;user-select:none">📂</div>
+            <div>
+                <h3 id="restoreChoiceTitle" style="margin:0 0 .375rem;font-size:1.0625rem;font-weight:700;color:var(--text-heading)">Konfirmasi Pemulihan Data</h3>
+                <p id="restoreChoiceMessage" class="text-sm" style="margin:0;color:var(--text-sub);line-height:1.55">Pilih metode pemulihan:</p>
             </div>
         </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:.625rem">
+            <button id="btnRestoreChoiceCancel" type="button" class="btn btn-secondary text-xs" style="padding:.625rem .9rem">Batal</button>
+            <button id="btnRestoreChoiceMerge" type="button" class="btn btn-primary text-xs" style="padding:.625rem .9rem">Gabungkan</button>
+            <button id="btnRestoreChoiceOverwrite" type="button" class="btn btn-orange text-xs" style="padding:.625rem .9rem">Timpa Data Lama</button>
+        </div>
     </div>
+</div>
 
-    <!-- WADAH NOTIFIKASI TOAST -->
-    <div id="toastContainer" class="toast-container"></div>
+<div id="toastContainer" class="toast-container"></div>
 
-    <script>
-        /**
-         * Aplikasi Catatan Pemakaian Aplikasi (100% OFFLINE LOCAL MODE)
-         * - Hanya Backup ZIP ke GitHub & Pulihkan GitHub yang mengakses internet.
-         * - Seluruh tampilan, font, ikon, CRUD, penyimpanan lokal, kompresi ZIP,
-         *   dan dekompresi ZIP berjalan 100% secara lokal di perangkat tanpa internet.
-         */
-        (function () {
-            'use strict';
+<script>
+(()=>{
+'use strict';
+const KEYS={RECORDS:'app_usage_records_v1',THEME:'app_usage_theme_v1',GITHUB:'app_usage_github_cfg_v1'};
+const DEF_FILE='Aplikasi.zip',INNER_JSON='Aplikasi.json';
+const MONTHS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const $=(id)=>document.getElementById(id);
+const pad=(n)=>String(n).padStart(2,'0');
 
-            const STORAGE_KEYS = {
-                RECORDS: 'app_usage_records_v1',
-                THEME: 'app_usage_theme_v1',
-                GITHUB_CFG: 'app_usage_github_cfg_v1'
+let usageRecords=[],githubConfig={token:'',repo:'',filePath:DEF_FILE},confirmCb=null,pendingRestore=null;
+
+const el={
+    form:$('usageForm'),app:$('appName'),customWrap:$('customAppNameWrapper'),customApp:$('customAppName'),
+    start:$('startTime'),end:$('endTime'),durEst:$('durationEstimateText'),bat:$('batteryLevel'),
+    conn:$('connectionType'),sort:$('sortOrder'),tbody:$('historyTableBody'),badge:$('recordCountBadge'),
+    btnBak:$('btnBackupLocal'),btnRes:$('btnRestoreLocal'),fileIn:$('backupFileInput'),btnDelAll:$('btnDeleteAll'),
+    modalSet:$('settingsModal'),btnOpenSet:$('btnOpenSettings'),btnCloseSet:$('btnCloseSettings'),
+    btnDark:$('btnThemeDark'),btnLight:$('btnThemeLight'),ghToken:$('githubToken'),btnTokEye:$('btnToggleToken'),
+    tokHint:$('tokenStatusHint'),ghRepo:$('githubRepo'),ghPath:$('githubFilePath'),btnSaveGh:$('btnSaveGithub'),
+    btnPush:$('btnGithubPush'),btnPull:$('btnGithubPull'),modalConf:$('confirmModal'),confTitle:$('confirmTitle'),
+    confMsg:$('confirmMessage'),btnConfNo:$('btnConfirmCancel'),btnConfYes:$('btnConfirmOk'),
+    modalRes:$('restoreChoiceModal'),resMsg:$('restoreChoiceMessage'),btnResNo:$('btnRestoreChoiceCancel'),
+    btnResMerge:$('btnRestoreChoiceMerge'),btnResOver:$('btnRestoreChoiceOverwrite')
+};
+
+const fmtInputDate=(d)=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const fmtDate=(iso)=>{const d=new Date(iso);return isNaN(d)?'-':`${pad(d.getDate())} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`};
+const fmtTime=(iso)=>{const d=new Date(iso);return isNaN(d)?'-':`${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const fmtBytes=(b)=>!b||b<=0?'0 B':b<1024?`${b} B`:b<1048576?`${(b/1024).toFixed(1)} KB`:`${(b/1048576).toFixed(2)} MB`;
+
+function calcDuration(s,e){
+    const diff=new Date(e)-new Date(s);
+    if(isNaN(diff)||diff<=0)return null;
+    const mins=Math.floor(diff/60000),d=Math.floor(mins/1440),h=Math.floor((mins%1440)/60),m=mins%60,p=[];
+    if(d>0)p.push(`${d} hr`);if(h>0)p.push(`${h} jam`);if(m>0||!p.length)p.push(`${m} mnt`);
+    return{text:p.join(' '),minutes:mins,days:d,hours:h,remMins:m};
+}
+
+function updateDurEstimate(){
+    const dur=calcDuration(el.start.value,el.end.value);
+    if(!dur){el.durEst.textContent='Waktu berakhir harus lebih besar';el.durEst.classList.add('invalid');return}
+    el.durEst.classList.remove('invalid');
+    const p=[];
+    if(dur.days>0)p.push(`${dur.days} hari`);
+    if(dur.hours>0)p.push(`${dur.hours} jam`);
+    if(dur.remMins>0||!p.length)p.push(`${dur.remMins} menit`);
+    el.durEst.textContent=p.join(' ');
+}
+
+// CRC32 & ZIP OFFLINE ENGINE
+const CRC_TBL=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[i]=c>>>0}return t})();
+const crc32=(u8)=>{let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_TBL[(c^u8[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+const u8ToB64=(u8)=>{let b='';for(let i=0;i<u8.length;i+=0x8000)b+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(b)};
+const b64ToU8=(b64)=>{const b=atob(String(b64||'').replace(/\s/g,'')),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+
+async function transformStream(u8,stream){
+    const w=stream.writable.getWriter(),wp=w.write(u8).then(()=>w.close()),r=stream.readable.getReader(),chunks=[];
+    let total=0;
+    while(true){const{value,done}=await r.read();if(done)break;if(value?.byteLength){chunks.push(value);total+=value.byteLength}}
+    await wp;
+    const res=new Uint8Array(total);let off=0;
+    for(const c of chunks){res.set(c,off);off+=c.byteLength}
+    return res;
+}
+
+async function compressZip(payload,innerName=INNER_JSON){
+    const enc=new TextEncoder(),raw=enc.encode(JSON.stringify(payload,null,2)),name=enc.encode(innerName);
+    const rawLen=raw.byteLength,crc=crc32(raw),d=new Date();
+    const dosT=((d.getHours()&31)<<11)|((d.getMinutes()&63)<<5)|((d.getSeconds()>>1)&31);
+    const dosD=((Math.max(0,d.getFullYear()-1980)&127)<<9)|(((d.getMonth()+1)&15)<<5)|(d.getDate()&31);
+    let comp=raw,method=0;
+    if(typeof CompressionStream!=='undefined'){try{comp=await transformStream(raw,new CompressionStream('deflate-raw'));method=8}catch(e){}}
+    const cLen=comp.byteLength,nLen=name.byteLength,lh=30+nLen,cdOff=lh+cLen,cdLen=46+nLen;
+    const buf=new ArrayBuffer(cdOff+cdLen+22),v=new DataView(buf),z=new Uint8Array(buf);
+    v.setUint32(0,0x04034B50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint16(8,method,true);
+    v.setUint16(10,dosT,true);v.setUint16(12,dosD,true);v.setUint32(14,crc,true);v.setUint32(18,cLen,true);
+    v.setUint32(22,rawLen,true);v.setUint16(26,nLen,true);z.set(name,30);z.set(comp,lh);
+    let p=cdOff;
+    v.setUint32(p,0x02014B50,true);v.setUint16(p+4,20,true);v.setUint16(p+6,20,true);v.setUint16(p+8,0x0800,true);
+    v.setUint16(p+10,method,true);v.setUint16(p+12,dosT,true);v.setUint16(p+14,dosD,true);v.setUint32(p+16,crc,true);
+    v.setUint32(p+20,cLen,true);v.setUint32(p+24,rawLen,true);v.setUint16(p+28,nLen,true);z.set(name,p+46);
+    p=cdOff+cdLen;
+    v.setUint32(p,0x06054B50,true);v.setUint16(p+8,1,true);v.setUint16(p+10,1,true);v.setUint32(p+12,cdLen,true);v.setUint32(p+16,cdOff,true);
+    const compBytes=z.byteLength;
+    return{blob:new Blob([z],{type:'application/zip'}),base64:u8ToB64(z),compressedBytes:compBytes,savedPercent:rawLen>0?Math.max(0,Math.round(((rawLen-compBytes)/rawLen)*100)):0};
+}
+
+async function extractZipJson(bytes){
+    const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),dec=new TextDecoder('utf-8'),entries=[];
+    let eocd=-1;
+    for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--)if(v.getUint32(i,true)===0x06054B50){eocd=i;break}
+    if(eocd!==-1){
+        const tot=v.getUint16(eocd+10,true);let p=v.getUint32(eocd+16,true);
+        for(let i=0;i<tot&&p+46<=bytes.length;i++){
+            if(v.getUint32(p,true)!==0x02014B50)break;
+            const nLen=v.getUint16(p+28,true);
+            entries.push({name:dec.decode(bytes.subarray(p+46,p+46+nLen)),method:v.getUint16(p+10,true),crc:v.getUint32(p+16,true),cSize:v.getUint32(p+20,true),off:v.getUint32(p+42,true)});
+            p+=46+nLen+v.getUint16(p+30,true)+v.getUint16(p+32,true);
+        }
+    }else{
+        let p=0;
+        while(p+30<=bytes.length&&v.getUint32(p,true)===0x04034B50){
+            const nLen=v.getUint16(p+26,true),cSize=v.getUint32(p+18,true);
+            entries.push({name:dec.decode(bytes.subarray(p+30,p+30+nLen)),method:v.getUint16(p+8,true),crc:v.getUint32(p+14,true),cSize,off:p});
+            p+=30+nLen+v.getUint16(p+28,true)+cSize;
+        }
+    }
+    const jsons=entries.filter(e=>!e.name.endsWith('/')&&!e.name.startsWith('__MACOSX/')&&e.name.toLowerCase().endsWith('.json'));
+    if(!jsons.length)throw new Error('Arsip ZIP tidak berisi file .json.');
+    const t=jsons.find(e=>e.name.toLowerCase().endsWith('aplikasi.json'))||jsons[0];
+    if(t.off+30>bytes.length||v.getUint32(t.off,true)!==0x04034B50)throw new Error('Header file lokal ZIP rusak.');
+    const start=t.off+30+v.getUint16(t.off+26,true)+v.getUint16(t.off+28,true),end=start+t.cSize;
+    if(end>bytes.length)throw new Error('Data ZIP terpotong.');
+    const slice=bytes.subarray(start,end);
+    let raw;
+    if(t.method===0)raw=slice;
+    else if(t.method===8){
+        if(typeof DecompressionStream==='undefined')throw new Error('Browser tidak mendukung DecompressionStream.');
+        raw=await transformStream(slice,new DecompressionStream('deflate-raw'));
+    }else throw new Error(`Metode kompresi ZIP (${t.method}) tidak didukung.`);
+    if(t.crc!==0&&crc32(raw)!==t.crc)throw new Error('Checksum CRC32 ZIP tidak cocok.');
+    return dec.decode(raw);
+}
+
+async function parseBackupBytes(bufOrU8){
+    const b=bufOrU8 instanceof Uint8Array?bufOrU8:new Uint8Array(bufOrU8);
+    const isZip=b.length>=4&&b[0]===0x50&&b[1]===0x4B&&((b[2]===3&&b[3]===4)||(b[2]===5&&b[3]===6));
+    const txt=isZip?await extractZipJson(b):new TextDecoder('utf-8').decode(b);
+    let parsed;try{parsed=JSON.parse(txt)}catch(e){throw new Error('Isi JSON tidak valid atau file rusak.')}
+    return{records:normalizePayload(parsed),wasCompressed:isZip};
+}
+
+function parseLegacyRange(tgl,jam){
+    const dp=String(tgl||'').trim().split(/[.\-\/]/),tr=String(jam||'').trim().split('-');
+    if(dp.length!==3||tr.length!==2)return null;
+    const iso=`${dp[2].length===2?'20'+dp[2]:dp[2]}-${dp[1].padStart(2,'0')}-${dp[0].padStart(2,'0')}`;
+    const norm=(c)=>{const[h='00',m='00']=c.trim().replace('.',':').split(':');return`${h.padStart(2,'0')}:${m.padStart(2,'0')}`};
+    const startTime=`${iso}T${norm(tr[0])}`;let endTime=`${iso}T${norm(tr[1])}`;
+    const s=new Date(startTime),e=new Date(endTime);
+    if(!isNaN(s)&&!isNaN(e)&&e<=s){e.setDate(e.getDate()+1);endTime=fmtInputDate(e)}
+    return{startTime,endTime};
+}
+
+function normalizePayload(raw){
+    const items=Array.isArray(raw)?raw:raw?.records;
+    if(!Array.isArray(items))throw new Error('Struktur JSON cadangan tidak dikenali.');
+    const out=[];
+    items.forEach((it,idx)=>{
+        if(!it||typeof it!=='object')return;
+        if(it.aplikasi&&it.tanggal&&it.jam){
+            const r=parseLegacyRange(it.tanggal,it.jam);if(!r)return;
+            const dur=calcDuration(r.startTime,r.endTime),bat=parseInt(String(it.baterai??'0').replace(/\D/g,''),10);
+            const mins=dur?dur.minutes:parseInt(String(it.durasi||'').match(/\d+/)?.[0]||'0',10);
+            out.push({id:it.id||`legacy_${Date.now()}_${idx}_${Math.random().toString(36).slice(2,6)}`,appName:String(it.aplikasi).trim(),startTime:r.startTime,endTime:r.endTime,durationText:dur?dur.text:String(it.durasi||`${mins} mnt`),durationMinutes:mins,battery:isNaN(bat)?0:Math.min(100,Math.max(0,bat)),connection:String(it.koneksi||'WiFi').trim(),createdAt:new Date().toISOString()});
+        }else if(it.appName&&it.startTime&&it.endTime){
+            const dur=calcDuration(it.startTime,it.endTime);
+            out.push({id:it.id||`rec_${Date.now()}_${idx}_${Math.random().toString(36).slice(2,6)}`,appName:String(it.appName).trim(),startTime:it.startTime,endTime:it.endTime,durationText:it.durationText||(dur?dur.text:'0 mnt'),durationMinutes:it.durationMinutes||(dur?dur.minutes:0),battery:Number(it.battery??0),connection:it.connection||'WiFi',createdAt:it.createdAt||new Date().toISOString()});
+        }
+    });
+    return out;
+}
+
+// UI, TOAST & MODALS
+function toast(msg,type='success'){
+    const bg={success:'#059669',error:'#e11d48',info:'#2563eb',warning:'#f59e0b'},ic={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+    const t=document.createElement('div');
+    t.className='toast-item animate-toast';
+    t.style.backgroundColor=bg[type]||bg.info;
+    t.innerHTML=`<span style="font-size:1rem;flex-shrink:0">${ic[type]||ic.info}</span><span style="line-height:1.35"></span>`;
+    t.lastChild.textContent=msg;
+    $('toastContainer').appendChild(t);
+    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(8px)';t.style.transition='all .25s ease';setTimeout(()=>t.remove(),250)},3800);
+}
+
+function openConfirm(title,msg,cb){el.confTitle.textContent=title;el.confMsg.textContent=msg;confirmCb=cb;el.modalConf.classList.add('open')}
+function closeConfirm(){el.modalConf.classList.remove('open');confirmCb=null}
+function closeRestoreModal(){el.modalRes.classList.remove('open');pendingRestore=null}
+
+function promptRestore(incoming,label){
+    if(!Array.isArray(incoming)||!incoming.length)return toast('Tidak ditemukan catatan yang valid untuk dipulihkan.','warning');
+    if(!usageRecords.length)return applyRestore('overwrite',incoming,label);
+    pendingRestore={records:incoming,label};
+    el.resMsg.textContent=`Ditemukan ${incoming.length} catatan pada ${label}, sementara saat ini sudah ada ${usageRecords.length} catatan tersimpan. Pilih metode pemulihan:`;
+    el.modalRes.classList.add('open');
+}
+
+function applyRestore(mode,incoming,label){
+    if(mode==='overwrite'){
+        usageRecords=[...incoming];saveRecords();renderTable();
+        return toast(`Berhasil menimpa data lama dengan ${usageRecords.length} catatan dari ${label}!`,'success');
+    }
+    const fp=(r)=>`${r.appName}|${r.startTime}|${r.endTime}|${r.battery}|${r.connection}`;
+    const ids=new Set(usageRecords.map(r=>r.id)),fps=new Set(usageRecords.map(fp));
+    let added=0;
+    incoming.forEach((it,i)=>{
+        const f=fp(it);if(ids.has(it.id)||fps.has(f))return;
+        const rec={...it,id:it.id||`merged_${Date.now()}_${i}_${Math.random().toString(36).slice(2,6)}`};
+        usageRecords.push(rec);ids.add(rec.id);fps.add(f);added++;
+    });
+    saveRecords();renderTable();
+    toast(added>0?`Berhasil menggabungkan ${added} catatan baru (total ${usageRecords.length} catatan).`:`Semua catatan dari ${label} sudah ada di riwayat (${usageRecords.length} catatan).`,added>0?'success':'info');
+}
+
+function applyTheme(theme,notify=true){
+    const dark=theme==='dark';
+    document.documentElement.classList.toggle('dark',dark);
+    el.btnDark.className=dark?'theme-btn active-dark':'theme-btn';
+    el.btnLight.className=dark?'theme-btn':'theme-btn active-light';
+    const meta=document.querySelector('meta[name="theme-color"]');
+    if(meta)meta.setAttribute('content',dark?'#0b111e':'#f1f5f9');
+    localStorage.setItem(KEYS.THEME,theme);
+    if(notify)toast(`Tema ${dark?'Gelap 🌙':'Terang ☀️'} diterapkan.`,'info');
+}
+
+const loadRecords=()=>{try{const p=JSON.parse(localStorage.getItem(KEYS.RECORDS)||'[]');usageRecords=Array.isArray(p)?p:[]}catch(e){usageRecords=[]}};
+const saveRecords=()=>{try{localStorage.setItem(KEYS.RECORDS,JSON.stringify(usageRecords))}catch(e){toast('Gagal menyimpan data ke penyimpanan lokal.','error')}};
+
+function renderTable(){
+    const newest=el.sort.value==='newest';
+    const sorted=[...usageRecords].sort((a,b)=>newest?new Date(b.startTime)-new Date(a.startTime):new Date(a.startTime)-new Date(b.startTime));
+    el.badge.textContent=`${sorted.length} catatan`;
+    el.tbody.textContent='';
+    if(!sorted.length){
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td colspan="9" class="text-center" style="padding:2.75rem 1rem;color:var(--text-muted)"><div style="font-size:1.875rem;margin-bottom:.5rem">📭</div><p class="font-medium text-sm" style="margin:0">Belum ada catatan pemakaian aplikasi.</p><p class="text-xs" style="margin:.25rem 0 0">Isi formulir di atas lalu tekan Simpan Catatan.</p></td>`;
+        el.tbody.appendChild(tr);return;
+    }
+    const frag=document.createDocumentFragment();
+    sorted.forEach((it,idx)=>{
+        const tr=document.createElement('tr');
+        const batCls=it.battery<=20?'pill-rose':it.battery<=50?'pill-amber':'pill-green';
+        const icon=it.connection==='WiFi'?'📶':it.connection==='Data Seluler'?'📡':'📴';
+        [
+            {t:String(idx+1),cls:'font-medium',c:'var(--text-muted)'},
+            {t:fmtDate(it.startTime),c:'var(--text-sub)'},
+            {t:it.appName,cls:'font-semibold',c:'var(--text-heading)'},
+            {t:fmtTime(it.startTime),cls:'font-mono',c:'var(--text-sub)'},
+            {t:fmtTime(it.endTime),cls:'font-mono',c:'var(--text-sub)'},
+            {p:'pill-blue',t:`⏱️ ${it.durationText}`},
+            {p:batCls,t:`🔋 ${it.battery}%`},
+            {t:`${icon} ${it.connection}`,cls:'text-xs',c:'var(--text-sub)'}
+        ].forEach(c=>{
+            const td=document.createElement('td');
+            if(c.cls)td.className=c.cls;
+            if(c.c)td.style.color=c.c;
+            if(c.p){const s=document.createElement('span');s.className=`pill ${c.p}`;s.textContent=c.t;td.appendChild(s)}
+            else td.textContent=c.t;
+            tr.appendChild(td);
+        });
+        const tdAct=document.createElement('td');tdAct.className='text-center';
+        const btn=document.createElement('button');
+        btn.type='button';btn.className='btn-del-row';btn.dataset.id=String(it.id);
+        btn.title='Hapus catatan ini';btn.setAttribute('aria-label','Hapus catatan ini');btn.textContent='🗑️';
+        tdAct.appendChild(btn);tr.appendChild(tdAct);frag.appendChild(tr);
+    });
+    el.tbody.appendChild(frag);
+}
+
+// GITHUB HELPERS (Base64 Encoded Storage)
+function encodeGithubConfig(cfg){
+    const json=JSON.stringify({
+        token:String(cfg?.token||''),
+        repo:String(cfg?.repo||''),
+        filePath:String(cfg?.filePath||DEF_FILE)
+    });
+    try{
+        return btoa(json);
+    }catch(e){
+        const bytes=new TextEncoder().encode(json);
+        let bin='';
+        for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    }
+}
+
+function decodeGithubConfig(raw){
+    if(!raw||typeof raw!=='string')return null;
+    const trimmed=raw.trim();
+    if(!trimmed)return null;
+    try{
+        const bin=atob(trimmed);
+        let jsonStr=bin;
+        try{
+            const bytes=new Uint8Array(bin.length);
+            for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+            jsonStr=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+        }catch(e){
+            jsonStr=bin;
+        }
+        const parsed=JSON.parse(jsonStr);
+        if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed)){
+            return{config:parsed,isLegacy:false};
+        }
+    }catch(e){}
+    try{
+        const legacy=JSON.parse(trimmed);
+        if(legacy&&typeof legacy==='object'&&!Array.isArray(legacy)){
+            return{config:legacy,isLegacy:true};
+        }
+    }catch(e){}
+    return null;
+}
+
+function saveGithubConfig(cfg){
+    const normalized={
+        token:String(cfg?.token||''),
+        repo:String(cfg?.repo||''),
+        filePath:String(cfg?.filePath||DEF_FILE)
+    };
+    githubConfig=normalized;
+    try{
+        localStorage.setItem(KEYS.GITHUB,encodeGithubConfig(normalized));
+        return true;
+    }catch(e){
+        return false;
+    }
+}
+
+function loadGithub(){
+    try{
+        const saved=localStorage.getItem(KEYS.GITHUB);
+        const decoded=decodeGithubConfig(saved);
+        if(decoded&&decoded.config){
+            const p=decoded.config;
+            githubConfig={
+                token:typeof p.token==='string'?p.token:'',
+                repo:typeof p.repo==='string'?p.repo:'',
+                filePath:typeof p.filePath==='string'&&p.filePath.trim()?p.filePath:DEF_FILE
             };
-
-            const DEFAULT_GITHUB_FILE = 'Aplikasi.zip';
-            const INTERNAL_ZIP_JSON_NAME = 'Aplikasi.json';
-
-            let usageRecords = [];
-            let githubConfig = {
-                token: '',
-                repo: '',
-                filePath: DEFAULT_GITHUB_FILE
-            };
-            let confirmCallback = null;
-            let pendingRestoreState = null;
-
-            // Elemen DOM Utama
-            const usageForm = document.getElementById('usageForm');
-            const appNameInput = document.getElementById('appName');
-            const customAppNameWrapper = document.getElementById('customAppNameWrapper');
-            const customAppNameInput = document.getElementById('customAppName');
-            const startTimeInput = document.getElementById('startTime');
-            const endTimeInput = document.getElementById('endTime');
-            const batteryInput = document.getElementById('batteryLevel');
-            const connectionInput = document.getElementById('connectionType');
-            const sortOrderSelect = document.getElementById('sortOrder');
-            const historyTableBody = document.getElementById('historyTableBody');
-            const recordCountBadge = document.getElementById('recordCountBadge');
-
-            // Elemen DOM Pengelolaan Data
-            const btnBackupLocal = document.getElementById('btnBackupLocal');
-            const btnRestoreLocal = document.getElementById('btnRestoreLocal');
-            const backupFileInput = document.getElementById('backupFileInput');
-            const btnDeleteAll = document.getElementById('btnDeleteAll');
-
-            // Elemen DOM Pengaturan
-            const settingsModal = document.getElementById('settingsModal');
-            const btnOpenSettings = document.getElementById('btnOpenSettings');
-            const btnCloseSettings = document.getElementById('btnCloseSettings');
-            const btnThemeDark = document.getElementById('btnThemeDark');
-            const btnThemeLight = document.getElementById('btnThemeLight');
-            const githubTokenInput = document.getElementById('githubToken');
-            const btnToggleToken = document.getElementById('btnToggleToken');
-            const tokenStatusHint = document.getElementById('tokenStatusHint');
-            const githubRepoInput = document.getElementById('githubRepo');
-            const githubFilePathInput = document.getElementById('githubFilePath');
-            const btnSaveGithub = document.getElementById('btnSaveGithub');
-            const btnGithubPush = document.getElementById('btnGithubPush');
-            const btnGithubPull = document.getElementById('btnGithubPull');
-
-            // Elemen DOM Modal Konfirmasi
-            const confirmModal = document.getElementById('confirmModal');
-            const confirmTitle = document.getElementById('confirmTitle');
-            const confirmMessage = document.getElementById('confirmMessage');
-            const btnConfirmCancel = document.getElementById('btnConfirmCancel');
-            const btnConfirmOk = document.getElementById('btnConfirmOk');
-
-            // Elemen DOM Modal Konfirmasi Pemulihan Data
-            const restoreChoiceModal = document.getElementById('restoreChoiceModal');
-            const restoreChoiceMessage = document.getElementById('restoreChoiceMessage');
-            const btnRestoreChoiceCancel = document.getElementById('btnRestoreChoiceCancel');
-            const btnRestoreChoiceMerge = document.getElementById('btnRestoreChoiceMerge');
-            const btnRestoreChoiceOverwrite = document.getElementById('btnRestoreChoiceOverwrite');
-
-            // ==========================================
-            // 1. INISIALISASI APLIKASI
-            // ==========================================
-            document.addEventListener('DOMContentLoaded', () => {
-                loadTheme();
-                loadRecords();
-                loadGithubConfig();
-                setDefaultDateTimes();
-                renderTable();
-                setupEventListeners();
-            });
-
-            function setDefaultDateTimes() {
-                const now = new Date();
-                const thirtyMinsAgo = new Date(now.getTime() - 30 * 60000);
-                startTimeInput.value = formatForDateTimeLocal(thirtyMinsAgo);
-                endTimeInput.value = formatForDateTimeLocal(now);
+            if(decoded.isLegacy){
+                saveGithubConfig(githubConfig);
             }
-
-            function formatForDateTimeLocal(date) {
-                const pad = (n) => String(n).padStart(2, '0');
-                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-            }
-
-            // ==========================================
-            // 2. ENGINE KOMPRESI & DEKOMPRESI ZIP MANDIRI (100% OFFLINE + PURE-JS INFLATE FALLBACK)
-            // ==========================================
-            const CRC32_TABLE = (() => {
-                const table = new Uint32Array(256);
-                for (let i = 0; i < 256; i++) {
-                    let c = i;
-                    for (let k = 0; k < 8; k++) {
-                        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-                    }
-                    table[i] = c >>> 0;
-                }
-                return table;
-            })();
-
-            function computeCrc32(uint8Array) {
-                let crc = 0xFFFFFFFF;
-                for (let i = 0; i < uint8Array.length; i++) {
-                    crc = CRC32_TABLE[(crc ^ uint8Array[i]) & 0xFF] ^ (crc >>> 8);
-                }
-                return (crc ^ 0xFFFFFFFF) >>> 0;
-            }
-
-            function getDosDateTime(date = new Date()) {
-                const year = Math.max(1980, date.getFullYear());
-                const dosTime =
-                    ((date.getHours() & 0x1F) << 11) |
-                    ((date.getMinutes() & 0x3F) << 5) |
-                    ((Math.floor(date.getSeconds() / 2)) & 0x1F);
-                const dosDate =
-                    (((year - 1980) & 0x7F) << 9) |
-                    (((date.getMonth() + 1) & 0x0F) << 5) |
-                    (date.getDate() & 0x1F);
-                return { dosTime, dosDate };
-            }
-
-            // Pure-JS RFC 1951 DEFLATE-RAW Inflater (Fallback jika browser lama tidak punya DecompressionStream)
-            const INFLATE_LEN_BASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-            const INFLATE_LEN_EXTRA = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-            const INFLATE_DIST_BASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-            const INFLATE_DIST_EXTRA = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-            const INFLATE_CL_ORDER = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
-
-            function buildHuffmanTable(lengths, numSyms) {
-                const counts = new Uint16Array(16);
-                let maxBits = 0;
-                for (let i = 0; i < numSyms; i++) {
-                    const l = lengths[i];
-                    if (l > 0) {
-                        counts[l]++;
-                        if (l > maxBits) maxBits = l;
-                    }
-                }
-                if (maxBits === 0) return { table: new Int32Array(1), maxBits: 1 };
-
-                const offsets = new Uint16Array(16);
-                let code = 0;
-                for (let bits = 1; bits <= maxBits; bits++) {
-                    code = (code + counts[bits - 1]) << 1;
-                    offsets[bits] = code;
-                }
-
-                const size = 1 << maxBits;
-                const table = new Int32Array(size);
-                table.fill(-1);
-
-                for (let sym = 0; sym < numSyms; sym++) {
-                    const len = lengths[sym];
-                    if (len > 0) {
-                        const c = offsets[len]++;
-                        let rev = 0;
-                        for (let b = 0; b < len; b++) {
-                            rev = (rev << 1) | ((c >>> b) & 1);
-                        }
-                        const entry = (len << 16) | sym;
-                        const step = 1 << len;
-                        for (let idx = rev; idx < size; idx += step) {
-                            table[idx] = entry;
-                        }
-                    }
-                }
-                return { table, maxBits };
-            }
-
-            function pureJsInflateRaw(src, expectedSize) {
-                let bytePos = 0;
-                let bitBuf = 0;
-                let bitCount = 0;
-
-                function needBits(n) {
-                    while (bitCount < n) {
-                        if (bytePos >= src.length) throw new Error('Data kompresi ZIP terpotong.');
-                        bitBuf |= src[bytePos++] << bitCount;
-                        bitCount += 8;
-                    }
-                }
-
-                function readBits(n) {
-                    if (n === 0) return 0;
-                    needBits(n);
-                    const val = bitBuf & ((1 << n) - 1);
-                    bitBuf >>>= n;
-                    bitCount -= n;
-                    return val;
-                }
-
-                function decodeSym(huff) {
-                    needBits(huff.maxBits);
-                    const entry = huff.table[bitBuf & ((1 << huff.maxBits) - 1)];
-                    if (entry < 0) throw new Error('Kode Huffman ZIP korup.');
-                    const len = entry >>> 16;
-                    bitBuf >>>= len;
-                    bitCount -= len;
-                    return entry & 0xFFFF;
-                }
-
-                let out = new Uint8Array(expectedSize > 0 ? expectedSize : Math.max(256, src.length * 3));
-                let outPos = 0;
-
-                function ensureCapacity(extra) {
-                    if (outPos + extra > out.length) {
-                        const next = new Uint8Array(Math.max(out.length * 2, outPos + extra));
-                        next.set(out.subarray(0, outPos));
-                        out = next;
-                    }
-                }
-
-                let fixedLit = null;
-                let fixedDist = null;
-                let isFinal = 0;
-
-                while (!isFinal) {
-                    isFinal = readBits(1);
-                    const blockType = readBits(2);
-
-                    if (blockType === 0) {
-                        bitBuf = 0;
-                        bitCount = 0;
-                        if (bytePos + 4 > src.length) throw new Error('Blok uncompressed ZIP korup.');
-                        const len = src[bytePos] | (src[bytePos + 1] << 8);
-                        const nlen = src[bytePos + 2] | (src[bytePos + 3] << 8);
-                        bytePos += 4;
-                        if ((len ^ 0xFFFF) !== nlen || bytePos + len > src.length) {
-                            throw new Error('Panjang blok uncompressed ZIP tidak cocok.');
-                        }
-                        ensureCapacity(len);
-                        out.set(src.subarray(bytePos, bytePos + len), outPos);
-                        bytePos += len;
-                        outPos += len;
-                    } else if (blockType === 1 || blockType === 2) {
-                        let litHuff;
-                        let distHuff;
-
-                        if (blockType === 1) {
-                            if (!fixedLit) {
-                                const ll = new Uint8Array(288);
-                                ll.fill(8, 0, 144);
-                                ll.fill(9, 144, 256);
-                                ll.fill(7, 256, 280);
-                                ll.fill(8, 280, 288);
-                                fixedLit = buildHuffmanTable(ll, 288);
-                                const dl = new Uint8Array(32);
-                                dl.fill(5);
-                                fixedDist = buildHuffmanTable(dl, 32);
-                            }
-                            litHuff = fixedLit;
-                            distHuff = fixedDist;
-                        } else {
-                            const hlit = readBits(5) + 257;
-                            const hdist = readBits(5) + 1;
-                            const hclen = readBits(4) + 4;
-                            const clLens = new Uint8Array(19);
-                            for (let i = 0; i < hclen; i++) {
-                                clLens[INFLATE_CL_ORDER[i]] = readBits(3);
-                            }
-                            const clHuff = buildHuffmanTable(clLens, 19);
-                            const totalCodes = hlit + hdist;
-                            const allLens = new Uint8Array(totalCodes);
-                            let idx = 0;
-
-                            while (idx < totalCodes) {
-                                const sym = decodeSym(clHuff);
-                                if (sym < 16) {
-                                    allLens[idx++] = sym;
-                                } else if (sym === 16) {
-                                    if (idx === 0) throw new Error('Pengulangan kode Huffman ZIP tidak valid.');
-                                    const rep = readBits(2) + 3;
-                                    const prev = allLens[idx - 1];
-                                    for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = prev;
-                                } else if (sym === 17) {
-                                    const rep = readBits(3) + 3;
-                                    for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = 0;
-                                } else if (sym === 18) {
-                                    const rep = readBits(7) + 11;
-                                    for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = 0;
-                                } else {
-                                    throw new Error('Simbol panjang kode ZIP tidak valid.');
-                                }
-                            }
-
-                            litHuff = buildHuffmanTable(allLens.subarray(0, hlit), hlit);
-                            distHuff = buildHuffmanTable(allLens.subarray(hlit, totalCodes), hdist);
-                        }
-
-                        while (true) {
-                            const sym = decodeSym(litHuff);
-                            if (sym < 256) {
-                                ensureCapacity(1);
-                                out[outPos++] = sym;
-                            } else if (sym === 256) {
-                                break;
-                            } else {
-                                const lenIdx = sym - 257;
-                                if (lenIdx >= INFLATE_LEN_BASE.length) throw new Error('Kode panjang LZ77 ZIP tidak valid.');
-                                const length = INFLATE_LEN_BASE[lenIdx] + readBits(INFLATE_LEN_EXTRA[lenIdx]);
-                                const distSym = decodeSym(distHuff);
-                                if (distSym >= INFLATE_DIST_BASE.length) throw new Error('Kode jarak LZ77 ZIP tidak valid.');
-                                const distance = INFLATE_DIST_BASE[distSym] + readBits(INFLATE_DIST_EXTRA[distSym]);
-                                if (distance > outPos) throw new Error('Jarak mundur LZ77 melebihi buffer output.');
-
-                                ensureCapacity(length);
-                                for (let k = 0; k < length; k++) {
-                                    out[outPos] = out[outPos - distance];
-                                    outPos++;
-                                }
-                            }
-                        }
-                    } else {
-                        throw new Error('Tipe blok DEFLATE ZIP tidak valid.');
-                    }
-                }
-
-                return out.subarray(0, outPos);
-            }
-
-            async function runStreamTransform(uint8Array, streamInstance) {
-                const writer = streamInstance.writable.getWriter();
-                const writePromise = writer.write(uint8Array).then(() => writer.close());
-
-                const reader = streamInstance.readable.getReader();
-                const chunks = [];
-                let totalLength = 0;
-
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    if (value && value.byteLength > 0) {
-                        chunks.push(value);
-                        totalLength += value.byteLength;
-                    }
-                }
-
-                await writePromise;
-
-                const result = new Uint8Array(totalLength);
-                let offset = 0;
-                for (const chunk of chunks) {
-                    result.set(chunk, offset);
-                    offset += chunk.byteLength;
-                }
-                return result;
-            }
-
-            async function deflateRawBytes(uint8Array) {
-                if (typeof CompressionStream === 'undefined') {
-                    throw new Error('CompressionStream tidak tersedia.');
-                }
-                return runStreamTransform(uint8Array, new CompressionStream('deflate-raw'));
-            }
-
-            async function inflateRawBytes(uint8Array, expectedUncompressedSize = 0) {
-                if (typeof DecompressionStream !== 'undefined') {
-                    try {
-                        return await runStreamTransform(uint8Array, new DecompressionStream('deflate-raw'));
-                    } catch (e) {
-                        // Lanjut ke fallback Pure-JS Inflate
-                    }
-                }
-                return pureJsInflateRaw(uint8Array, expectedUncompressedSize);
-            }
-
-            function formatByteSize(bytes) {
-                if (!bytes || bytes <= 0) return '0 B';
-                if (bytes < 1024) return `${bytes} B`;
-                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-            }
-
-            async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
-                const encoder = new TextEncoder();
-                const jsonText = JSON.stringify(payloadObj, null, 2);
-                const rawData = encoder.encode(jsonText);
-                const fileNameBytes = encoder.encode(innerFileName);
-
-                const rawBytes = rawData.byteLength;
-                const crc32 = computeCrc32(rawData);
-                const { dosTime, dosDate } = getDosDateTime(new Date());
-
-                let compressedData;
-                let compressionMethod = 8; // 8 = DEFLATE
-                try {
-                    compressedData = await deflateRawBytes(rawData);
-                } catch (e) {
-                    // Fallback ke Store (metode 0) pada browser lama tanpa CompressionStream
-                    compressedData = rawData;
-                    compressionMethod = 0;
-                }
-
-                const compressedSize = compressedData.byteLength;
-                const uncompressedSize = rawData.byteLength;
-                const nameLen = fileNameBytes.byteLength;
-
-                const localHeaderSize = 30 + nameLen;
-                const centralDirOffset = localHeaderSize + compressedSize;
-                const centralDirSize = 46 + nameLen;
-                const eocdSize = 22;
-                const totalZipSize = centralDirOffset + centralDirSize + eocdSize;
-
-                const zipBuffer = new ArrayBuffer(totalZipSize);
-                const view = new DataView(zipBuffer);
-                const zipBytes = new Uint8Array(zipBuffer);
-
-                // 1. Local File Header (0x04034B50)
-                view.setUint32(0, 0x04034B50, true);
-                view.setUint16(4, 20, true);
-                view.setUint16(6, 0x0800, true);
-                view.setUint16(8, compressionMethod, true);
-                view.setUint16(10, dosTime, true);
-                view.setUint16(12, dosDate, true);
-                view.setUint32(14, crc32, true);
-                view.setUint32(18, compressedSize, true);
-                view.setUint32(22, uncompressedSize, true);
-                view.setUint16(26, nameLen, true);
-                view.setUint16(28, 0, true);
-                zipBytes.set(fileNameBytes, 30);
-
-                // 2. File Data
-                zipBytes.set(compressedData, localHeaderSize);
-
-                // 3. Central Directory File Header (0x02014B50)
-                let ptr = centralDirOffset;
-                view.setUint32(ptr, 0x02014B50, true);
-                view.setUint16(ptr + 4, 20, true);
-                view.setUint16(ptr + 6, 20, true);
-                view.setUint16(ptr + 8, 0x0800, true);
-                view.setUint16(ptr + 10, compressionMethod, true);
-                view.setUint16(ptr + 12, dosTime, true);
-                view.setUint16(ptr + 14, dosDate, true);
-                view.setUint32(ptr + 16, crc32, true);
-                view.setUint32(ptr + 20, compressedSize, true);
-                view.setUint32(ptr + 24, uncompressedSize, true);
-                view.setUint16(ptr + 28, nameLen, true);
-                view.setUint16(ptr + 30, 0, true);
-                view.setUint16(ptr + 32, 0, true);
-                view.setUint16(ptr + 34, 0, true);
-                view.setUint16(ptr + 36, 0, true);
-                view.setUint32(ptr + 38, 0, true);
-                view.setUint32(ptr + 42, 0, true);
-                zipBytes.set(fileNameBytes, ptr + 46);
-
-                // 4. End of Central Directory Record (0x06054B50)
-                ptr = centralDirOffset + centralDirSize;
-                view.setUint32(ptr, 0x06054B50, true);
-                view.setUint16(ptr + 4, 0, true);
-                view.setUint16(ptr + 6, 0, true);
-                view.setUint16(ptr + 8, 1, true);
-                view.setUint16(ptr + 10, 1, true);
-                view.setUint32(ptr + 12, centralDirSize, true);
-                view.setUint32(ptr + 16, centralDirOffset, true);
-                view.setUint16(ptr + 20, 0, true);
-
-                const blob = new Blob([zipBytes], { type: 'application/zip' });
-                const base64 = uint8ArrayToBase64(zipBytes);
-                const compressedBytes = zipBytes.byteLength;
-                const savedPercent = rawBytes > 0
-                    ? Math.max(0, Math.round(((rawBytes - compressedBytes) / rawBytes) * 100))
-                    : 0;
-
-                return {
-                    blob,
-                    uint8Array: zipBytes,
-                    base64,
-                    rawBytes,
-                    compressedBytes,
-                    savedPercent
-                };
-            }
-
-            function isZipBinarySignature(bufferOrUint8) {
-                const bytes = bufferOrUint8 instanceof Uint8Array
-                    ? bufferOrUint8
-                    : new Uint8Array(bufferOrUint8);
-                if (bytes.length < 4) return false;
-                return (
-                    bytes[0] === 0x50 &&
-                    bytes[1] === 0x4B &&
-                    ((bytes[2] === 0x03 && bytes[3] === 0x04) || (bytes[2] === 0x05 && bytes[3] === 0x06))
-                );
-            }
-
-            async function extractJsonTextFromZipBytes(bytes) {
-                const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-                const decoder = new TextDecoder('utf-8');
-                const entries = [];
-
-                let eocdOffset = -1;
-                const minSearchOffset = Math.max(0, bytes.length - 65557);
-                for (let i = bytes.length - 22; i >= minSearchOffset; i--) {
-                    if (view.getUint32(i, true) === 0x06054B50) {
-                        eocdOffset = i;
-                        break;
-                    }
-                }
-
-                if (eocdOffset !== -1) {
-                    const totalEntries = view.getUint16(eocdOffset + 10, true);
-                    const centralDirOffset = view.getUint32(eocdOffset + 16, true);
-                    let ptr = centralDirOffset;
-
-                    for (let idx = 0; idx < totalEntries && ptr + 46 <= bytes.length; idx++) {
-                        if (view.getUint32(ptr, true) !== 0x02014B50) break;
-
-                        const method = view.getUint16(ptr + 10, true);
-                        const expectedCrc = view.getUint32(ptr + 16, true);
-                        const compressedSize = view.getUint32(ptr + 20, true);
-                        const uncompressedSize = view.getUint32(ptr + 24, true);
-                        const fileNameLen = view.getUint16(ptr + 28, true);
-                        const extraLen = view.getUint16(ptr + 30, true);
-                        const commentLen = view.getUint16(ptr + 32, true);
-                        const localHeaderOffset = view.getUint32(ptr + 42, true);
-
-                        const fileName = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + fileNameLen));
-                        entries.push({
-                            fileName,
-                            method,
-                            expectedCrc,
-                            compressedSize,
-                            uncompressedSize,
-                            localHeaderOffset
-                        });
-
-                        ptr += 46 + fileNameLen + extraLen + commentLen;
-                    }
-                } else {
-                    let ptr = 0;
-                    while (ptr + 30 <= bytes.length && view.getUint32(ptr, true) === 0x04034B50) {
-                        const method = view.getUint16(ptr + 8, true);
-                        const expectedCrc = view.getUint32(ptr + 14, true);
-                        const compressedSize = view.getUint32(ptr + 18, true);
-                        const uncompressedSize = view.getUint32(ptr + 22, true);
-                        const fileNameLen = view.getUint16(ptr + 26, true);
-                        const extraLen = view.getUint16(ptr + 28, true);
-                        const fileName = decoder.decode(bytes.subarray(ptr + 30, ptr + 30 + fileNameLen));
-
-                        entries.push({
-                            fileName,
-                            method,
-                            expectedCrc,
-                            compressedSize,
-                            uncompressedSize,
-                            localHeaderOffset: ptr
-                        });
-
-                        ptr += 30 + fileNameLen + extraLen + compressedSize;
-                    }
-                }
-
-                const jsonEntries = entries.filter((entry) =>
-                    !entry.fileName.endsWith('/') &&
-                    !entry.fileName.startsWith('__MACOSX/') &&
-                    entry.fileName.toLowerCase().endsWith('.json')
-                );
-
-                if (jsonEntries.length === 0) {
-                    throw new Error('Arsip ZIP tidak berisi file cadangan berformat .json.');
-                }
-
-                const target =
-                    jsonEntries.find((e) => e.fileName.toLowerCase().endsWith('aplikasi.json')) ||
-                    jsonEntries[0];
-
-                const lhOffset = target.localHeaderOffset;
-                if (lhOffset + 30 > bytes.length || view.getUint32(lhOffset, true) !== 0x04034B50) {
-                    throw new Error('Header file lokal di dalam arsip ZIP rusak atau tidak valid.');
-                }
-
-                const lhNameLen = view.getUint16(lhOffset + 26, true);
-                const lhExtraLen = view.getUint16(lhOffset + 28, true);
-                const dataStart = lhOffset + 30 + lhNameLen + lhExtraLen;
-                const dataEnd = dataStart + target.compressedSize;
-
-                if (dataEnd > bytes.length) {
-                    throw new Error('Ukuran data terkompresi di dalam ZIP terpotong.');
-                }
-
-                const compressedSlice = bytes.subarray(dataStart, dataEnd);
-                let rawJsonBytes;
-
-                if (target.method === 0) {
-                    rawJsonBytes = compressedSlice;
-                } else if (target.method === 8) {
-                    rawJsonBytes = await inflateRawBytes(compressedSlice, target.uncompressedSize);
-                } else {
-                    throw new Error(`Metode kompresi ZIP (${target.method}) tidak didukung.`);
-                }
-
-                if (target.expectedCrc !== 0 && computeCrc32(rawJsonBytes) !== target.expectedCrc) {
-                    throw new Error('Checksum CRC32 tidak cocok (file ZIP rusak/korup).');
-                }
-
-                return decoder.decode(rawJsonBytes);
-            }
-
-            async function decompressAndParseBackupBytes(arrayBufferOrUint8) {
-                const bytes = arrayBufferOrUint8 instanceof Uint8Array
-                    ? arrayBufferOrUint8
-                    : new Uint8Array(arrayBufferOrUint8);
-
-                let jsonText = '';
-                let wasCompressed = false;
-
-                if (isZipBinarySignature(bytes)) {
-                    jsonText = await extractJsonTextFromZipBytes(bytes);
-                    wasCompressed = true;
-                } else {
-                    jsonText = new TextDecoder('utf-8').decode(bytes);
-                }
-
-                let parsed;
-                try {
-                    parsed = JSON.parse(jsonText);
-                } catch (e) {
-                    throw new Error('Isi JSON tidak valid atau file rusak.');
-                }
-
-                const records = parseAndNormalizeBackupPayload(parsed);
-
-                return {
-                    records,
-                    wasCompressed
-                };
-            }
-
-            function uint8ArrayToBase64(uint8Array) {
-                const CHUNK_SIZE = 0x8000;
-                let binary = '';
-                for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
-                    const chunk = uint8Array.subarray(i, i + CHUNK_SIZE);
-                    binary += String.fromCharCode.apply(null, chunk);
-                }
-                return btoa(binary);
-            }
-
-            function base64ToUint8Array(base64) {
-                const cleanB64 = String(base64 || '').replace(/\s/g, '');
-                const binString = atob(cleanB64);
-                const len = binString.length;
-                const bytes = new Uint8Array(len);
-                for (let i = 0; i < len; i++) {
-                    bytes[i] = binString.charCodeAt(i);
-                }
-                return bytes;
-            }
-
-            // ==========================================
-            // 3. SISTEM NOTIFIKASI & KONFIRMASI KUSTOM
-            // ==========================================
-            function showToast(message, type = 'success') {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                
-                const colors = {
-                    success: '#059669',
-                    error: '#e11d48',
-                    info: '#2563eb',
-                    warning: '#f59e0b'
-                };
-
-                const icons = {
-                    success: '✅',
-                    error: '❌',
-                    info: 'ℹ️',
-                    warning: '⚠️'
-                };
-
-                toast.className = 'toast-item animate-toast';
-                toast.style.backgroundColor = colors[type] || colors.info;
-
-                const iconSpan = document.createElement('span');
-                iconSpan.style.fontSize = '1rem';
-                iconSpan.style.flexShrink = '0';
-                iconSpan.textContent = icons[type] || icons.info;
-
-                const textSpan = document.createElement('span');
-                textSpan.style.lineHeight = '1.35';
-                textSpan.textContent = message;
-
-                toast.append(iconSpan, textSpan);
-                container.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateY(8px)';
-                    toast.style.transition = 'all 0.25s ease';
-                    setTimeout(() => toast.remove(), 250);
-                }, 3800);
-            }
-
-            function openConfirm(title, message, onConfirm) {
-                confirmTitle.textContent = title;
-                confirmMessage.textContent = message;
-                confirmCallback = onConfirm;
-                confirmModal.classList.add('open');
-            }
-
-            function closeConfirm() {
-                confirmModal.classList.remove('open');
-                confirmCallback = null;
-            }
-
-            function promptRestoreStrategy(incomingRecords, sourceLabel) {
-                if (!Array.isArray(incomingRecords) || incomingRecords.length === 0) {
-                    showToast('Tidak ditemukan catatan yang valid untuk dipulihkan.', 'warning');
-                    return;
-                }
-
-                if (usageRecords.length === 0) {
-                    executeRestoreStrategy('overwrite', incomingRecords, sourceLabel);
-                    return;
-                }
-
-                pendingRestoreState = {
-                    records: incomingRecords,
-                    sourceLabel: sourceLabel
-                };
-
-                restoreChoiceMessage.textContent =
-                    `Ditemukan ${incomingRecords.length} catatan pada ${sourceLabel}, sementara saat ini sudah ada ${usageRecords.length} catatan tersimpan. Pilih metode pemulihan:`;
-
-                restoreChoiceModal.classList.add('open');
-            }
-
-            function closeRestoreChoiceModal() {
-                restoreChoiceModal.classList.remove('open');
-                pendingRestoreState = null;
-            }
-
-            function getRecordFingerprint(rec) {
-                return `${rec.appName}|${rec.startTime}|${rec.endTime}|${rec.battery}|${rec.connection}`;
-            }
-
-            function executeRestoreStrategy(mode, incomingRecords, sourceLabel) {
-                if (mode === 'overwrite') {
-                    usageRecords = [...incomingRecords];
-                    saveRecords();
-                    renderTable();
-                    showToast(
-                        `Berhasil menimpa data lama dengan ${usageRecords.length} catatan dari ${sourceLabel}!`,
-                        'success'
-                    );
-                    return;
-                }
-
-                if (mode === 'merge') {
-                    const existingIds = new Set(usageRecords.map(r => r.id));
-                    const existingFingerprints = new Set(usageRecords.map(getRecordFingerprint));
-                    let addedCount = 0;
-
-                    incomingRecords.forEach((item, index) => {
-                        const fp = getRecordFingerprint(item);
-                        if (existingIds.has(item.id) || existingFingerprints.has(fp)) {
-                            return;
-                        }
-
-                        const uniqueRecord = {
-                            ...item,
-                            id: item.id || `merged_${Date.now()}_${index}_${Math.random().toString(36).substring(2, 6)}`
-                        };
-                        usageRecords.push(uniqueRecord);
-                        existingIds.add(uniqueRecord.id);
-                        existingFingerprints.add(fp);
-                        addedCount++;
-                    });
-
-                    saveRecords();
-                    renderTable();
-
-                    if (addedCount > 0) {
-                        showToast(
-                            `Berhasil menggabungkan ${addedCount} catatan baru (total ${usageRecords.length} catatan).`,
-                            'success'
-                        );
-                    } else {
-                        showToast(
-                            `Semua catatan dari ${sourceLabel} sudah ada di riwayat (${usageRecords.length} catatan).`,
-                            'info'
-                        );
-                    }
-                }
-            }
-
-            // ==========================================
-            // 4. MANAJEMEN TEMA (GELAP & TERANG)
-            // ==========================================
-            function loadTheme() {
-                const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'dark';
-                applyTheme(savedTheme, false);
-            }
-
-            function applyTheme(theme, notify = true) {
-                const htmlEl = document.documentElement;
-                const metaTheme = document.querySelector('meta[name="theme-color"]');
-
-                if (theme === 'dark') {
-                    htmlEl.classList.add('dark');
-                    btnThemeDark.className = 'theme-btn active-dark';
-                    btnThemeLight.className = 'theme-btn';
-                    if (metaTheme) metaTheme.setAttribute('content', '#0a0f1c');
-                } else {
-                    htmlEl.classList.remove('dark');
-                    btnThemeLight.className = 'theme-btn active-light';
-                    btnThemeDark.className = 'theme-btn';
-                    if (metaTheme) metaTheme.setAttribute('content', '#f1f5f9');
-                }
-                localStorage.setItem(STORAGE_KEYS.THEME, theme);
-                if (notify) {
-                    showToast(`Tema ${theme === 'dark' ? 'Gelap 🌙' : 'Terang ☀️'} diterapkan.`, 'info');
-                }
-            }
-
-            // ==========================================
-            // 5. LOGIKA DATA, PERHITUNGAN & PARSER BACKUP
-            // ==========================================
-            function loadRecords() {
-                try {
-                    const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
-                    usageRecords = raw ? JSON.parse(raw) : [];
-                    if (!Array.isArray(usageRecords)) usageRecords = [];
-                } catch (err) {
-                    usageRecords = [];
-                }
-            }
-
-            function saveRecords() {
-                try {
-                    localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(usageRecords));
-                } catch (err) {
-                    showToast('Gagal menyimpan data ke penyimpanan lokal.', 'error');
-                }
-            }
-
-            function calculateDuration(startIso, endIso) {
-                const start = new Date(startIso);
-                const end = new Date(endIso);
-                const diffMs = end - start;
-
-                if (isNaN(diffMs) || diffMs <= 0) return null;
-
-                const totalMinutes = Math.floor(diffMs / 60000);
-                const days = Math.floor(totalMinutes / 1440);
-                const hours = Math.floor((totalMinutes % 1440) / 60);
-                const minutes = totalMinutes % 60;
-
-                const parts = [];
-                if (days > 0) parts.push(`${days} hr`);
-                if (hours > 0) parts.push(`${hours} jam`);
-                if (minutes > 0 || parts.length === 0) parts.push(`${minutes} mnt`);
-
-                return {
-                    text: parts.join(' '),
-                    minutes: totalMinutes
-                };
-            }
-
-            function parseLegacyDateAndTimeRange(tanggalStr, jamStr) {
-                const dateParts = String(tanggalStr || '').trim().split(/[.\-\/]/);
-                if (dateParts.length !== 3) return null;
-
-                const day = dateParts[0].padStart(2, '0');
-                const month = dateParts[1].padStart(2, '0');
-                const year = dateParts[2].length === 2 ? `20${dateParts[2]}` : dateParts[2];
-                const isoDate = `${year}-${month}-${day}`;
-
-                const timeRange = String(jamStr || '').trim().split('-');
-                if (timeRange.length !== 2) return null;
-
-                const normalizeClock = (clock) => {
-                    const cleaned = clock.trim().replace('.', ':');
-                    const [h = '00', m = '00'] = cleaned.split(':');
-                    return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
-                };
-
-                const startClock = normalizeClock(timeRange[0]);
-                const endClock = normalizeClock(timeRange[1]);
-
-                const startTime = `${isoDate}T${startClock}`;
-                let endTime = `${isoDate}T${endClock}`;
-
-                const startObj = new Date(startTime);
-                const endObj = new Date(endTime);
-                if (!isNaN(startObj) && !isNaN(endObj) && endObj <= startObj) {
-                    endObj.setDate(endObj.getDate() + 1);
-                    endTime = formatForDateTimeLocal(endObj);
-                }
-
-                return { startTime, endTime };
-            }
-
-            function parseAndNormalizeBackupPayload(rawParsed) {
-                let rawItems = [];
-
-                if (Array.isArray(rawParsed)) {
-                    rawItems = rawParsed;
-                } else if (rawParsed && Array.isArray(rawParsed.records)) {
-                    rawItems = rawParsed.records;
-                } else {
-                    throw new Error('Struktur JSON cadangan tidak dikenali.');
-                }
-
-                if (!Array.isArray(rawItems)) {
-                    throw new Error('Data catatan di dalam cadangan bukan berupa daftar.');
-                }
-
-                const normalizedRecords = [];
-
-                rawItems.forEach((item, idx) => {
-                    if (!item || typeof item !== 'object') return;
-
-                    // Format Lama: aplikasi, tanggal, jam
-                    if (item.aplikasi && item.tanggal && item.jam) {
-                        const parsedRange = parseLegacyDateAndTimeRange(item.tanggal, item.jam);
-                        if (!parsedRange) return;
-
-                        const dur = calculateDuration(parsedRange.startTime, parsedRange.endTime);
-                        const batteryNum = parseInt(String(item.baterai ?? '0').replace(/[^0-9]/g, ''), 10);
-
-                        let durationMinutes = dur ? dur.minutes : 0;
-                        if (!durationMinutes && item.durasi) {
-                            const matchMin = String(item.durasi).match(/(\d+)/);
-                            if (matchMin) durationMinutes = parseInt(matchMin[1], 10);
-                        }
-
-                        normalizedRecords.push({
-                            id: item.id || `legacy_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
-                            appName: String(item.aplikasi).trim(),
-                            startTime: parsedRange.startTime,
-                            endTime: parsedRange.endTime,
-                            durationText: dur ? dur.text : String(item.durasi || `${durationMinutes} mnt`),
-                            durationMinutes: durationMinutes,
-                            battery: isNaN(batteryNum) ? 0 : Math.min(100, Math.max(0, batteryNum)),
-                            connection: String(item.koneksi || 'WiFi').trim(),
-                            createdAt: new Date().toISOString()
-                        });
-                        return;
-                    }
-
-                    // Format Baru: appName, startTime, endTime
-                    if (item.appName && item.startTime && item.endTime) {
-                        const dur = calculateDuration(item.startTime, item.endTime);
-                        normalizedRecords.push({
-                            id: item.id || `rec_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`,
-                            appName: String(item.appName).trim(),
-                            startTime: item.startTime,
-                            endTime: item.endTime,
-                            durationText: item.durationText || (dur ? dur.text : '0 mnt'),
-                            durationMinutes: item.durationMinutes || (dur ? dur.minutes : 0),
-                            battery: Number(item.battery ?? 0),
-                            connection: item.connection || 'WiFi',
-                            createdAt: item.createdAt || new Date().toISOString()
-                        });
-                    }
-                });
-
-                return normalizedRecords;
-            }
-
-            function formatDisplayDate(isoString) {
-                const d = new Date(isoString);
-                if (isNaN(d)) return '-';
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
-            }
-
-            function formatDisplayTime(isoString) {
-                const d = new Date(isoString);
-                if (isNaN(d)) return '-';
-                const h = String(d.getHours()).padStart(2, '0');
-                const m = String(d.getMinutes()).padStart(2, '0');
-                return `${h}:${m}`;
-            }
-
-            // ==========================================
-            // 6. RENDER TABEL RIWAYAT (AMAN DARI XSS)
-            // ==========================================
-            function renderTable() {
-                const sortType = sortOrderSelect.value;
-                const sorted = [...usageRecords].sort((a, b) => {
-                    const dateA = new Date(a.startTime).getTime();
-                    const dateB = new Date(b.startTime).getTime();
-                    return sortType === 'newest' ? dateB - dateA : dateA - dateB;
-                });
-
-                recordCountBadge.textContent = `${sorted.length} catatan`;
-                historyTableBody.textContent = '';
-
-                if (sorted.length === 0) {
-                    const tr = document.createElement('tr');
-                    const td = document.createElement('td');
-                    td.colSpan = 9;
-                    td.className = 'text-center';
-                    td.style.padding = '2.5rem 1rem';
-                    td.style.color = 'var(--text-muted)';
-
-                    const iconDiv = document.createElement('div');
-                    iconDiv.style.fontSize = '1.875rem';
-                    iconDiv.style.marginBottom = '0.5rem';
-                    iconDiv.textContent = '📭';
-
-                    const pTitle = document.createElement('p');
-                    pTitle.className = 'font-medium text-sm';
-                    pTitle.style.margin = '0';
-                    pTitle.textContent = 'Belum ada catatan pemakaian aplikasi.';
-
-                    const pSub = document.createElement('p');
-                    pSub.className = 'text-xs';
-                    pSub.style.margin = '0.25rem 0 0';
-                    pSub.textContent = 'Isi formulir di atas lalu tekan Simpan Catatan.';
-
-                    td.append(iconDiv, pTitle, pSub);
-                    tr.appendChild(td);
-                    historyTableBody.appendChild(tr);
-                    return;
-                }
-
-                const frag = document.createDocumentFragment();
-
-                sorted.forEach((item, index) => {
-                    const tr = document.createElement('tr');
-
-                    const tdNo = document.createElement('td');
-                    tdNo.className = 'font-medium';
-                    tdNo.style.color = 'var(--text-muted)';
-                    tdNo.textContent = String(index + 1);
-
-                    const tdDate = document.createElement('td');
-                    tdDate.style.color = 'var(--text-sub)';
-                    tdDate.textContent = formatDisplayDate(item.startTime);
-
-                    const tdApp = document.createElement('td');
-                    tdApp.className = 'font-semibold';
-                    tdApp.style.color = 'var(--text-heading)';
-                    tdApp.textContent = item.appName;
-
-                    const tdStart = document.createElement('td');
-                    tdStart.className = 'font-mono';
-                    tdStart.style.color = 'var(--text-sub)';
-                    tdStart.textContent = formatDisplayTime(item.startTime);
-
-                    const tdEnd = document.createElement('td');
-                    tdEnd.className = 'font-mono';
-                    tdEnd.style.color = 'var(--text-sub)';
-                    tdEnd.textContent = formatDisplayTime(item.endTime);
-
-                    const tdDur = document.createElement('td');
-                    const spanDur = document.createElement('span');
-                    spanDur.className = 'pill pill-blue';
-                    spanDur.textContent = `⏱️ ${item.durationText}`;
-                    tdDur.appendChild(spanDur);
-
-                    const tdBat = document.createElement('td');
-                    const spanBat = document.createElement('span');
-                    const batClass = item.battery <= 20 ? 'pill-rose' : item.battery <= 50 ? 'pill-amber' : 'pill-green';
-                    spanBat.className = `pill ${batClass}`;
-                    spanBat.textContent = `🔋 ${item.battery}%`;
-                    tdBat.appendChild(spanBat);
-
-                    const tdConn = document.createElement('td');
-                    tdConn.className = 'text-xs';
-                    tdConn.style.color = 'var(--text-sub)';
-                    const connIcon = item.connection === 'WiFi' ? '📶' : item.connection === 'Data Seluler' ? '📡' : '📴';
-                    tdConn.textContent = `${connIcon} ${item.connection}`;
-
-                    const tdAct = document.createElement('td');
-                    tdAct.className = 'text-center';
-                    const btnDel = document.createElement('button');
-                    btnDel.type = 'button';
-                    btnDel.className = 'btn-del-row';
-                    btnDel.dataset.id = String(item.id);
-                    btnDel.title = 'Hapus catatan ini';
-                    btnDel.setAttribute('aria-label', 'Hapus catatan ini');
-                    btnDel.textContent = '🗑️';
-                    tdAct.appendChild(btnDel);
-
-                    tr.append(tdNo, tdDate, tdApp, tdStart, tdEnd, tdDur, tdBat, tdConn, tdAct);
-                    frag.appendChild(tr);
-                });
-
-                historyTableBody.appendChild(frag);
-            }
-
-            // ==========================================
-            // 7. AKSI FORMULIR & PENGELOLAAN DATA LOKAL (100% OFFLINE ZIP)
-            // ==========================================
-            function handleFormSubmit(e) {
-                e.preventDefault();
-
-                const appName = appNameInput.value === 'Lainnya'
-                    ? customAppNameInput.value.trim()
-                    : appNameInput.value.trim();
-                const startTime = startTimeInput.value;
-                const endTime = endTimeInput.value;
-                const batteryRaw = batteryInput.value.trim();
-                const connection = connectionInput.value;
-
-                if (!appName) {
-                    if (appNameInput.value === 'Lainnya') {
-                        showToast('Silakan masukkan nama aplikasi terlebih dahulu.', 'error');
-                        customAppNameInput.focus();
-                    } else {
-                        showToast('Silakan pilih nama aplikasi.', 'error');
-                    }
-                    return;
-                }
-                if (!startTime || !endTime) {
-                    showToast('Tanggal & jam mulai maupun berakhir wajib diisi.', 'error');
-                    return;
-                }
-
-                const startDate = new Date(startTime);
-                const endDate = new Date(endTime);
-                if (endDate <= startDate) {
-                    showToast('Jam berakhir harus lebih besar dari jam mulai!', 'error');
-                    return;
-                }
-
-                if (batteryRaw === '' || isNaN(Number(batteryRaw))) {
-                    showToast('Masukkan persentase baterai yang valid (0–100).', 'error');
-                    return;
-                }
-
-                const battery = Number(batteryRaw);
-                if (battery < 0 || battery > 100) {
-                    showToast('Nilai baterai harus di antara 0 hingga 100%.', 'error');
-                    return;
-                }
-
-                const durationObj = calculateDuration(startTime, endTime);
-                if (!durationObj) {
-                    showToast('Durasi tidak valid. Periksa kembali waktu Anda.', 'error');
-                    return;
-                }
-
-                const newRecord = {
-                    id: 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-                    appName,
-                    startTime,
-                    endTime,
-                    durationText: durationObj.text,
-                    durationMinutes: durationObj.minutes,
-                    battery,
-                    connection,
-                    createdAt: new Date().toISOString()
-                };
-
-                usageRecords.unshift(newRecord);
-                saveRecords();
-                renderTable();
-
-                batteryInput.value = '';
-                showToast(`Catatan ${appName} (${durationObj.text}) berhasil disimpan!`, 'success');
-            }
-
-            async function exportToZip() {
-                if (usageRecords.length === 0) {
-                    showToast('Tidak ada data untuk dicadangkan.', 'warning');
-                    return;
-                }
-
-                let downloadUrl = null;
-                let downloadLink = null;
-                btnBackupLocal.disabled = true;
-
-                try {
-                    const exportData = {
-                        app: 'Catatan Pemakaian Aplikasi',
-                        compressed: 'NATIVE-ZIP-DEFLATE',
-                        exportedAt: new Date().toISOString(),
-                        totalRecords: usageRecords.length,
-                        records: usageRecords
-                    };
-
-                    const zipResult = await compressPayloadToZip(exportData, INTERNAL_ZIP_JSON_NAME);
-
-                    if (window.URL && typeof URL.createObjectURL === 'function') {
-                        downloadUrl = URL.createObjectURL(zipResult.blob);
-                        downloadLink = document.createElement('a');
-                        downloadLink.href = downloadUrl;
-                        downloadLink.download = `cadangan-pemakaian-aplikasi-${new Date().toISOString().slice(0, 10)}.zip`;
-                        downloadLink.style.display = 'none';
-                        downloadLink.setAttribute('aria-hidden', 'true');
-                        document.body.appendChild(downloadLink);
-
-                        downloadLink.click();
-
-                        window.setTimeout(() => {
-                            if (downloadLink && downloadLink.parentNode) {
-                                downloadLink.parentNode.removeChild(downloadLink);
-                            }
-                            if (downloadUrl) {
-                                URL.revokeObjectURL(downloadUrl);
-                            }
-                        }, 30000);
-
-                        showToast(
-                            `Backup ZIP ${usageRecords.length} catatan diunduh (${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%).`,
-                            'success'
-                        );
-                        return;
-                    }
-
-                    throw new Error('Browser ini tidak mendukung pembuatan file unduhan.');
-                } catch (err) {
-                    if (downloadLink && downloadLink.parentNode) {
-                        downloadLink.parentNode.removeChild(downloadLink);
-                    }
-                    if (downloadUrl) {
-                        URL.revokeObjectURL(downloadUrl);
-                    }
-                    showToast(`Gagal membuat cadangan ZIP: ${err.message}`, 'error');
-                } finally {
-                    btnBackupLocal.disabled = false;
-                }
-            }
-
-            function importFromLocalBackup(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const { records: validRecords, wasCompressed } = await decompressAndParseBackupBytes(e.target.result);
-
-                        if (validRecords.length === 0) {
-                            showToast('File cadangan tidak berisi catatan yang valid.', 'error');
-                            return;
-                        }
-
-                        const labelType = wasCompressed ? 'arsip ZIP' : 'file JSON';
-                        promptRestoreStrategy(validRecords, `${labelType} (${file.name})`);
-                    } catch (err) {
-                        showToast('Gagal memulihkan cadangan lokal: ' + err.message, 'error');
-                    } finally {
-                        backupFileInput.value = '';
-                    }
-                };
-                reader.onerror = function() {
-                    showToast('Gagal membaca file dari perangkat.', 'error');
-                    backupFileInput.value = '';
-                };
-                reader.readAsArrayBuffer(file);
-            }
-
-            function handleDeleteAll() {
-                if (usageRecords.length === 0) {
-                    showToast('Riwayat sudah kosong.', 'info');
-                    return;
-                }
-
-                openConfirm(
-                    'Hapus Semua Riwayat',
-                    `Anda yakin ingin menghapus seluruh (${usageRecords.length}) catatan riwayat? Tindakan ini tidak dapat dibatalkan.`,
-                    () => {
-                        usageRecords = [];
-                        saveRecords();
-                        renderTable();
-                        showToast('Seluruh riwayat pemakaian telah dihapus.', 'success');
-                    }
-                );
-            }
-
-            // ==========================================
-            // 8. PENGATURAN & INTEGRASI GITHUB BACKUP (SATU-SATUNYA FITUR ONLINE)
-            // ==========================================
-            function loadGithubConfig() {
-                try {
-                    const raw = localStorage.getItem(STORAGE_KEYS.GITHUB_CFG);
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
-                        githubConfig.token = parsed.token || '';
-                        githubConfig.repo = parsed.repo || '';
-                        githubConfig.filePath = parsed.filePath || DEFAULT_GITHUB_FILE;
-                    }
-                } catch (e) {}
-                refreshGithubFormUI();
-            }
-
-            function refreshGithubFormUI() {
-                githubRepoInput.value = githubConfig.repo;
-                githubFilePathInput.value = githubConfig.filePath || DEFAULT_GITHUB_FILE;
-                githubTokenInput.type = 'password';
-                githubTokenInput.value = githubConfig.token;
-                btnToggleToken.textContent = '👁️';
-
-                if (githubConfig.token) {
-                    tokenStatusHint.textContent = '🔒 Token tersimpan di perangkat (hanya dipakai saat Backup/Restore GitHub).';
-                    tokenStatusHint.style.color = '#10b981';
-                } else {
-                    tokenStatusHint.textContent = 'Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.';
-                    tokenStatusHint.style.color = 'var(--text-muted)';
-                }
-            }
-
-            function handleSaveGithub() {
-                const token = githubTokenInput.value.trim();
-                const repo = githubRepoInput.value.trim();
-                let filePath = githubFilePathInput.value.trim() || DEFAULT_GITHUB_FILE;
-
-                if (!token) {
-                    showToast('Masukkan GitHub Personal Access Token terlebih dahulu.', 'error');
-                    return;
-                }
-                if (!repo || !repo.includes('/')) {
-                    showToast('Masukkan nama repository dengan format user/repo (contoh: geminiveo600-byte/backup).', 'error');
-                    return;
-                }
-
-                githubConfig = { token, repo, filePath };
-                localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, JSON.stringify(githubConfig));
-                refreshGithubFormUI();
-                showToast('Konfigurasi GitHub berhasil disimpan!', 'success');
-            }
-
-            function mapGithubError(status, fallbackMsg) {
-                if (status === 401 || status === 403) {
-                    return 'GitHub Token tidak valid atau tidak memiliki izin akses repository.';
-                }
-                if (status === 404) {
-                    return 'Repository tidak ditemukan atau file belum ada di GitHub.';
-                }
-                return fallbackMsg || `HTTP ${status}`;
-            }
-
-            async function backupToGithub() {
-                if (!githubConfig.token || !githubConfig.repo) {
-                    showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
-                    return;
-                }
-                if (usageRecords.length === 0) {
-                    showToast('Tidak ada data riwayat untuk dicadangkan ke GitHub.', 'warning');
-                    return;
-                }
-                if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-                    showToast('Tidak ada koneksi internet. Backup GitHub membutuhkan internet.', 'error');
-                    return;
-                }
-
-                let filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
-                if (filePath.toLowerCase().endsWith('.json')) {
-                    filePath = filePath.replace(/\.json$/i, '.zip');
-                    githubConfig.filePath = filePath;
-                    localStorage.setItem(STORAGE_KEYS.GITHUB_CFG, JSON.stringify(githubConfig));
-                    refreshGithubFormUI();
-                } else if (!filePath.toLowerCase().endsWith('.zip')) {
-                    filePath = `${filePath}.zip`;
-                }
-
-                const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
-                const apiUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${encodedPath}`;
-
-                btnGithubPush.disabled = true;
-                showToast('Mengompres data ke ZIP & mengunggah ke GitHub...', 'info');
-
-                try {
-                    let sha = null;
-                    const getRes = await fetch(apiUrl, {
-                        headers: {
-                            'Authorization': `Bearer ${githubConfig.token}`,
-                            'Accept': 'application/vnd.github+json'
-                        },
-                        cache: 'no-store'
-                    });
-
-                    if (getRes.ok) {
-                        const existingFile = await getRes.json();
-                        sha = existingFile.sha;
-                    } else if (getRes.status !== 404) {
-                        const errData = await getRes.json().catch(() => ({}));
-                        throw new Error(mapGithubError(getRes.status, errData.message));
-                    }
-
-                    const payloadObj = {
-                        app: 'Catatan Pemakaian Aplikasi',
-                        compressed: 'NATIVE-ZIP-DEFLATE',
-                        updatedAt: new Date().toISOString(),
-                        totalRecords: usageRecords.length,
-                        records: usageRecords
-                    };
-
-                    const zipResult = await compressPayloadToZip(payloadObj, INTERNAL_ZIP_JSON_NAME);
-
-                    const bodyData = {
-                        message: `Backup ZIP Catatan Pemakaian Aplikasi (${new Date().toLocaleString('id-ID')})`,
-                        content: zipResult.base64
-                    };
-                    if (sha) bodyData.sha = sha;
-
-                    const putRes = await fetch(apiUrl, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${githubConfig.token}`,
-                            'Accept': 'application/vnd.github+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(bodyData)
-                    });
-
-                    if (!putRes.ok) {
-                        const errPut = await putRes.json().catch(() => ({}));
-                        throw new Error(mapGithubError(putRes.status, errPut.message));
-                    }
-
-                    showToast(
-                        `Berhasil backup ZIP ${usageRecords.length} catatan ke GitHub (${formatByteSize(zipResult.compressedBytes)}, hemat ${zipResult.savedPercent}%)!`,
-                        'success'
-                    );
-                } catch (error) {
-                    const msg = error.name === 'TypeError'
-                        ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.'
-                        : error.message;
-                    showToast(`Gagal backup ZIP ke GitHub: ${msg}`, 'error');
-                } finally {
-                    btnGithubPush.disabled = false;
-                }
-            }
-
-            async function restoreFromGithub() {
-                if (!githubConfig.token || !githubConfig.repo) {
-                    showToast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.', 'warning');
-                    return;
-                }
-                if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-                    showToast('Tidak ada koneksi internet. Pulihkan GitHub membutuhkan internet.', 'error');
-                    return;
-                }
-
-                const filePath = githubConfig.filePath || DEFAULT_GITHUB_FILE;
-                const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
-                const apiUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${encodedPath}`;
-
-                btnGithubPull.disabled = true;
-                showToast('Mengunduh & mendekompres data cadangan dari GitHub...', 'info');
-
-                try {
-                    const res = await fetch(apiUrl, {
-                        headers: {
-                            'Authorization': `Bearer ${githubConfig.token}`,
-                            'Accept': 'application/vnd.github+json'
-                        },
-                        cache: 'no-store'
-                    });
-
-                    if (!res.ok) {
-                        if (res.status === 404) {
-                            throw new Error(`Repository atau file "${filePath}" belum ditemukan di GitHub.`);
-                        }
-                        const errData = await res.json().catch(() => ({}));
-                        throw new Error(mapGithubError(res.status, errData.message));
-                    }
-
-                    const fileData = await res.json();
-                    let binaryBytes;
-
-                    if (fileData.content && fileData.encoding === 'base64') {
-                        binaryBytes = base64ToUint8Array(fileData.content);
-                    } else if (fileData.git_url) {
-                        const blobRes = await fetch(fileData.git_url, {
-                            headers: {
-                                'Authorization': `Bearer ${githubConfig.token}`,
-                                'Accept': 'application/vnd.github+json'
-                            },
-                            cache: 'no-store'
-                        });
-                        if (!blobRes.ok) {
-                            throw new Error(`Gagal mengunduh blob arsip dari GitHub (HTTP ${blobRes.status})`);
-                        }
-                        const blobJson = await blobRes.json();
-                        binaryBytes = base64ToUint8Array(blobJson.content);
-                    } else {
-                        throw new Error('Konten file dari GitHub kosong atau tidak dapat dibaca.');
-                    }
-
-                    const { records: validRecords, wasCompressed } = await decompressAndParseBackupBytes(binaryBytes);
-
-                    if (validRecords.length === 0) {
-                        throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
-                    }
-
-                    const formatNote = wasCompressed ? 'ZIP GitHub' : 'JSON GitHub';
-                    promptRestoreStrategy(validRecords, `${formatNote} (${githubConfig.repo}/${filePath})`);
-                } catch (error) {
-                    const msg = error.name === 'TypeError'
-                        ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.'
-                        : error.message;
-                    showToast(`Gagal memulihkan dari GitHub: ${msg}`, 'error');
-                } finally {
-                    btnGithubPull.disabled = false;
-                }
-            }
-
-            // ==========================================
-            // 9. EVENT LISTENERS
-            // ==========================================
-            function setupEventListeners() {
-                usageForm.addEventListener('submit', handleFormSubmit);
-                appNameInput.addEventListener('change', () => {
-                    const showCustomInput = appNameInput.value === 'Lainnya';
-                    customAppNameWrapper.classList.toggle('hidden', !showCustomInput);
-                    customAppNameInput.required = showCustomInput;
-                    if (showCustomInput) customAppNameInput.focus();
-                });
-                sortOrderSelect.addEventListener('change', renderTable);
-
-                // Delegasi tombol hapus baris tabel
-                historyTableBody.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.btn-del-row');
-                    if (!btn) return;
-                    const id = btn.dataset.id;
-                    const target = usageRecords.find(r => String(r.id) === id);
-                    if (!target) return;
-
-                    openConfirm(
-                        'Hapus Catatan',
-                        `Hapus catatan pemakaian "${target.appName}" pada ${formatDisplayDate(target.startTime)}?`,
-                        () => {
-                            usageRecords = usageRecords.filter(r => String(r.id) !== id);
-                            saveRecords();
-                            renderTable();
-                            showToast('Catatan berhasil dihapus.', 'success');
-                        }
-                    );
-                });
-
-                // Tombol Pengelolaan Data Lokal (100% Offline)
-                btnBackupLocal.addEventListener('click', exportToZip);
-                btnRestoreLocal.addEventListener('click', () => backupFileInput.click());
-                backupFileInput.addEventListener('change', importFromLocalBackup);
-                btnDeleteAll.addEventListener('click', handleDeleteAll);
-
-                // Modal Pengaturan
-                btnOpenSettings.addEventListener('click', () => {
-                    refreshGithubFormUI();
-                    settingsModal.classList.add('open');
-                });
-
-                btnCloseSettings.addEventListener('click', () => {
-                    settingsModal.classList.remove('open');
-                });
-
-                settingsModal.addEventListener('click', (e) => {
-                    if (e.target === settingsModal) {
-                        settingsModal.classList.remove('open');
-                    }
-                });
-
-                // Tema
-                btnThemeDark.addEventListener('click', () => applyTheme('dark', true));
-                btnThemeLight.addEventListener('click', () => applyTheme('light', true));
-
-                // GitHub Settings
-                btnToggleToken.addEventListener('click', () => {
-                    if (githubTokenInput.type === 'password') {
-                        githubTokenInput.type = 'text';
-                        btnToggleToken.textContent = '🙈';
-                    } else {
-                        githubTokenInput.type = 'password';
-                        btnToggleToken.textContent = '👁️';
-                    }
-                });
-
-                btnSaveGithub.addEventListener('click', handleSaveGithub);
-                btnGithubPush.addEventListener('click', backupToGithub);
-                btnGithubPull.addEventListener('click', restoreFromGithub);
-
-                // Modal Konfirmasi Hapus
-                btnConfirmCancel.addEventListener('click', closeConfirm);
-                btnConfirmOk.addEventListener('click', () => {
-                    if (typeof confirmCallback === 'function') {
-                        confirmCallback();
-                    }
-                    closeConfirm();
-                });
-                confirmModal.addEventListener('click', (e) => {
-                    if (e.target === confirmModal) closeConfirm();
-                });
-
-                // Modal Konfirmasi Pemulihan Data
-                btnRestoreChoiceCancel.addEventListener('click', () => {
-                    closeRestoreChoiceModal();
-                    showToast('Pemulihan data dibatalkan.', 'info');
-                });
-
-                btnRestoreChoiceMerge.addEventListener('click', () => {
-                    if (pendingRestoreState) {
-                        const { records, sourceLabel } = pendingRestoreState;
-                        closeRestoreChoiceModal();
-                        executeRestoreStrategy('merge', records, sourceLabel);
-                    }
-                });
-
-                btnRestoreChoiceOverwrite.addEventListener('click', () => {
-                    if (pendingRestoreState) {
-                        const { records, sourceLabel } = pendingRestoreState;
-                        closeRestoreChoiceModal();
-                        executeRestoreStrategy('overwrite', records, sourceLabel);
-                    }
-                });
-
-                restoreChoiceModal.addEventListener('click', (e) => {
-                    if (e.target === restoreChoiceModal) {
-                        closeRestoreChoiceModal();
-                    }
-                });
-            }
-        })();
-    </script>
+        }else{
+            githubConfig={token:'',repo:'',filePath:DEF_FILE};
+        }
+    }catch(e){
+        githubConfig={token:'',repo:'',filePath:DEF_FILE};
+    }
+    refreshGithubUI();
+}
+
+function refreshGithubUI(){
+    el.ghRepo.value=githubConfig.repo;
+    el.ghPath.value=githubConfig.filePath||DEF_FILE;
+    el.ghToken.type='password';el.ghToken.value=githubConfig.token;el.btnTokEye.textContent='👁️';
+    el.tokHint.textContent=githubConfig.token?'🔒 Token tersimpan di perangkat (hanya dipakai saat Backup/Restore GitHub).':'Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.';
+    el.tokHint.style.color=githubConfig.token?'#10b981':'var(--text-muted)';
+}
+const ghErr=(s,fb)=>(s===401||s===403)?'GitHub Token tidak valid atau tidak memiliki izin akses repository.':s===404?'Repository tidak ditemukan atau file belum ada di GitHub.':(fb||`HTTP ${s}`);
+
+async function backupToGithub(){
+    if(!githubConfig.token||!githubConfig.repo)return toast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.','warning');
+    if(!usageRecords.length)return toast('Tidak ada data riwayat untuk dicadangkan ke GitHub.','warning');
+    if(navigator.onLine===false)return toast('Tidak ada koneksi internet. Backup GitHub membutuhkan internet.','error');
+    let fp=githubConfig.filePath||DEF_FILE;
+    if(fp.toLowerCase().endsWith('.json')){fp=fp.replace(/\.json$/i,'.zip');saveGithubConfig({...githubConfig,filePath:fp});refreshGithubUI()}
+    else if(!fp.toLowerCase().endsWith('.zip'))fp+='.zip';
+    const url=`https://api.github.com/repos/${githubConfig.repo}/contents/${fp.split('/').map(encodeURIComponent).join('/')}`;
+    const headers={Authorization:`Bearer ${githubConfig.token}`,Accept:'application/vnd.github+json'};
+    el.btnPush.disabled=true;toast('Mengompres data ke ZIP & mengunggah ke GitHub...','info');
+    try{
+        let sha=null;
+        const gRes=await fetch(url,{headers,cache:'no-store'});
+        if(gRes.ok)sha=(await gRes.json()).sha;
+        else if(gRes.status!==404)throw new Error(ghErr(gRes.status,(await gRes.json().catch(()=>({}))).message));
+        const zip=await compressZip({app:'Catatan Pemakaian Aplikasi',compressed:'NATIVE-ZIP-DEFLATE',updatedAt:new Date().toISOString(),totalRecords:usageRecords.length,records:usageRecords});
+        const pRes=await fetch(url,{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({message:`Backup ZIP Catatan Pemakaian Aplikasi (${new Date().toLocaleString('id-ID')})`,content:zip.base64,...(sha?{sha}:{})})});
+        if(!pRes.ok)throw new Error(ghErr(pRes.status,(await pRes.json().catch(()=>({}))).message));
+        toast(`Berhasil backup ZIP ${usageRecords.length} catatan ke GitHub (${fmtBytes(zip.compressedBytes)}, hemat ${zip.savedPercent}%)!`,'success');
+    }catch(err){toast(`Gagal backup ZIP ke GitHub: ${err.name==='TypeError'?'Koneksi internet terputus.':err.message}`,'error')}
+    finally{el.btnPush.disabled=false}
+}
+
+async function restoreFromGithub(){
+    if(!githubConfig.token||!githubConfig.repo)return toast('Simpan konfigurasi Token & Repository GitHub terlebih dahulu.','warning');
+    if(navigator.onLine===false)return toast('Tidak ada koneksi internet. Pulihkan GitHub membutuhkan internet.','error');
+    const fp=githubConfig.filePath||DEF_FILE;
+    const url=`https://api.github.com/repos/${githubConfig.repo}/contents/${fp.split('/').map(encodeURIComponent).join('/')}`;
+    const headers={Authorization:`Bearer ${githubConfig.token}`,Accept:'application/vnd.github+json'};
+    el.btnPull.disabled=true;toast('Mengunduh & mendekompres data cadangan dari GitHub...','info');
+    try{
+        const res=await fetch(url,{headers,cache:'no-store'});
+        if(!res.ok)throw new Error(res.status===404?`Repository atau file "${fp}" belum ditemukan di GitHub.`:ghErr(res.status,(await res.json().catch(()=>({}))).message));
+        const data=await res.json();let bytes;
+        if(data.content&&data.encoding==='base64')bytes=b64ToU8(data.content);
+        else if(data.git_url){
+            const bRes=await fetch(data.git_url,{headers,cache:'no-store'});
+            if(!bRes.ok)throw new Error(`Gagal mengunduh arsip dari GitHub (HTTP ${bRes.status})`);
+            bytes=b64ToU8((await bRes.json()).content);
+        }else throw new Error('Konten file dari GitHub kosong.');
+        const{records,wasCompressed}=await parseBackupBytes(bytes);
+        if(!records.length)throw new Error('Tidak ditemukan catatan yang valid di file GitHub.');
+        promptRestore(records,`${wasCompressed?'ZIP GitHub':'JSON GitHub'} (${githubConfig.repo}/${fp})`);
+    }catch(err){toast(`Gagal memulihkan dari GitHub: ${err.name==='TypeError'?'Koneksi internet terputus.':err.message}`,'error')}
+    finally{el.btnPull.disabled=false}
+}
+
+// INIT & EVENTS
+document.addEventListener('DOMContentLoaded',()=>{
+    applyTheme(localStorage.getItem(KEYS.THEME)||'dark',false);
+    loadRecords();loadGithub();
+    const now=new Date();
+    el.start.value=fmtInputDate(new Date(now.getTime()-30*60000));
+    el.end.value=fmtInputDate(now);
+    updateDurEstimate();renderTable();
+
+    el.form.addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const appName=el.app.value==='Lainnya'?el.customApp.value.trim():el.app.value.trim();
+        const sTime=el.start.value,eTime=el.end.value,batRaw=el.bat.value.trim();
+        if(!appName){toast(el.app.value==='Lainnya'?'Silakan masukkan nama aplikasi terlebih dahulu.':'Silakan pilih nama aplikasi.','error');if(el.app.value==='Lainnya')el.customApp.focus();return}
+        if(!sTime||!eTime)return toast('Tanggal & jam mulai maupun berakhir wajib diisi.','error');
+        if(new Date(eTime)<=new Date(sTime))return toast('Jam berakhir harus lebih besar dari jam mulai!','error');
+        const bat=Number(batRaw);
+        if(batRaw===''||isNaN(bat)||bat<0||bat>100)return toast('Nilai baterai harus di antara 0 hingga 100%.','error');
+        const dur=calcDuration(sTime,eTime);
+        if(!dur)return toast('Durasi tidak valid. Periksa kembali waktu Anda.','error');
+        usageRecords.unshift({id:`rec_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,appName,startTime:sTime,endTime:eTime,durationText:dur.text,durationMinutes:dur.minutes,battery:bat,connection:el.conn.value,createdAt:new Date().toISOString()});
+        saveRecords();renderTable();el.bat.value='';
+        toast(`Catatan ${appName} (${dur.text}) berhasil disimpan!`,'success');
+    });
+
+    ['input','change'].forEach(ev=>{el.start.addEventListener(ev,updateDurEstimate);el.end.addEventListener(ev,updateDurEstimate)});
+    el.app.addEventListener('change',()=>{const show=el.app.value==='Lainnya';el.customWrap.classList.toggle('hidden',!show);el.customApp.required=show;if(show)el.customApp.focus()});
+    el.sort.addEventListener('change',renderTable);
+
+    el.tbody.addEventListener('click',(e)=>{
+        const btn=e.target.closest('.btn-del-row');if(!btn)return;
+        const target=usageRecords.find(r=>String(r.id)===btn.dataset.id);if(!target)return;
+        openConfirm('Hapus Catatan',`Hapus catatan pemakaian "${target.appName}" pada ${fmtDate(target.startTime)}?`,()=>{
+            usageRecords=usageRecords.filter(r=>String(r.id)!==String(target.id));
+            saveRecords();renderTable();toast('Catatan berhasil dihapus.','success');
+        });
+    });
+
+    el.btnBak.addEventListener('click',async()=>{
+        if(!usageRecords.length)return toast('Tidak ada data untuk dicadangkan.','warning');
+        el.btnBak.disabled=true;
+        try{
+            const zip=await compressZip({app:'Catatan Pemakaian Aplikasi',compressed:'NATIVE-ZIP-DEFLATE',exportedAt:new Date().toISOString(),totalRecords:usageRecords.length,records:usageRecords});
+            const u=URL.createObjectURL(zip.blob),a=document.createElement('a');
+            a.href=u;a.download=`cadangan-pemakaian-aplikasi-${new Date().toISOString().slice(0,10)}.zip`;a.style.display='none';
+            document.body.appendChild(a);a.click();
+            setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},30000);
+            toast(`Backup ZIP ${usageRecords.length} catatan diunduh (${fmtBytes(zip.compressedBytes)}, hemat ${zip.savedPercent}%).`,'success');
+        }catch(err){toast(`Gagal membuat cadangan ZIP: ${err.message}`,'error')}
+        finally{el.btnBak.disabled=false}
+    });
+
+    el.btnRes.addEventListener('click',()=>el.fileIn.click());
+    el.fileIn.addEventListener('change',(e)=>{
+        const file=e.target.files[0];if(!file)return;
+        const r=new FileReader();
+        r.onload=async(ev)=>{
+            try{
+                const{records,wasCompressed}=await parseBackupBytes(ev.target.result);
+                if(!records.length)return toast('File cadangan tidak berisi catatan yang valid.','error');
+                promptRestore(records,`${wasCompressed?'arsip ZIP':'file JSON'} (${file.name})`);
+            }catch(err){toast('Gagal memulihkan cadangan lokal: '+err.message,'error')}
+            finally{el.fileIn.value=''}
+        };
+        r.onerror=()=>{toast('Gagal membaca file dari perangkat.','error');el.fileIn.value=''};
+        r.readAsArrayBuffer(file);
+    });
+
+    el.btnDelAll.addEventListener('click',()=>{
+        if(!usageRecords.length)return toast('Riwayat sudah kosong.','info');
+        openConfirm('Hapus Semua Riwayat',`Anda yakin ingin menghapus seluruh (${usageRecords.length}) catatan riwayat? Tindakan ini tidak dapat dibatalkan.`,()=>{
+            usageRecords=[];saveRecords();renderTable();toast('Seluruh riwayat pemakaian telah dihapus.','success');
+        });
+    });
+
+    el.btnOpenSet.addEventListener('click',()=>{refreshGithubUI();el.modalSet.classList.add('open')});
+    el.btnCloseSet.addEventListener('click',()=>el.modalSet.classList.remove('open'));
+    el.modalSet.addEventListener('click',(e)=>{if(e.target===el.modalSet)el.modalSet.classList.remove('open')});
+    el.btnDark.addEventListener('click',()=>applyTheme('dark',true));
+    el.btnLight.addEventListener('click',()=>applyTheme('light',true));
+    el.btnTokEye.addEventListener('click',()=>{const s=el.ghToken.type==='password';el.ghToken.type=s?'text':'password';el.btnTokEye.textContent=s?'🙈':'👁️'});
+
+    el.btnSaveGh.addEventListener('click',()=>{
+        const token=el.ghToken.value.trim(),repo=el.ghRepo.value.trim(),filePath=el.ghPath.value.trim()||DEF_FILE;
+        if(!token)return toast('Masukkan GitHub Personal Access Token terlebih dahulu.','error');
+        if(!repo.includes('/'))return toast('Masukkan nama repository dengan format user/repo (contoh: geminiveo600-byte/backup).','error');
+        if(!saveGithubConfig({token,repo,filePath}))return toast('Gagal menyimpan konfigurasi GitHub ke penyimpanan lokal.','error');
+        refreshGithubUI();toast('Konfigurasi GitHub berhasil disimpan!','success');
+    });
+
+    el.btnPush.addEventListener('click',backupToGithub);
+    el.btnPull.addEventListener('click',restoreFromGithub);
+    el.btnConfNo.addEventListener('click',closeConfirm);
+    el.btnConfYes.addEventListener('click',()=>{if(typeof confirmCb==='function')confirmCb();closeConfirm()});
+    el.modalConf.addEventListener('click',(e)=>{if(e.target===el.modalConf)closeConfirm()});
+
+    el.btnResNo.addEventListener('click',()=>{closeRestoreModal();toast('Pemulihan data dibatalkan.','info')});
+    el.btnResMerge.addEventListener('click',()=>{if(pendingRestore){const s=pendingRestore;closeRestoreModal();applyRestore('merge',s.records,s.label)}});
+    el.btnResOver.addEventListener('click',()=>{if(pendingRestore){const s=pendingRestore;closeRestoreModal();applyRestore('overwrite',s.records,s.label)}});
+    el.modalRes.addEventListener('click',(e)=>{if(e.target===el.modalRes)closeRestoreModal()});
+});
+})();
+</script>
 </body>
 </html>
