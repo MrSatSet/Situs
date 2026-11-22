@@ -5,21 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>Daftar Jam ke Menit</title>
 
-  <!-- Memuat Google Fonts (Roboto & Inter) untuk tipografi modern yang bersih -->
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
 
-  <!-- Memuat Tailwind CSS untuk tata letak responsif -->
+  <!-- Tailwind CSS & Konfigurasi -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Konfigurasi Tailwind untuk mendukung mode gelap berbasis class
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Roboto', 'Arial', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
           },
         },
       },
@@ -27,47 +29,212 @@
   </script>
 
   <style>
-    /* Pengaturan dasar tinggi layar penuh dan transisi halus antar tema */
+    /* ==========================================================================
+       1. Pengaturan Dasar & Latar Belakang Halaman
+       ========================================================================== */
     html,
     body {
       height: 100%;
       margin: 0;
       padding: 0;
-      font-family: 'Roboto', Arial, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Gradasi warna biru untuk judul utama agar tetap kontras di Mode Gelap maupun Mode Terang */
-    .title-blue-gradient {
-      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #2563eb 100%);
+    body {
+      background: linear-gradient(135deg, #e0f2fe 0%, #ede9fe 50%, #fce7f3 100%);
+      transition: background 0.35s ease;
+    }
+
+    html.dark body {
+      background: radial-gradient(circle at top left, #0c192c 0%, #070910 55%, #160a24 100%);
+    }
+
+    /* ==========================================================================
+       2. Bingkai Utama Ponsel & Border Gradien Bersama
+       ========================================================================== */
+    .phone-frame::before,
+    .conversion-row-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.5px;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .phone-frame {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(244, 247, 254, 0.96) 100%);
+      box-shadow: 0 20px 50px -12px rgba(79, 70, 229, 0.18), inset 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+      transition: all 0.35s ease;
+    }
+
+    html.dark .phone-frame {
+      background: linear-gradient(180deg, #0b111e 0%, #0b0d17 50%, #120b1e 100%);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.12);
+    }
+
+    .phone-frame::before {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      opacity: 0.55;
+    }
+
+    html.dark .phone-frame::before {
+      background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 45%, #d946ef 100%);
+      opacity: 0.85;
+    }
+
+    /* ==========================================================================
+       3. Tipografi Judul, Tombol Pengaturan & Header Kolom
+       ========================================================================== */
+    .title-gradient {
+      background: linear-gradient(90deg, #0ea5e9 0%, #3b82f6 50%, #9333ea 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    /* Kustomisasi scrollbar vertikal agar minimalis dan tidak mengganggu tampilan */
-    .table-scroll::-webkit-scrollbar {
-      width: 5px;
+    html.dark .title-gradient {
+      background: linear-gradient(90deg, #22d3ee 0%, #38bdf8 45%, #d946ef 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.25));
     }
 
-    .table-scroll::-webkit-scrollbar-track {
+    .gear-button {
+      background: linear-gradient(145deg, #ffffff, #e6ecf8);
+      box-shadow: 5px 5px 12px rgba(163, 177, 198, 0.45), -4px -4px 10px rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    html.dark .gear-button {
+      background: radial-gradient(circle at 30% 30%, #1d243b, #111524);
+      box-shadow: 0 0 15px rgba(217, 70, 239, 0.35), inset 0 0 0 1.5px rgba(217, 70, 239, 0.65);
+      border: none;
+    }
+
+    .col-pill {
+      position: relative;
+      border-radius: 9999px;
+      padding: 2px;
+      background: linear-gradient(90deg, #0ea5e9 0%, #6366f1 50%, #9333ea 100%);
+      box-shadow: 0 6px 16px -4px rgba(99, 102, 241, 0.35);
+    }
+
+    .col-pill-inner {
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #0284c7 0%, #4f46e5 55%, #7e22ce 100%);
+      color: #ffffff;
+    }
+
+    html.dark .col-pill {
+      background: linear-gradient(90deg, #22d3ee 0%, #3b82f6 50%, #d946ef 100%);
+      box-shadow: 0 0 14px rgba(34, 211, 238, 0.25), 0 0 14px rgba(217, 70, 239, 0.2);
+    }
+
+    html.dark .col-pill-inner {
+      background: #0d1322;
+      color: #67e8f9;
+      text-shadow: 0 0 8px rgba(103, 232, 249, 0.45);
+    }
+
+    /* ==========================================================================
+       4. Kartu Konversi (Jam & Menit)
+       ========================================================================== */
+    .conversion-row-card {
+      position: relative;
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 4px 14px rgba(148, 163, 184, 0.16);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .conversion-row-card::before {
+      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+      opacity: 0.7;
+    }
+
+    html.dark .conversion-row-card {
+      background: linear-gradient(90deg, rgba(16, 26, 43, 0.9) 0%, rgba(23, 18, 38, 0.9) 100%);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    html.dark .conversion-row-card::before {
+      background: linear-gradient(
+        90deg,
+        rgba(34, 211, 238, 0.65) 0%,
+        rgba(99, 102, 241, 0.4) 50%,
+        rgba(217, 70, 239, 0.65) 100%
+      );
+      opacity: 0.9;
+    }
+
+    .jam-box {
+      background: #ffffff;
+      box-shadow: 0 3px 10px rgba(148, 163, 184, 0.22);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      color: #0f172a;
+    }
+
+    html.dark .jam-box {
       background: transparent;
+      box-shadow: none;
+      border: none;
+      color: #f8fafc;
     }
 
-    html.dark .table-scroll::-webkit-scrollbar-thumb {
-      background-color: rgba(156, 163, 175, 0.3);
+    .menit-badge {
+      background: linear-gradient(90deg, #0ea5e9 0%, #4f46e5 52%, #9333ea 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.32);
+    }
+
+    html.dark .menit-badge {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    html.dark .menit-neon-cyan {
+      color: #22d3ee;
+      text-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
+    }
+
+    html.dark .menit-neon-magenta {
+      color: #e879f9;
+      text-shadow: 0 0 10px rgba(232, 121, 249, 0.45);
+    }
+
+    /* ==========================================================================
+       5. Scrollbar & Popover Pengaturan
+       ========================================================================== */
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+      margin-block: 8px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.55);
       border-radius: 9999px;
     }
 
-    html:not(.dark) .table-scroll::-webkit-scrollbar-thumb {
-      background-color: rgba(107, 114, 128, 0.3);
+    html.dark .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
       border-radius: 9999px;
     }
 
-    /* Animasi kemunculan menu pengaturan */
     .settings-popover {
       transform-origin: top right;
-      transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
+      transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease;
     }
 
     .settings-popover.closed {
@@ -85,326 +252,350 @@
     }
   </style>
 </head>
-<body class="bg-[#e5e7eb] dark:bg-[#111215] transition-colors duration-300 flex justify-center items-stretch overflow-hidden">
 
-  <!-- Kontainer Utama Tampilan Smartphone (Mobile-First) -->
+<body class="flex justify-center items-stretch sm:py-4 overflow-hidden">
+  <!-- Kontainer Utama Tampilan Smartphone -->
   <main
     id="app-container"
-    class="relative w-full max-w-md h-[100dvh] flex flex-col bg-[#f3f4f6] dark:bg-[#1b1c20] text-[#111827] dark:text-[#ffffff] sm:shadow-2xl sm:border-x border-gray-200 dark:border-[#2e3038] transition-colors duration-300"
+    class="phone-frame w-full max-w-[420px] h-[100dvh] sm:h-[calc(100dvh-2rem)] sm:rounded-[2.25rem] flex flex-col overflow-hidden"
   >
-    <!-- Bagian Header: Judul Rata Tengah Dua Baris & Tombol Pengaturan di Pojok Kanan Atas -->
-    <header class="relative flex items-center justify-center pt-7 pb-5 px-14 shrink-0">
-      <h1
-        class="title-blue-gradient text-center font-black uppercase tracking-wide text-[1.65rem] sm:text-[1.85rem] leading-[1.2] select-none"
-      >
-        DAFTAR JAM<br />KE MENIT
-      </h1>
+    <!-- Bagian Header Aplikasi -->
+    <header class="relative pt-6 pb-3 px-5 shrink-0">
+      <div class="flex items-start justify-between gap-2">
+        <!-- Judul Utama -->
+        <div class="flex-1 pr-2">
+          <h1
+            class="title-gradient font-extrabold uppercase tracking-tight text-[1.6rem] sm:text-[1.72rem] leading-[1.15] select-none"
+          >
+            DAFTAR JAM<br />
+            <span class="inline-flex items-center gap-2">
+              <span>KE MENIT</span>
+              <span
+                class="inline-flex dark:hidden items-center justify-center w-6 h-6 rounded-full bg-white shadow-sm border border-indigo-100 text-indigo-500"
+                aria-hidden="true"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+            </span>
+          </h1>
+        </div>
 
-      <!-- Tombol Pengaturan (Ikon Roda Gigi) dengan area sentuh optimal -->
-      <button
-        id="settings-btn"
-        type="button"
-        aria-label="Pengaturan Tema"
-        aria-expanded="false"
-        aria-haspopup="true"
-        class="absolute top-5 right-4 w-11 h-11 rounded-full flex items-center justify-center bg-white/90 dark:bg-[#272930] hover:bg-gray-100 dark:hover:bg-[#32353f] active:scale-95 text-gray-800 dark:text-gray-100 border border-gray-200/80 dark:border-[#383b45] shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <!-- Ikon Roda Gigi SVG presisi agar selalu tajam di semua layar -->
-        <svg
-          id="gear-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          class="w-6 h-6 text-gray-700 dark:text-gray-200 transition-transform duration-300"
-          aria-hidden="true"
+        <!-- Tombol Pengaturan Tema -->
+        <button
+          id="settings-btn"
+          type="button"
+          aria-label="Pengaturan Tema"
+          aria-expanded="false"
+          aria-haspopup="true"
+          class="gear-button w-11 h-11 rounded-full flex items-center justify-center shrink-0 active:scale-95 transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
         >
-          <path
-            fill-rule="evenodd"
-            d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </button>
+          <svg
+            id="gear-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-6 h-6 text-slate-600 dark:text-fuchsia-400 transition-transform duration-300"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+        </button>
+      </div>
 
       <!-- Menu Popover Pengaturan Tema -->
       <div
         id="settings-menu"
         role="menu"
         aria-labelledby="settings-btn"
-        class="settings-popover closed absolute top-[4.4rem] right-4 z-30 w-56 rounded-2xl bg-white dark:bg-[#262830] border border-gray-200 dark:border-[#3a3d47] shadow-xl p-2 transition-colors duration-300"
+        class="settings-popover closed absolute top-[4.5rem] right-5 z-30 w-56 rounded-2xl bg-white/95 dark:bg-[#13192b]/95 backdrop-blur-md border border-indigo-100 dark:border-cyan-500/30 shadow-2xl p-2"
       >
-        <div class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-400 select-none">
+        <div
+          class="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 select-none"
+        >
           Tampilan Tema
         </div>
 
-        <!-- Opsi Mode Gelap -->
-        <button
-          id="theme-dark-btn"
-          type="button"
-          role="menuitemradio"
-          aria-checked="true"
-          class="w-full flex items-center justify-between px-3 py-2.5 mt-1 rounded-xl text-sm font-medium text-left transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#323540]"
-        >
-          <span class="flex items-center gap-2.5">
-            <span class="text-base leading-none" aria-hidden="true">🌙</span>
-            <span>Mode Gelap</span>
-          </span>
-          <span
-            id="indicator-dark"
-            class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-500 text-xs font-bold"
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-        </button>
+        <!-- Daftar Opsi Tema (Dirender dinamis melalui JS untuk mencegah duplikasi markup) -->
+        <div id="theme-options-container" class="space-y-1 mt-1"></div>
+      </div>
 
-        <!-- Opsi Mode Terang -->
-        <button
-          id="theme-light-btn"
-          type="button"
-          role="menuitemradio"
-          aria-checked="false"
-          class="w-full flex items-center justify-between px-3 py-2.5 mt-1 rounded-xl text-sm font-medium text-left transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-[#323540]"
-        >
-          <span class="flex items-center gap-2.5">
-            <span class="text-base leading-none" aria-hidden="true">☀️</span>
-            <span>Mode Terang</span>
-          </span>
-          <span
-            id="indicator-light"
-            class="hidden items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-600 text-xs font-bold"
-            aria-hidden="true"
-          >
-            ✓
-          </span>
-        </button>
+      <!-- Header Dua Kolom ("Jam" dan "Menit") -->
+      <div class="grid grid-cols-2 gap-3.5 mt-4">
+        <div class="col-pill">
+          <div class="col-pill-inner py-1.5 text-center font-bold text-sm sm:text-base tracking-wide select-none">
+            Jam
+          </div>
+        </div>
+        <div class="col-pill">
+          <div class="col-pill-inner py-1.5 text-center font-bold text-sm sm:text-base tracking-wide select-none">
+            Menit
+          </div>
+        </div>
       </div>
     </header>
 
-    <!-- Kontainer Tabel Konversi Jam ke Menit -->
+    <!-- Daftar Kartu Konversi (1 - 24 Jam) -->
     <section
-      aria-label="Tabel Konversi Jam ke Menit"
-      class="flex-1 min-h-0 mx-4 mb-5 rounded-2xl bg-white dark:bg-[#24262c] border border-gray-200 dark:border-[#363942] shadow-md flex flex-col overflow-hidden transition-colors duration-300"
+      aria-label="Daftar Konversi Jam ke Menit"
+      class="custom-scroll flex-1 min-h-0 overflow-y-auto px-4 pt-1 pb-5"
     >
-      <!-- Pembungkus Tabel dengan Gulir Vertikal (Vertical Scrolling) -->
-      <div class="table-scroll flex-1 overflow-y-auto">
-        <table class="w-full table-fixed border-collapse text-left">
-          <!-- Header Tabel Tetap (Sticky) saat digulir -->
-          <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-[#2c2f37] border-b border-gray-200 dark:border-[#3c3f49] transition-colors duration-300">
-            <tr>
-              <th
-                scope="col"
-                class="w-1/2 px-5 py-3.5 text-sm sm:text-base font-bold text-[#111827] dark:text-white tracking-wide"
-              >
-                Jam
-              </th>
-              <th
-                scope="col"
-                class="w-1/2 px-5 py-3.5 text-sm sm:text-base font-bold text-[#111827] dark:text-white tracking-wide"
-              >
-                Menit
-              </th>
-            </tr>
-          </thead>
-
-          <!-- Isi Tabel 1 sampai 24 Jam (Diisi secara dinamis dan konsisten) -->
-          <tbody
-            id="conversion-tbody"
-            class="divide-y divide-gray-200 dark:divide-[#363942] text-sm sm:text-base transition-colors duration-300"
-          >
-            <!-- Baris 1 jam - 24 jam akan dirender oleh JavaScript -->
-          </tbody>
-        </table>
-      </div>
+      <div id="conversion-list" class="space-y-2.5"></div>
     </section>
   </main>
 
   <script>
     /**
-     * Inisialisasi Aplikasi Daftar Jam ke Menit
-     * Mengelola pembuatan tabel konversi 1-24 jam serta pengaturan tema (Gelap/Terang)
-     * yang tersimpan secara permanen di localStorage.
+     * Aplikasi Daftar Jam ke Menit
+     * Mengelola rendering kartu konversi 1-24 jam serta pergantian tema Light/Dark Mode.
      */
     (function () {
       'use strict';
 
-      // Kunci penyimpanan tema di localStorage
-      const THEME_STORAGE_KEY = 'daftar_jam_ke_menit_theme';
+      const THEME_STORAGE_KEY = 'daftar_jam_ke_menit_theme_v2';
+      const TOTAL_HOURS = 24;
+      const MINUTES_PER_HOUR = 60;
+      const CYAN_THRESHOLD_HOUR = 15;
 
-      // Referensi elemen DOM
-      const htmlElement = document.documentElement;
-      const tbodyElement = document.getElementById('conversion-tbody');
-      const settingsBtn = document.getElementById('settings-btn');
-      const gearIcon = document.getElementById('gear-icon');
-      const settingsMenu = document.getElementById('settings-menu');
-      const themeDarkBtn = document.getElementById('theme-dark-btn');
-      const themeLightBtn = document.getElementById('theme-light-btn');
-      const indicatorDark = document.getElementById('indicator-dark');
-      const indicatorLight = document.getElementById('indicator-light');
+      // Referensi Elemen DOM
+      const dom = {
+        html: document.documentElement,
+        conversionList: document.getElementById('conversion-list'),
+        settingsBtn: document.getElementById('settings-btn'),
+        gearIcon: document.getElementById('gear-icon'),
+        settingsMenu: document.getElementById('settings-menu'),
+        themeOptionsContainer: document.getElementById('theme-options-container'),
+      };
+
+      // Konfigurasi Opsi Tema
+      const THEME_OPTIONS = [
+        {
+          id: 'dark',
+          label: 'Dark Mode',
+          icon: '🌙',
+          activeClasses: ['bg-cyan-500/10', 'text-cyan-300', 'font-semibold'],
+          badgeClasses: 'bg-cyan-500/20 text-cyan-400',
+        },
+        {
+          id: 'light',
+          label: 'Light Mode',
+          icon: '☀️',
+          activeClasses: ['bg-indigo-50', 'text-indigo-600', 'font-semibold'],
+          badgeClasses: 'bg-indigo-500/15 text-indigo-600',
+        },
+      ];
 
       let isMenuOpen = false;
+      const themeButtons = new Map();
 
       /**
-       * Membaca preferensi tema dari localStorage dengan penanganan error
-       * @returns {'dark' | 'light'} Tema yang tersimpan atau 'dark' sebagai default
+       * Merender tombol opsi tema secara dinamis dari konfigurasi THEME_OPTIONS
+       */
+      function renderThemeOptions() {
+        const fragment = document.createDocumentFragment();
+
+        THEME_OPTIONS.forEach((opt) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('role', 'menuitemradio');
+          btn.setAttribute('aria-checked', 'false');
+          btn.className =
+            'w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-100 text-left transition-colors duration-200 hover:bg-indigo-50 dark:hover:bg-cyan-500/10';
+
+          btn.innerHTML = `
+            <span class="flex items-center gap-2.5">
+              <span class="text-base leading-none" aria-hidden="true">${opt.icon}</span>
+              <span>${opt.label}</span>
+            </span>
+            <span
+              data-indicator
+              class="hidden items-center justify-center w-5 h-5 rounded-full ${opt.badgeClasses} text-xs font-bold"
+              aria-hidden="true"
+            >✓</span>
+          `;
+
+          btn.addEventListener('click', () => {
+            applyTheme(opt.id);
+            toggleSettingsMenu(false);
+          });
+
+          themeButtons.set(opt.id, {
+            btn,
+            indicator: btn.querySelector('[data-indicator]'),
+            activeClasses: opt.activeClasses,
+          });
+
+          fragment.appendChild(btn);
+        });
+
+        dom.themeOptionsContainer.replaceChildren(fragment);
+      }
+
+      /**
+       * Mengambil tema tersimpan dari localStorage
+       * @returns {'dark' | 'light'}
        */
       function getSavedTheme() {
         try {
           const saved = localStorage.getItem(THEME_STORAGE_KEY);
-          if (saved === 'light' || saved === 'dark') {
-            return saved;
-          }
-        } catch (error) {
-          console.warn('Penyimpanan lokal tidak tersedia:', error);
+          return saved === 'light' || saved === 'dark' ? saved : 'dark';
+        } catch {
+          return 'dark';
         }
-        return 'dark';
       }
 
       /**
-       * Menyimpan preferensi tema ke localStorage dengan aman
+       * Menyimpan tema pilihan ke localStorage
        * @param {'dark' | 'light'} theme
        */
       function saveTheme(theme) {
         try {
           localStorage.setItem(THEME_STORAGE_KEY, theme);
-        } catch (error) {
-          console.warn('Gagal menyimpan tema ke penyimpanan lokal:', error);
+        } catch {
+          // Abaikan jika penyimpanan diblokir browser
         }
       }
 
       /**
-       * Menerapkan tema ke seluruh aplikasi secara langsung dan memperbarui indikator aktif
+       * Menerapkan tema ke seluruh dokumen dan memperbarui status indikator menu
        * @param {'dark' | 'light'} theme
        */
       function applyTheme(theme) {
-        const isDark = theme === 'dark';
+        dom.html.classList.toggle('dark', theme === 'dark');
 
-        if (isDark) {
-          htmlElement.classList.add('dark');
-        } else {
-          htmlElement.classList.remove('dark');
-        }
-
-        // Perbarui status aksesibilitas dan indikator visual pada menu tema
-        themeDarkBtn.setAttribute('aria-checked', String(isDark));
-        themeLightBtn.setAttribute('aria-checked', String(!isDark));
-
-        if (isDark) {
-          themeDarkBtn.classList.add('bg-blue-500/10', 'text-blue-400', 'font-semibold');
-          themeLightBtn.classList.remove('bg-blue-500/10', 'text-blue-600', 'font-semibold');
-
-          indicatorDark.classList.remove('hidden');
-          indicatorDark.classList.add('inline-flex');
-          indicatorLight.classList.add('hidden');
-          indicatorLight.classList.remove('inline-flex');
-        } else {
-          themeLightBtn.classList.add('bg-blue-500/10', 'text-blue-600', 'font-semibold');
-          themeDarkBtn.classList.remove('bg-blue-500/10', 'text-blue-400', 'font-semibold');
-
-          indicatorLight.classList.remove('hidden');
-          indicatorLight.classList.add('inline-flex');
-          indicatorDark.classList.add('hidden');
-          indicatorDark.classList.remove('inline-flex');
-        }
+        themeButtons.forEach(({ btn, indicator, activeClasses }, id) => {
+          const isActive = id === theme;
+          btn.setAttribute('aria-checked', String(isActive));
+          activeClasses.forEach((cls) => btn.classList.toggle(cls, isActive));
+          indicator.classList.toggle('hidden', !isActive);
+          indicator.classList.toggle('inline-flex', isActive);
+        });
 
         saveTheme(theme);
       }
 
       /**
-       * Membuka atau menutup menu pengaturan tema
+       * Membuka atau menutup popover menu pengaturan
        * @param {boolean} [forceState]
        */
       function toggleSettingsMenu(forceState) {
         isMenuOpen = typeof forceState === 'boolean' ? forceState : !isMenuOpen;
-        settingsBtn.setAttribute('aria-expanded', String(isMenuOpen));
+        dom.settingsBtn.setAttribute('aria-expanded', String(isMenuOpen));
 
-        if (isMenuOpen) {
-          settingsMenu.classList.remove('closed');
-          settingsMenu.classList.add('open');
-          gearIcon.classList.add('rotate-90');
-        } else {
-          settingsMenu.classList.remove('open');
-          settingsMenu.classList.add('closed');
-          gearIcon.classList.remove('rotate-90');
+        dom.settingsMenu.classList.toggle('open', isMenuOpen);
+        dom.settingsMenu.classList.toggle('closed', !isMenuOpen);
+        dom.gearIcon.classList.toggle('rotate-90', isMenuOpen);
+      }
+
+      /**
+       * Membuat elemen konektor panah titik antara kolom Jam dan Menit
+       * @returns {HTMLDivElement}
+       */
+      function createConnectorElement() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex items-center justify-center px-1.5 shrink-0 select-none';
+        wrapper.setAttribute('aria-hidden', 'true');
+        wrapper.innerHTML = `
+          <svg width="20" height="12" viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg"
+               class="text-indigo-400/70 dark:text-purple-400/65">
+            <line x1="2" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <circle cx="15.5" cy="6" r="2.2" fill="currentColor" />
+          </svg>
+        `;
+        return wrapper;
+      }
+
+      /**
+       * Membuat satu baris kartu konversi jam ke menit
+       * @param {number} jam
+       * @returns {HTMLDivElement}
+       */
+      function createConversionCard(jam) {
+        const menit = jam * MINUTES_PER_HOUR;
+        const darkNeonClass = jam <= CYAN_THRESHOLD_HOUR ? 'menit-neon-cyan' : 'menit-neon-magenta';
+
+        const card = document.createElement('div');
+        card.className = 'conversion-row-card flex items-center justify-between p-1.5 sm:p-2';
+
+        const jamContainer = document.createElement('div');
+        jamContainer.className =
+          'jam-box w-[43%] py-2 px-3 rounded-xl text-center font-bold text-[1.05rem] sm:text-[1.12rem] tracking-tight whitespace-nowrap';
+        jamContainer.textContent = `${jam} jam`;
+
+        const connector = createConnectorElement();
+
+        const menitWrapper = document.createElement('div');
+        menitWrapper.className = 'w-[47%] flex justify-center';
+
+        const menitBadge = document.createElement('span');
+        menitBadge.className = `menit-badge ${darkNeonClass} w-full py-1.5 px-2.5 rounded-full text-center font-bold text-[0.95rem] sm:text-[1.02rem] tracking-tight whitespace-nowrap`;
+        menitBadge.textContent = `${menit} menit`;
+
+        menitWrapper.appendChild(menitBadge);
+        card.append(jamContainer, connector, menitWrapper);
+
+        return card;
+      }
+
+      /**
+       * Merender seluruh daftar kartu konversi dari 1 jam hingga 24 jam
+       */
+      function renderConversionList() {
+        try {
+          const fragment = document.createDocumentFragment();
+          for (let jam = 1; jam <= TOTAL_HOURS; jam++) {
+            fragment.appendChild(createConversionCard(jam));
+          }
+          dom.conversionList.replaceChildren(fragment);
+        } catch (error) {
+          console.error('Gagal merender daftar konversi:', error);
         }
       }
 
       /**
-       * Merender seluruh baris konversi dari 1 jam hingga 24 jam
-       * Format: "X jam" dan "Y menit" tanpa pemisah ribuan sesuai spesifikasi
+       * Mendaftarkan semua event listener aplikasi
        */
-      function renderConversionTable() {
-        try {
-          const fragment = document.createDocumentFragment();
+      function bindEvents() {
+        dom.settingsBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleSettingsMenu();
+        });
 
-          for (let jam = 1; jam <= 24; jam++) {
-            const menit = jam * 60;
-            const tr = document.createElement('tr');
-            tr.className =
-              'h-12 hover:bg-gray-50/90 dark:hover:bg-[#2c2f37]/80 transition-colors duration-150';
-
-            const tdJam = document.createElement('td');
-            tdJam.className =
-              'w-1/2 px-5 py-3 font-medium text-[#111827] dark:text-[#f9fafb] whitespace-nowrap';
-            tdJam.textContent = `${jam} jam`;
-
-            const tdMenit = document.createElement('td');
-            tdMenit.className =
-              'w-1/2 px-5 py-3 font-normal text-[#1f2937] dark:text-[#e5e7eb] whitespace-nowrap';
-            tdMenit.textContent = `${menit} menit`;
-
-            tr.appendChild(tdJam);
-            tr.appendChild(tdMenit);
-            fragment.appendChild(tr);
+        document.addEventListener('click', (event) => {
+          if (
+            isMenuOpen &&
+            !dom.settingsMenu.contains(event.target) &&
+            !dom.settingsBtn.contains(event.target)
+          ) {
+            toggleSettingsMenu(false);
           }
+        });
 
-          tbodyElement.innerHTML = '';
-          tbodyElement.appendChild(fragment);
-        } catch (error) {
-          console.error('Terjadi kesalahan saat memuat tabel konversi:', error);
-        }
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && isMenuOpen) {
+            toggleSettingsMenu(false);
+            dom.settingsBtn.focus();
+          }
+        });
       }
 
-      // Event Listener untuk tombol pengaturan (ikon roda gigi)
-      settingsBtn.addEventListener('click', function (event) {
-        event.stopPropagation();
-        toggleSettingsMenu();
-      });
-
-      // Event Listener untuk pemilihan Mode Gelap
-      themeDarkBtn.addEventListener('click', function () {
-        applyTheme('dark');
-        toggleSettingsMenu(false);
-      });
-
-      // Event Listener untuk pemilihan Mode Terang
-      themeLightBtn.addEventListener('click', function () {
-        applyTheme('light');
-        toggleSettingsMenu(false);
-      });
-
-      // Menutup menu pengaturan apabila pengguna menekan area di luar menu
-      document.addEventListener('click', function (event) {
-        if (
-          isMenuOpen &&
-          !settingsMenu.contains(event.target) &&
-          !settingsBtn.contains(event.target)
-        ) {
-          toggleSettingsMenu(false);
-        }
-      });
-
-      // Menutup menu pengaturan saat tombol Escape ditekan
-      document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && isMenuOpen) {
-          toggleSettingsMenu(false);
-          settingsBtn.focus();
-        }
-      });
-
-      // Jalankan inisialisasi awal saat halaman dimuat
+      // Inisialisasi Aplikasi
+      renderThemeOptions();
       applyTheme(getSavedTheme());
-      renderConversionTable();
+      renderConversionList();
+      bindEvents();
     })();
   </script>
 </body>
