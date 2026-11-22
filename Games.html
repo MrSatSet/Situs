@@ -2,39 +2,98 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
   <title>Catatan Pemakaian Game</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            navy: {
-              950: '#080e1a',
-              900: '#0f172a', // Background utama mode gelap
-              800: '#1e293b', // Card / Container mode gelap
-              700: '#2c3a4f', // Input abu-abu kebiruan
-              600: '#334155', // Border / Hover
-            }
-          }
+    // Terapkan tema sebelum render pertama agar tidak berkedip (zero-FOUC)
+    (function () {
+      try {
+        var t = localStorage.getItem('cpg_theme_v1');
+        if (t === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
         }
-      }
-    }
+      } catch (e) {}
+    })();
   </script>
-
   <style>
-    /* Custom scrollbar untuk tabel horizontal pada smartphone */
+    /* ==========================================================================
+       DESIGN TOKENS & 100% OFFLINE CSS (TANPA TAILWIND CDN & GOOGLE FONTS)
+       ========================================================================== */
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-input: #f1f5f9;
+      --bg-sub: #f1f5f9;
+      --bg-hover: #f8fafc;
+      --bg-preview: #eff6ff;
+      --border-preview: #bfdbfe;
+      --bg-btn-sec: #e2e8f0;
+      --bg-btn-sec-hover: #cbd5e1;
+      --text-main: #0f172a;
+      --text-heading: #0f172a;
+      --text-sub: #334155;
+      --text-muted: #64748b;
+      --border-main: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --shadow-card: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    }
+
+    html.dark {
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #2c3a4f;
+      --bg-sub: rgba(15, 23, 42, 0.9);
+      --bg-hover: rgba(44, 58, 79, 0.5);
+      --bg-preview: rgba(15, 23, 42, 0.8);
+      --border-preview: #334155;
+      --bg-btn-sec: #2c3a4f;
+      --bg-btn-sec-hover: #475569;
+      --text-main: #ffffff;
+      --text-heading: #ffffff;
+      --text-sub: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-main: rgba(51, 65, 85, 0.7);
+      --border-strong: #475569;
+      --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      padding-bottom: 2.5rem;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    ::selection {
+      background-color: #3b82f6;
+      color: #ffffff;
+    }
+
+    button, select, input {
+      font-family: inherit;
+      touch-action: manipulation;
+    }
+
+    /* Custom scrollbar untuk tabel horizontal */
     .table-scroll::-webkit-scrollbar {
       height: 6px;
     }
@@ -50,7 +109,6 @@
       background: rgba(100, 116, 139, 0.8);
     }
 
-    /* Styling input datetime-local agar ikon kalender terlihat jelas di mode gelap */
     html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
       cursor: pointer;
@@ -59,32 +117,484 @@
       cursor: pointer;
     }
 
-    /* Animasi halus untuk modal & toast */
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.96); }
       to { opacity: 1; transform: scale(1); }
     }
     .animate-modal {
-      animation: fadeIn 0.2s ease-out forwards;
+      animation: fadeIn 0.18s ease-out forwards;
     }
+
+    /* Container & Card */
+    .container {
+      max-width: 48rem;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 0;
+    }
+    @media (min-width: 640px) {
+      .container { padding-top: 2rem; }
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-main);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-card);
+    }
+    @media (min-width: 640px) {
+      .card { padding: 1.5rem; }
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: rgba(37, 99, 235, 0.15);
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    html.dark .header-icon {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+      color: var(--text-heading);
+    }
+    @media (min-width: 640px) {
+      .app-title { font-size: 1.25rem; }
+    }
+
+    .app-subtitle {
+      margin: 0.125rem 0 0;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .section-title {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .accent-bar {
+      width: 0.5rem;
+      height: 1.25rem;
+      border-radius: 9999px;
+      display: inline-block;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.08s ease-out, background-color 0.15s ease, opacity 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.6; pointer-events: none; }
+
+    .btn-settings {
+      padding: 0.75rem;
+      font-size: 1.25rem;
+      line-height: 1;
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-strong);
+      flex-shrink: 0;
+    }
+    .btn-settings:hover { background-color: var(--bg-btn-sec-hover); }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+    }
+    .btn-primary:hover { background-color: #1d4ed8; }
+
+    .btn-emerald {
+      background-color: #059669;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(5, 150, 105, 0.22);
+    }
+    .btn-emerald:hover { background-color: #047857; }
+
+    .btn-amber {
+      background-color: #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.22);
+    }
+    .btn-amber:hover { background-color: #d97706; }
+
+    .btn-orange {
+      background-color: #ea580c;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(234, 88, 12, 0.25);
+    }
+    .btn-orange:hover { background-color: #c2410c; }
+
+    .btn-rose {
+      background-color: #e11d48;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.22);
+    }
+    .btn-rose:hover { background-color: #be123c; }
+
+    .btn-secondary {
+      background-color: var(--bg-btn-sec);
+      color: var(--text-main);
+      border: 1px solid var(--border-strong);
+    }
+    .btn-secondary:hover { background-color: var(--bg-btn-sec-hover); }
+
+    /* Form Controls */
+    .form-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .grid-2-sm {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 640px) {
+      .grid-2-sm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.625rem;
+    }
+    @media (min-width: 640px) {
+      .grid-3 { gap: 0.75rem; }
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+      color: var(--text-sub);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      background-color: var(--bg-input);
+      color: var(--text-heading);
+      border: 1px solid var(--border-strong);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-control::placeholder { color: #94a3b8; }
+    .form-control:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+    }
+
+    .form-control-sm {
+      padding: 0.625rem 0.875rem;
+      font-size: 0.875rem;
+    }
+
+    .duration-box {
+      padding: 0.625rem 1rem;
+      border-radius: 0.75rem;
+      background-color: var(--bg-preview);
+      border: 1px solid var(--border-preview);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.875rem;
+    }
+
+    /* Table & History */
+    .history-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-main);
+    }
+    @media (min-width: 640px) {
+      .history-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-main);
+    }
+
+    table {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead tr {
+      background-color: var(--bg-sub);
+      color: var(--text-sub);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border-main);
+    }
+
+    th, td {
+      padding: 0.875rem 0.75rem;
+      white-space: nowrap;
+    }
+    th { font-weight: 700; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-main);
+      font-size: 0.875rem;
+      transition: background-color 0.12s ease;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background-color: var(--bg-hover); }
+
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8125rem;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.25rem 0.625rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .pill-blue { background: #dbeafe; color: #1d4ed8; }
+    html.dark .pill-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+
+    .pill-amber { background: #fef3c7; color: #b45309; }
+    html.dark .pill-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+
+    .pill-slate { background: #e2e8f0; color: #334155; }
+    html.dark .pill-slate { background: rgba(100, 116, 139, 0.35); color: #cbd5e1; }
+
+    .bat-green { color: #059669; }
+    html.dark .bat-green { color: #34d399; }
+    .bat-amber { color: #d97706; }
+    html.dark .bat-amber { color: #fbbf24; }
+    .bat-rose { color: #e11d48; }
+    html.dark .bat-rose { color: #fb7185; }
+
+    .btn-delete-row {
+      padding: 0.375rem 0.625rem;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: rgba(244, 63, 94, 0.15);
+      color: #e11d48;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    html.dark .btn-delete-row { color: #fb7185; }
+    .btn-delete-row:hover {
+      background-color: #e11d48;
+      color: #ffffff;
+    }
+
+    .mobile-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin: 0.625rem 0 0;
+      text-align: center;
+    }
+    @media (min-width: 640px) {
+      .mobile-hint { display: none; }
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(2, 6, 23, 0.78);
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      width: 100%;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 1rem;
+      box-shadow: var(--shadow-modal);
+      overflow: hidden;
+      margin: auto;
+    }
+    .modal-sm { max-width: 24rem; padding: 1.25rem; }
+    .modal-md { max-width: 28rem; padding: 1.5rem; }
+    .modal-lg { max-width: 28rem; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-main);
+      background-color: var(--bg-sub);
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+    }
+
+    .theme-btn {
+      padding: 0.875rem 1rem;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+      border: 2px solid var(--border-strong);
+      background-color: var(--bg-input);
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .theme-btn.active-dark {
+      border-color: #3b82f6;
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+    .theme-btn.active-light {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 92%;
+      max-width: 28rem;
+      pointer-events: none;
+    }
+    .toast-item {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #ffffff;
+      box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .toast-item.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Utilities */
+    .hidden { display: none !important; }
+    .w-full { width: 100%; }
+    .text-center { text-align: center; }
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-blue { color: #2563eb; }
+    html.dark .text-blue { color: #60a5fa; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 dark:bg-navy-900 dark:text-white font-sans min-h-screen transition-colors duration-200 selection:bg-blue-500 selection:text-white pb-10">
+<body>
 
   <!-- Container Utama (Dioptimalkan untuk Android & Desktop) -->
-  <div class="max-w-3xl mx-auto px-4 pt-5 sm:pt-8">
+  <div class="container">
     
     <!-- Header Aplikasi -->
-    <header class="flex items-center justify-between bg-white dark:bg-navy-800 px-5 py-4 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70 mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600/15 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl font-bold shadow-inner">
-          🎮
-        </div>
+    <header class="card app-header">
+      <div class="header-left">
+        <div class="header-icon">🎮</div>
         <div>
-          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-            Catatan Pemakaian Game
-          </h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Pantau durasi & riwayat bermainmu</p>
+          <h1 class="app-title">Catatan Pemakaian Game</h1>
+          <p class="app-subtitle">Pantau durasi & riwayat bermainmu</p>
         </div>
       </div>
 
@@ -93,28 +603,24 @@
         id="btnOpenSettings" 
         type="button"
         aria-label="Pengaturan Aplikasi"
-        class="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-slate-600 text-xl transition active:scale-95 shadow-sm border border-slate-200 dark:border-slate-600/50"
+        class="btn btn-settings"
         title="Pengaturan">
         ⚙️
       </button>
     </header>
 
     <!-- Formulir Pencatatan Aktivitas Game -->
-    <main class="bg-white dark:bg-navy-800 p-5 sm:p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70 mb-6">
-      <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-        <span class="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
+    <main class="card">
+      <h2 class="section-title">
+        <span class="accent-bar" style="background-color: #2563eb;"></span>
         Tambah Catatan Bermain
       </h2>
 
-      <form id="gameLogForm" class="space-y-4" novalidate>
+      <form id="gameLogForm" class="form-stack" novalidate>
         <!-- 1. Nama Game -->
         <div>
-          <label for="gameSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-            Nama Game
-          </label>
-          <select 
-            id="gameSelect" 
-            class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          <label for="gameSelect" class="field-label">Nama Game</label>
+          <select id="gameSelect" class="form-control">
             <option value="Mobile Legends">Mobile Legends</option>
             <option value="PUBG Flash">PUBG Flash</option>
             <option value="Free Fire Max">Free Fire Max</option>
@@ -124,72 +630,56 @@
           </select>
 
           <!-- Input Manual jika memilih "Game Lainnya" -->
-          <div id="customGameWrapper" class="hidden mt-2.5">
+          <div id="customGameWrapper" class="hidden" style="margin-top: 0.625rem;">
             <input 
               type="text" 
               id="customGameInput" 
               placeholder="Masukkan nama game secara manual..." 
-              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+              class="form-control" />
           </div>
         </div>
 
         <!-- 2 & 3. Tanggal & Jam Mulai + Berakhir -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid-2-sm">
           <div>
-            <label for="startTime" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-              Tanggal & Jam Mulai
-            </label>
-            <input 
-              type="datetime-local" 
-              id="startTime" 
-              required
-              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+            <label for="startTime" class="field-label">Tanggal & Jam Mulai</label>
+            <input type="datetime-local" id="startTime" required class="form-control" />
           </div>
 
           <div>
-            <label for="endTime" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-              Tanggal & Jam Berakhir
-            </label>
-            <input 
-              type="datetime-local" 
-              id="endTime" 
-              required
-              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+            <label for="endTime" class="field-label">Tanggal & Jam Berakhir</label>
+            <input type="datetime-local" id="endTime" required class="form-control" />
           </div>
         </div>
 
         <!-- Pratinjau Otomatis Durasi Bermain -->
-        <div id="durationPreviewBox" class="px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-navy-900/80 border border-blue-200 dark:border-slate-700 flex items-center justify-between text-sm">
-          <span class="text-slate-600 dark:text-slate-400 font-medium">Estimasi Durasi Bermain:</span>
-          <span id="durationPreviewText" class="font-bold text-blue-600 dark:text-blue-400">0 jam 0 menit</span>
+        <div id="durationPreviewBox" class="duration-box">
+          <span class="font-medium" style="color: var(--text-muted);">Estimasi Durasi Bermain:</span>
+          <span id="durationPreviewText" class="font-bold text-blue">0 jam 0 menit</span>
         </div>
 
         <!-- 4 & 5. Baterai (%) + Koneksi -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid-2-sm">
           <div>
-            <label for="batteryInput" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-              Baterai (%)
-            </label>
-            <div class="relative">
+            <label for="batteryInput" class="field-label">Baterai (%)</label>
+            <div style="position: relative;">
               <input 
                 type="number" 
                 id="batteryInput" 
                 min="0" 
                 max="100" 
                 placeholder="80" 
+                inputmode="numeric"
                 required
-                class="w-full px-4 py-3 pr-10 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</span>
+                class="form-control"
+                style="padding-right: 2.5rem;" />
+              <span style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-weight: 700;">%</span>
             </div>
           </div>
 
           <div>
-            <label for="connectionSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-              Koneksi
-            </label>
-            <select 
-              id="connectionSelect" 
-              class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <label for="connectionSelect" class="field-label">Koneksi</label>
+            <select id="connectionSelect" class="form-control">
               <option value="WiFi">WiFi</option>
               <option value="Data Seluler">Data Seluler</option>
               <option value="Offline">Offline</option>
@@ -198,10 +688,11 @@
         </div>
 
         <!-- Tombol Simpan Besar Berwarna Biru -->
-        <div class="pt-2">
+        <div style="padding-top: 0.35rem;">
           <button 
             type="submit" 
-            class="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-base shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+            class="btn btn-primary w-full"
+            style="padding: 0.875rem 1.5rem; font-size: 1rem;">
             <span>💾</span>
             <span>Simpan Catatan</span>
           </button>
@@ -210,15 +701,16 @@
     </main>
 
     <!-- Bagian Pengelolaan Data & Riwayat Permainan -->
-    <section class="bg-white dark:bg-navy-800 p-5 sm:p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/70">
+    <section class="card" style="margin-bottom: 0;">
       
-      <!-- Baris Tombol Pengelolaan Data: Cadangkan (Hijau), Pulihkan (Oranye), Hapus Semua (Merah) -->
-      <div class="grid grid-cols-3 gap-2.5 sm:gap-3 mb-5">
+      <!-- Baris Tombol Pengelolaan Data: 100% Offline -->
+      <div class="grid-3" style="margin-bottom: 1.25rem;">
         <button 
           id="btnBackupJson" 
           type="button"
-          title="Cadangkan data dalam format kompresi ZIP mandiri"
-          class="py-3 px-2 sm:px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          title="Cadangkan data dalam format kompresi ZIP mandiri (Offline)"
+          class="btn btn-emerald text-xs"
+          style="padding: 0.75rem 0.5rem;">
           <span>🗜️</span>
           <span>Cadangkan ZIP</span>
         </button>
@@ -226,8 +718,9 @@
         <button 
           id="btnRestoreJson" 
           type="button"
-          title="Pulihkan dari arsip ZIP terkompresi atau file JSON"
-          class="py-3 px-2 sm:px-4 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          title="Pulihkan dari arsip ZIP terkompresi atau file JSON (Offline)"
+          class="btn btn-amber text-xs"
+          style="padding: 0.75rem 0.5rem;">
           <span>📂</span>
           <span>Pulihkan</span>
         </button>
@@ -235,59 +728,58 @@
         <button 
           id="btnDeleteAll" 
           type="button"
-          class="py-3 px-2 sm:px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-rose-600/20 transition active:scale-95 flex items-center justify-center gap-1.5">
+          class="btn btn-rose text-xs"
+          style="padding: 0.75rem 0.5rem;">
           <span>🗑️</span>
           <span>Hapus Semua</span>
         </button>
 
-        <!-- Input file tersembunyi untuk Pulihkan ZIP maupun JSON -->
         <input type="file" id="restoreFileInput" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" class="hidden" />
       </div>
 
       <!-- Header Tabel & Dropdown Urutan Riwayat -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
-        <h2 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-          <span class="w-2 h-5 bg-emerald-500 rounded-full inline-block"></span>
+      <div class="history-header">
+        <h2 class="section-title" style="margin-bottom: 0;">
+          <span class="accent-bar" style="background-color: #10b981;"></span>
           Riwayat Permainan
         </h2>
 
-        <div class="flex items-center gap-2">
-          <label for="sortOrderSelect" class="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label for="sortOrderSelect" class="text-xs font-semibold" style="color: var(--text-muted); white-space: nowrap;">
             Urutkan:
           </label>
           <select 
             id="sortOrderSelect" 
-            class="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-xs sm:text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            class="form-control form-control-sm"
+            style="width: auto; flex: 1;">
             <option value="newest">Tanggal terbaru → terlama</option>
             <option value="oldest">Tanggal terlama → terbaru</option>
           </select>
         </div>
       </div>
 
-      <!-- Tabel Riwayat Permainan (Dapat digeser horizontal pada smartphone) -->
-      <div class="overflow-x-auto table-scroll rounded-xl border border-slate-200 dark:border-slate-700">
-        <table class="w-full text-left border-collapse min-w-[780px]">
+      <!-- Tabel Riwayat Permainan -->
+      <div class="table-wrap table-scroll">
+        <table>
           <thead>
-            <tr class="bg-slate-100 dark:bg-navy-900/90 text-slate-700 dark:text-slate-300 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
-              <th class="py-3.5 px-3 font-bold text-center w-12">No</th>
-              <th class="py-3.5 px-3 font-bold">Tanggal</th>
-              <th class="py-3.5 px-3 font-bold">Nama Game</th>
-              <th class="py-3.5 px-3 font-bold">Jam Mulai</th>
-              <th class="py-3.5 px-3 font-bold">Jam Akhir</th>
-              <th class="py-3.5 px-3 font-bold">Durasi Bermain</th>
-              <th class="py-3.5 px-3 font-bold text-center">Baterai (%)</th>
-              <th class="py-3.5 px-3 font-bold">Koneksi</th>
-              <th class="py-3.5 px-3 font-bold text-center w-20">Aksi</th>
+            <tr>
+              <th class="text-center" style="width: 3rem;">No</th>
+              <th>Tanggal</th>
+              <th>Nama Game</th>
+              <th>Jam Mulai</th>
+              <th>Jam Akhir</th>
+              <th>Durasi Bermain</th>
+              <th class="text-center">Baterai (%)</th>
+              <th>Koneksi</th>
+              <th class="text-center" style="width: 5rem;">Aksi</th>
             </tr>
           </thead>
-          <tbody id="historyTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/70 text-sm">
-            <!-- Baris riwayat akan dirender melalui JavaScript -->
-          </tbody>
+          <tbody id="historyTableBody"></tbody>
         </table>
       </div>
       
       <!-- Petunjuk Geser untuk Mobile -->
-      <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-2.5 text-center sm:hidden">
+      <p class="mobile-hint">
         ← Geser tabel ke kiri/kanan untuk melihat semua kolom →
       </p>
     </section>
@@ -296,125 +788,119 @@
   <!-- ===================================================================== -->
   <!-- MODAL PENGATURAN APLIKASI (Hanya 2 Bagian: Tampilan & GitHub Backup)  -->
   <!-- ===================================================================== -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-navy-800 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-modal my-auto">
+  <div id="settingsModal" class="modal-backdrop">
+    <div class="modal-box modal-lg animate-modal">
       
       <!-- Header Modal Pengaturan -->
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-navy-900/60">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 0.5rem;">
           <span>⚙️</span>
           <span>Pengaturan Aplikasi</span>
         </h3>
         <button 
           id="btnCloseSettings" 
           type="button"
-          class="w-9 h-9 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-navy-700 dark:hover:bg-slate-600 flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold transition">
+          class="btn btn-secondary"
+          style="width: 2.25rem; height: 2.25rem; padding: 0;">
           ✕
         </button>
       </div>
 
-      <div class="p-5 space-y-6">
+      <div class="modal-body">
         
         <!-- BAGIAN 1: TAMPILAN -->
         <div>
-          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+          <h4 style="margin: 0 0 0.75rem; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">
             1. Tampilan
           </h4>
-          <div class="grid grid-cols-2 gap-3">
-            <button 
-              id="btnThemeDark" 
-              type="button"
-              class="py-3.5 px-4 rounded-xl font-bold text-sm border-2 transition flex items-center justify-center gap-2 shadow-sm">
+          <div class="grid-2">
+            <button id="btnThemeDark" type="button" class="theme-btn">
               <span>🌙</span>
               <span>Gelap</span>
             </button>
 
-            <button 
-              id="btnThemeLight" 
-              type="button"
-              class="py-3.5 px-4 rounded-xl font-bold text-sm border-2 transition flex items-center justify-center gap-2 shadow-sm">
+            <button id="btnThemeLight" type="button" class="theme-btn">
               <span>☀️</span>
               <span>Terang</span>
             </button>
           </div>
         </div>
 
-        <hr class="border-slate-200 dark:border-slate-700" />
+        <hr style="border: none; border-top: 1px solid var(--border-main); margin: 0;" />
 
-        <!-- BAGIAN 2: GITHUB BACKUP -->
+        <!-- BAGIAN 2: GITHUB BACKUP (Hanya bagian ini yang menggunakan internet) -->
         <div>
-          <h4 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+          <h4 style="margin: 0 0 0.75rem; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">
             2. GitHub Backup (Kompresi ZIP Mandiri)
           </h4>
 
-          <div class="space-y-3.5">
-            <!-- GitHub Token -->
+          <div class="form-stack" style="gap: 0.875rem;">
             <div>
-              <label for="githubTokenInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label for="githubTokenInput" class="field-label text-xs">
                 GitHub Token (Personal Access Token)
               </label>
-              <div class="relative">
+              <div style="position: relative;">
                 <input 
                   type="password" 
                   id="githubTokenInput" 
                   placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
                   autocomplete="off"
-                  class="w-full px-3.5 py-2.5 pr-12 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  class="form-control form-control-sm"
+                  style="padding-right: 3rem;" />
                 <button 
                   id="btnToggleTokenVisibility" 
                   type="button"
                   title="Tampilkan/Sembunyikan Token"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white text-sm">
+                  style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); padding: 0.375rem; background: transparent; border: none; cursor: pointer; font-size: 0.95rem;">
                   👁️
                 </button>
               </div>
-              <p id="tokenStatusHint" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.
+              <p id="tokenStatusHint" style="font-size: 11px; color: var(--text-muted); margin: 0.35rem 0 0;">
+                Token disimpan secara lokal di perangkat Anda dan hanya digunakan saat backup/restore GitHub.
               </p>
             </div>
 
-            <!-- Repository (user/repo) -->
             <div>
-              <label for="githubRepoInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label for="githubRepoInput" class="field-label text-xs">
                 Repository (user/repo)
               </label>
               <input 
                 type="text" 
                 id="githubRepoInput" 
                 placeholder="geminiveo600-byte/backup"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                class="form-control form-control-sm" />
             </div>
 
-            <!-- Nama File Cadangan di GitHub -->
             <div>
-              <label for="githubFilePathInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label for="githubFilePathInput" class="field-label text-xs">
                 Nama File Cadangan di GitHub
               </label>
               <input 
                 type="text" 
                 id="githubFilePathInput" 
                 placeholder="Games.zip"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-navy-700 border border-slate-300 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Menggunakan mesin kompresi <strong>ZIP DEFLATE bawaan browser</strong> (100% mandiri tanpa CDN Cloudflare) dan mendukung pemulihan file .zip maupun .json.
+                class="form-control form-control-sm" />
+              <p style="font-size: 11px; color: var(--text-muted); margin: 0.35rem 0 0;">
+                Menggunakan mesin kompresi <strong>ZIP DEFLATE lokal</strong> (100% tanpa CDN) dan mendukung pemulihan file .zip maupun .json.
               </p>
             </div>
 
-            <!-- Tombol Simpan GitHub & Aksi Sinkronisasi -->
-            <div class="pt-1 space-y-2.5">
+            <div style="padding-top: 0.25rem; display: flex; flex-direction: column; gap: 0.625rem;">
               <button 
                 id="btnSaveGithub" 
                 type="button"
-                class="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm shadow-md shadow-blue-600/25 transition flex items-center justify-center gap-2">
+                class="btn btn-primary w-full text-sm"
+                style="padding: 0.75rem 1rem;">
                 <span>💾</span>
                 <span>Simpan GitHub</span>
               </button>
 
-              <div class="grid grid-cols-2 gap-2.5">
+              <div class="grid-2">
                 <button 
                   id="btnGithubPush" 
                   type="button"
-                  class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                  class="btn btn-emerald text-xs"
+                  style="padding: 0.65rem 0.75rem;">
                   <span>🗜️⬆️</span>
                   <span>Backup ZIP ke GitHub</span>
                 </button>
@@ -422,7 +908,8 @@
                 <button 
                   id="btnGithubPull" 
                   type="button"
-                  class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                  class="btn btn-amber text-xs"
+                  style="padding: 0.65rem 0.75rem;">
                   <span>📦⬇️</span>
                   <span>Pulihkan GitHub</span>
                 </button>
@@ -438,36 +925,38 @@
   <!-- ===================================================================== -->
   <!-- MODAL KONFIRMASI PEMULIHAN DATA (Batal / Gabungkan / Timpa Data Lama) -->
   <!-- ===================================================================== -->
-  <div id="restoreConfirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-[#192336] w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/80 p-6 animate-modal">
-      <div class="flex items-start gap-3.5">
-        <div class="text-3xl leading-none select-none pt-0.5">📂</div>
-        <div class="flex-1">
-          <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+  <div id="restoreConfirmModal" class="modal-backdrop" style="z-index: 60;">
+    <div class="modal-box modal-md animate-modal">
+      <div style="display: flex; align-items: flex-start; gap: 0.875rem;">
+        <div style="font-size: 1.875rem; line-height: 1; user-select: none; padding-top: 0.125rem;">📂</div>
+        <div style="flex: 1;">
+          <h3 style="margin: 0; font-size: 1.125rem; font-weight: 800; color: var(--text-heading);">
             Konfirmasi Pemulihan Data
           </h3>
-          <p id="restoreConfirmMessage" class="text-sm sm:text-[15px] text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
+          <p id="restoreConfirmMessage" class="text-sm" style="color: var(--text-sub); margin: 0.625rem 0 0; line-height: 1.55;">
             Ditemukan 1 catatan pada sumber cadangan, sementara saat ini sudah ada 1 catatan tersimpan. Pilih metode pemulihan:
           </p>
 
-          <!-- 3 Tombol Aksi: Batal, Gabungkan, Timpa Data Lama -->
-          <div class="flex flex-wrap items-center gap-2.5 mt-6">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; margin-top: 1.5rem;">
             <button 
               id="btnRestoreCancel" 
               type="button"
-              class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#2a364d] dark:hover:bg-[#34425e] border border-slate-300 dark:border-slate-600/80 text-slate-700 dark:text-slate-100 font-bold text-xs sm:text-sm transition active:scale-95">
+              class="btn btn-secondary text-xs"
+              style="padding: 0.625rem 1rem;">
               Batal
             </button>
             <button 
               id="btnRestoreMerge" 
               type="button"
-              class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-600/25 transition active:scale-95">
+              class="btn btn-primary text-xs"
+              style="padding: 0.625rem 1rem;">
               Gabungkan
             </button>
             <button 
               id="btnRestoreOverwrite" 
               type="button"
-              class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-600/25 transition active:scale-95">
+              class="btn btn-orange text-xs"
+              style="padding: 0.625rem 1rem;">
               Timpa Data Lama
             </button>
           </div>
@@ -477,30 +966,32 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL KONFIRMASI KUSTOM (Pengganti confirm() bawaan browser)          -->
+  <!-- MODAL KONFIRMASI KUSTOM                                               -->
   <!-- ===================================================================== -->
-  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-navy-800 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-5 animate-modal">
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+  <div id="confirmModal" class="modal-backdrop">
+    <div class="modal-box modal-sm animate-modal">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <div style="width: 2.5rem; height: 2.5rem; border-radius: 9999px; background: rgba(244, 63, 94, 0.18); color: #f43f5e; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
           ⚠️
         </div>
-        <h3 id="confirmTitle" class="text-base font-bold text-slate-900 dark:text-white">Konfirmasi</h3>
+        <h3 id="confirmTitle" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-heading);">Konfirmasi</h3>
       </div>
-      <p id="confirmMessage" class="text-sm text-slate-600 dark:text-slate-300 mb-5 leading-relaxed">
+      <p id="confirmMessage" class="text-sm" style="color: var(--text-sub); margin: 0 0 1.25rem; line-height: 1.55;">
         Apakah Anda yakin ingin melanjutkan tindakan ini?
       </p>
-      <div class="flex justify-end gap-2.5">
+      <div style="display: flex; justify-content: flex-end; gap: 0.625rem;">
         <button 
           id="btnConfirmCancel" 
           type="button"
-          class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-navy-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-semibold text-sm transition">
+          class="btn btn-secondary text-sm"
+          style="padding: 0.625rem 1rem;">
           Batal
         </button>
         <button 
           id="btnConfirmOk" 
           type="button"
-          class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-600/20 transition">
+          class="btn btn-rose text-sm"
+          style="padding: 0.625rem 1rem;">
           Ya, Hapus
         </button>
       </div>
@@ -508,16 +999,17 @@
   </div>
 
   <!-- ===================================================================== -->
-  <!-- NOTIFIKASI TOAST (Pengganti alert() bawaan browser)                   -->
+  <!-- NOTIFIKASI TOAST                                                      -->
   <!-- ===================================================================== -->
-  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[70] flex flex-col gap-2 w-[92%] max-w-md pointer-events-none"></div>
+  <div id="toastContainer" class="toast-container"></div>
 
   <!-- ===================================================================== -->
-  <!-- LOGIKA JAVASCRIPT APLIKASI                                            -->
+  <!-- LOGIKA JAVASCRIPT APLIKASI (100% OFFLINE LOCAL MODE)                   -->
   <!-- ===================================================================== -->
   <script>
     (function () {
-      // Kunci penyimpanan localStorage
+      'use strict';
+
       const STORAGE_KEYS = {
         LOGS: 'cpg_game_logs_v1',
         THEME: 'cpg_theme_v1',
@@ -527,9 +1019,8 @@
       const DEFAULT_GITHUB_FILE = 'Games.zip';
       const INTERNAL_ZIP_JSON_NAME = 'Games.json';
 
-      // State Aplikasi
       let gameLogs = [];
-      let sortOrder = 'newest'; // 'newest' | 'oldest'
+      let sortOrder = 'newest';
       let confirmCallback = null;
       let pendingRestoreData = null;
 
@@ -585,7 +1076,7 @@
       const btnConfirmOk = document.getElementById('btnConfirmOk');
 
       // -------------------------------------------------------------------
-      // 1. SISTEM KOMPRESI & DEKOMPRESI ZIP MANDIRI (100% NATIVE BROWSER)
+      // 1. SISTEM KOMPRESI & DEKOMPRESI ZIP MANDIRI (100% OFFLINE + INFLATE FALLBACK)
       // -------------------------------------------------------------------
       const CRC32_TABLE = (() => {
         const table = new Uint32Array(256);
@@ -620,6 +1111,205 @@
         return { dosTime, dosDate };
       }
 
+      // Pure-JS RFC 1951 DEFLATE-RAW Inflater (Fallback jika browser lama tidak punya DecompressionStream)
+      const INFLATE_LEN_BASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+      const INFLATE_LEN_EXTRA = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+      const INFLATE_DIST_BASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+      const INFLATE_DIST_EXTRA = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+      const INFLATE_CL_ORDER = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+
+      function buildHuffmanTable(lengths, numSyms) {
+        const counts = new Uint16Array(16);
+        let maxBits = 0;
+        for (let i = 0; i < numSyms; i++) {
+          const l = lengths[i];
+          if (l > 0) {
+            counts[l]++;
+            if (l > maxBits) maxBits = l;
+          }
+        }
+        if (maxBits === 0) return { table: new Int32Array(1), maxBits: 1 };
+
+        const offsets = new Uint16Array(16);
+        let code = 0;
+        for (let bits = 1; bits <= maxBits; bits++) {
+          code = (code + counts[bits - 1]) << 1;
+          offsets[bits] = code;
+        }
+
+        const size = 1 << maxBits;
+        const table = new Int32Array(size);
+        table.fill(-1);
+
+        for (let sym = 0; sym < numSyms; sym++) {
+          const len = lengths[sym];
+          if (len > 0) {
+            const c = offsets[len]++;
+            let rev = 0;
+            for (let b = 0; b < len; b++) {
+              rev = (rev << 1) | ((c >>> b) & 1);
+            }
+            const entry = (len << 16) | sym;
+            const step = 1 << len;
+            for (let idx = rev; idx < size; idx += step) {
+              table[idx] = entry;
+            }
+          }
+        }
+        return { table, maxBits };
+      }
+
+      function pureJsInflateRaw(src, expectedSize) {
+        let bytePos = 0;
+        let bitBuf = 0;
+        let bitCount = 0;
+
+        function needBits(n) {
+          while (bitCount < n) {
+            if (bytePos >= src.length) throw new Error('Data kompresi ZIP terpotong.');
+            bitBuf |= src[bytePos++] << bitCount;
+            bitCount += 8;
+          }
+        }
+
+        function readBits(n) {
+          if (n === 0) return 0;
+          needBits(n);
+          const val = bitBuf & ((1 << n) - 1);
+          bitBuf >>>= n;
+          bitCount -= n;
+          return val;
+        }
+
+        function decodeSym(huff) {
+          needBits(huff.maxBits);
+          const entry = huff.table[bitBuf & ((1 << huff.maxBits) - 1)];
+          if (entry < 0) throw new Error('Kode Huffman ZIP korup.');
+          const len = entry >>> 16;
+          bitBuf >>>= len;
+          bitCount -= len;
+          return entry & 0xFFFF;
+        }
+
+        let out = new Uint8Array(expectedSize > 0 ? expectedSize : Math.max(256, src.length * 3));
+        let outPos = 0;
+
+        function ensureCapacity(extra) {
+          if (outPos + extra > out.length) {
+            const next = new Uint8Array(Math.max(out.length * 2, outPos + extra));
+            next.set(out.subarray(0, outPos));
+            out = next;
+          }
+        }
+
+        let fixedLit = null;
+        let fixedDist = null;
+        let isFinal = 0;
+
+        while (!isFinal) {
+          isFinal = readBits(1);
+          const blockType = readBits(2);
+
+          if (blockType === 0) {
+            bitBuf = 0;
+            bitCount = 0;
+            if (bytePos + 4 > src.length) throw new Error('Blok uncompressed ZIP korup.');
+            const len = src[bytePos] | (src[bytePos + 1] << 8);
+            const nlen = src[bytePos + 2] | (src[bytePos + 3] << 8);
+            bytePos += 4;
+            if ((len ^ 0xFFFF) !== nlen || bytePos + len > src.length) {
+              throw new Error('Panjang blok uncompressed ZIP tidak cocok.');
+            }
+            ensureCapacity(len);
+            out.set(src.subarray(bytePos, bytePos + len), outPos);
+            bytePos += len;
+            outPos += len;
+          } else if (blockType === 1 || blockType === 2) {
+            let litHuff;
+            let distHuff;
+
+            if (blockType === 1) {
+              if (!fixedLit) {
+                const ll = new Uint8Array(288);
+                ll.fill(8, 0, 144);
+                ll.fill(9, 144, 256);
+                ll.fill(7, 256, 280);
+                ll.fill(8, 280, 288);
+                fixedLit = buildHuffmanTable(ll, 288);
+                const dl = new Uint8Array(32);
+                dl.fill(5);
+                fixedDist = buildHuffmanTable(dl, 32);
+              }
+              litHuff = fixedLit;
+              distHuff = fixedDist;
+            } else {
+              const hlit = readBits(5) + 257;
+              const hdist = readBits(5) + 1;
+              const hclen = readBits(4) + 4;
+              const clLens = new Uint8Array(19);
+              for (let i = 0; i < hclen; i++) {
+                clLens[INFLATE_CL_ORDER[i]] = readBits(3);
+              }
+              const clHuff = buildHuffmanTable(clLens, 19);
+              const totalCodes = hlit + hdist;
+              const allLens = new Uint8Array(totalCodes);
+              let idx = 0;
+
+              while (idx < totalCodes) {
+                const sym = decodeSym(clHuff);
+                if (sym < 16) {
+                  allLens[idx++] = sym;
+                } else if (sym === 16) {
+                  if (idx === 0) throw new Error('Pengulangan kode Huffman ZIP tidak valid.');
+                  const rep = readBits(2) + 3;
+                  const prev = allLens[idx - 1];
+                  for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = prev;
+                } else if (sym === 17) {
+                  const rep = readBits(3) + 3;
+                  for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = 0;
+                } else if (sym === 18) {
+                  const rep = readBits(7) + 11;
+                  for (let r = 0; r < rep && idx < totalCodes; r++) allLens[idx++] = 0;
+                } else {
+                  throw new Error('Simbol panjang kode ZIP tidak valid.');
+                }
+              }
+
+              litHuff = buildHuffmanTable(allLens.subarray(0, hlit), hlit);
+              distHuff = buildHuffmanTable(allLens.subarray(hlit, totalCodes), hdist);
+            }
+
+            while (true) {
+              const sym = decodeSym(litHuff);
+              if (sym < 256) {
+                ensureCapacity(1);
+                out[outPos++] = sym;
+              } else if (sym === 256) {
+                break;
+              } else {
+                const lenIdx = sym - 257;
+                if (lenIdx >= INFLATE_LEN_BASE.length) throw new Error('Kode panjang LZ77 ZIP tidak valid.');
+                const length = INFLATE_LEN_BASE[lenIdx] + readBits(INFLATE_LEN_EXTRA[lenIdx]);
+                const distSym = decodeSym(distHuff);
+                if (distSym >= INFLATE_DIST_BASE.length) throw new Error('Kode jarak LZ77 ZIP tidak valid.');
+                const distance = INFLATE_DIST_BASE[distSym] + readBits(INFLATE_DIST_EXTRA[distSym]);
+                if (distance > outPos) throw new Error('Jarak mundur LZ77 melebihi buffer output.');
+
+                ensureCapacity(length);
+                for (let k = 0; k < length; k++) {
+                  out[outPos] = out[outPos - distance];
+                  outPos++;
+                }
+              }
+            }
+          } else {
+            throw new Error('Tipe blok DEFLATE ZIP tidak valid.');
+          }
+        }
+
+        return out.subarray(0, outPos);
+      }
+
       async function runStreamTransform(uint8Array, streamInstance) {
         const writer = streamInstance.writable.getWriter();
         const writePromise = writer.write(uint8Array).then(() => writer.close());
@@ -650,16 +1340,20 @@
 
       async function deflateRawBytes(uint8Array) {
         if (typeof CompressionStream === 'undefined') {
-          throw new Error('Browser Anda belum mendukung API CompressionStream bawaan.');
+          throw new Error('CompressionStream tidak tersedia.');
         }
         return runStreamTransform(uint8Array, new CompressionStream('deflate-raw'));
       }
 
-      async function inflateRawBytes(uint8Array) {
-        if (typeof DecompressionStream === 'undefined') {
-          throw new Error('Browser Anda belum mendukung API DecompressionStream bawaan.');
+      async function inflateRawBytes(uint8Array, expectedUncompressedSize = 0) {
+        if (typeof DecompressionStream !== 'undefined') {
+          try {
+            return await runStreamTransform(uint8Array, new DecompressionStream('deflate-raw'));
+          } catch (e) {
+            // Lanjut ke fallback Pure-JS Inflate
+          }
         }
-        return runStreamTransform(uint8Array, new DecompressionStream('deflate-raw'));
+        return pureJsInflateRaw(uint8Array, expectedUncompressedSize);
       }
 
       function formatByteSize(bytes) {
@@ -702,10 +1396,6 @@
         );
       }
 
-      /**
-       * Mengompres objek payload JSON menjadi arsip ZIP standar (PKZIP 2.0, DEFLATE)
-       * secara mandiri tanpa ketergantungan Cloudflare/library eksternal.
-       */
       async function compressPayloadToZip(payloadObj, innerFileName = INTERNAL_ZIP_JSON_NAME) {
         const encoder = new TextEncoder();
         const jsonStr = JSON.stringify(payloadObj, null, 2);
@@ -722,7 +1412,7 @@
           compressedData = await deflateRawBytes(rawData);
         } catch (e) {
           compressedData = rawData;
-          compressionMethod = 0; // Fallback Store (tanpa kompresi)
+          compressionMethod = 0; // Fallback Store pada browser lama tanpa CompressionStream
         }
 
         const compressedSize = compressedData.byteLength;
@@ -805,10 +1495,6 @@
         };
       }
 
-      /**
-       * Mengekstrak entri file .json dari arsip ZIP secara mandiri
-       * menggunakan DecompressionStream('deflate-raw').
-       */
       async function extractJsonTextFromZipBytes(bytes) {
         const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         const decoder = new TextDecoder('utf-8');
@@ -832,14 +1518,16 @@
             if (view.getUint32(ptr, true) !== 0x02014B50) break;
 
             const method = view.getUint16(ptr + 10, true);
+            const expectedCrc = view.getUint32(ptr + 16, true);
             const compressedSize = view.getUint32(ptr + 20, true);
+            const uncompressedSize = view.getUint32(ptr + 24, true);
             const fileNameLen = view.getUint16(ptr + 28, true);
             const extraLen = view.getUint16(ptr + 30, true);
             const commentLen = view.getUint16(ptr + 32, true);
             const localHeaderOffset = view.getUint32(ptr + 42, true);
 
             const fileName = decoder.decode(bytes.subarray(ptr + 46, ptr + 46 + fileNameLen));
-            entries.push({ fileName, method, compressedSize, localHeaderOffset });
+            entries.push({ fileName, method, expectedCrc, compressedSize, uncompressedSize, localHeaderOffset });
 
             ptr += 46 + fileNameLen + extraLen + commentLen;
           }
@@ -847,12 +1535,14 @@
           let ptr = 0;
           while (ptr + 30 <= bytes.length && view.getUint32(ptr, true) === 0x04034B50) {
             const method = view.getUint16(ptr + 8, true);
+            const expectedCrc = view.getUint32(ptr + 14, true);
             const compressedSize = view.getUint32(ptr + 18, true);
+            const uncompressedSize = view.getUint32(ptr + 22, true);
             const fileNameLen = view.getUint16(ptr + 26, true);
             const extraLen = view.getUint16(ptr + 28, true);
             const fileName = decoder.decode(bytes.subarray(ptr + 30, ptr + 30 + fileNameLen));
 
-            entries.push({ fileName, method, compressedSize, localHeaderOffset: ptr });
+            entries.push({ fileName, method, expectedCrc, compressedSize, uncompressedSize, localHeaderOffset: ptr });
             ptr += 30 + fileNameLen + extraLen + compressedSize;
           }
         }
@@ -891,18 +1581,18 @@
         if (target.method === 0) {
           rawJsonBytes = compressedSlice;
         } else if (target.method === 8) {
-          rawJsonBytes = await inflateRawBytes(compressedSlice);
+          rawJsonBytes = await inflateRawBytes(compressedSlice, target.uncompressedSize);
         } else {
           throw new Error(`Metode kompresi ZIP (${target.method}) tidak didukung.`);
+        }
+
+        if (target.expectedCrc !== 0 && computeCrc32(rawJsonBytes) !== target.expectedCrc) {
+          throw new Error('Checksum CRC32 tidak cocok (file ZIP rusak/korup).');
         }
 
         return decoder.decode(rawJsonBytes);
       }
 
-      /**
-       * Mendekompres arsip ZIP (atau membaca langsung JSON biasa jika bukan ZIP)
-       * dan mengembalikan daftar catatan permainan beserta status kompresinya.
-       */
       async function decompressAndExtractLogs(bufferOrUint8) {
         const bytes = bufferOrUint8 instanceof Uint8Array
           ? bufferOrUint8
@@ -918,7 +1608,13 @@
           rawJson = new TextDecoder('utf-8').decode(bytes);
         }
 
-        const parsed = JSON.parse(rawJson);
+        let parsed;
+        try {
+          parsed = JSON.parse(rawJson);
+        } catch (e) {
+          throw new Error('Isi JSON tidak valid atau file rusak.');
+        }
+
         const extractedLogs = Array.isArray(parsed) ? parsed : parsed.logs;
 
         if (!Array.isArray(extractedLogs)) {
@@ -938,30 +1634,40 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         
-        let bgClass = 'bg-slate-800 text-white border-slate-700';
-        let icon = 'ℹ️';
-        if (type === 'success') {
-          bgClass = 'bg-emerald-600 text-white border-emerald-500';
-          icon = '✅';
-        } else if (type === 'error') {
-          bgClass = 'bg-rose-600 text-white border-rose-500';
-          icon = '❌';
-        } else if (type === 'warning') {
-          bgClass = 'bg-amber-600 text-white border-amber-500';
-          icon = '⚠️';
-        }
+        const colors = {
+          success: '#059669',
+          error: '#e11d48',
+          info: '#1e293b',
+          warning: '#d97706'
+        };
 
-        toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
-        toast.innerHTML = `<span>${icon}</span><span class="flex-1">${escapeHtml(message)}</span>`;
+        const icons = {
+          success: '✅',
+          error: '❌',
+          info: 'ℹ️',
+          warning: '⚠️'
+        };
+
+        toast.className = 'toast-item';
+        toast.style.backgroundColor = colors[type] || colors.info;
+
+        const iconSpan = document.createElement('span');
+        iconSpan.textContent = icons[type] || 'ℹ️';
+
+        const textSpan = document.createElement('span');
+        textSpan.style.flex = '1';
+        textSpan.textContent = message;
+
+        toast.append(iconSpan, textSpan);
         container.appendChild(toast);
 
         requestAnimationFrame(() => {
-          toast.classList.remove('translate-y-2', 'opacity-0');
+          toast.classList.add('show');
         });
 
         setTimeout(() => {
-          toast.classList.add('opacity-0', 'translate-y-2');
-          setTimeout(() => toast.remove(), 300);
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 250);
         }, 3500);
       }
 
@@ -970,13 +1676,11 @@
         confirmMessage.textContent = message;
         btnConfirmOk.textContent = okText || 'Ya, Lanjutkan';
         confirmCallback = onConfirm;
-        confirmModal.classList.remove('hidden');
-        confirmModal.classList.add('flex');
+        confirmModal.classList.add('open');
       }
 
       function closeConfirm() {
-        confirmModal.classList.add('hidden');
-        confirmModal.classList.remove('flex');
+        confirmModal.classList.remove('open');
         confirmCallback = null;
       }
 
@@ -1029,13 +1733,11 @@
         };
 
         restoreConfirmMessage.textContent = `Ditemukan ${validLogs.length} catatan pada ${sourceLabel}, sementara saat ini sudah ada ${gameLogs.length} catatan tersimpan. Pilih metode pemulihan:`;
-        restoreConfirmModal.classList.remove('hidden');
-        restoreConfirmModal.classList.add('flex');
+        restoreConfirmModal.classList.add('open');
       }
 
       function closeRestoreConfirmModal() {
-        restoreConfirmModal.classList.add('hidden');
-        restoreConfirmModal.classList.remove('flex');
+        restoreConfirmModal.classList.remove('open');
         pendingRestoreData = null;
       }
 
@@ -1074,14 +1776,17 @@
       // 2. MANAJEMEN TEMA (GELAP & TERANG)
       // -------------------------------------------------------------------
       function applyTheme(theme) {
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (theme === 'light') {
           htmlEl.classList.remove('dark');
-          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-blue-600 bg-blue-50 text-blue-700 transition flex items-center justify-center gap-2 shadow-sm';
-          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200 transition flex items-center justify-center gap-2';
+          btnThemeLight.className = 'theme-btn active-light';
+          btnThemeDark.className = 'theme-btn';
+          if (metaTheme) metaTheme.setAttribute('content', '#f1f5f9');
         } else {
           htmlEl.classList.add('dark');
-          btnThemeDark.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-blue-500 bg-blue-600/20 text-blue-300 transition flex items-center justify-center gap-2 shadow-sm';
-          btnThemeLight.className = 'py-3.5 px-4 rounded-xl font-bold text-sm border-2 border-slate-700 bg-navy-700 text-slate-300 hover:bg-slate-600 transition flex items-center justify-center gap-2';
+          btnThemeDark.className = 'theme-btn active-dark';
+          btnThemeLight.className = 'theme-btn';
+          if (metaTheme) metaTheme.setAttribute('content', '#0f172a');
         }
         localStorage.setItem(STORAGE_KEYS.THEME, theme);
       }
@@ -1138,34 +1843,30 @@
       function formatDisplayDate(isoStr) {
         const d = new Date(isoStr);
         if (isNaN(d.getTime())) return '-';
-        return d.toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric'
-        });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
       }
 
       function formatDisplayTime(isoStr) {
         const d = new Date(isoStr);
         if (isNaN(d.getTime())) return '-';
-        return d.toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }).replace('.', ':');
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        return `${h}:${m}`;
       }
 
       function updateDurationPreview() {
         const mins = calculateDurationMinutes(startTimeInput.value, endTimeInput.value);
         if (mins === null) {
           durationPreviewText.textContent = '-';
-          durationPreviewText.className = 'font-bold text-slate-400';
+          durationPreviewText.style.color = '#94a3b8';
         } else if (mins <= 0) {
           durationPreviewText.textContent = 'Jam berakhir harus setelah jam mulai';
-          durationPreviewText.className = 'font-bold text-rose-500';
+          durationPreviewText.style.color = '#f43f5e';
         } else {
           durationPreviewText.textContent = formatDuration(mins);
-          durationPreviewText.className = 'font-bold text-blue-600 dark:text-blue-400';
+          durationPreviewText.style.color = '';
         }
       }
 
@@ -1191,7 +1892,6 @@
           gameLogs = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(gameLogs)) gameLogs = [];
         } catch (err) {
-          console.error('Gagal membaca riwayat:', err);
           gameLogs = [];
         }
       }
@@ -1260,21 +1960,12 @@
       });
 
       // -------------------------------------------------------------------
-      // 5. RENDER TABEL RIWAYAT & STATISTIK
+      // 5. RENDER TABEL RIWAYAT (AMAN DARI XSS)
       // -------------------------------------------------------------------
       sortOrderSelect.addEventListener('change', () => {
         sortOrder = sortOrderSelect.value;
         renderHistoryTable();
       });
-
-      function escapeHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      }
 
       function renderHistoryTable() {
         const sortedLogs = [...gameLogs].sort((a, b) => {
@@ -1283,24 +1974,41 @@
           return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
         });
 
-        historyTableBody.innerHTML = '';
+        historyTableBody.textContent = '';
 
         if (sortedLogs.length === 0) {
-          historyTableBody.innerHTML = `
-            <tr>
-              <td colspan="9" class="py-10 px-4 text-center text-slate-400 dark:text-slate-500">
-                <div class="text-3xl mb-2">📭</div>
-                <p class="font-medium">Belum ada catatan pemakaian game.</p>
-                <p class="text-xs mt-1">Isi formulir di atas untuk mulai mencatat aktivitas bermain.</p>
-              </td>
-            </tr>
-          `;
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 9;
+          td.className = 'text-center';
+          td.style.padding = '2.5rem 1rem';
+          td.style.color = 'var(--text-muted)';
+
+          const iconDiv = document.createElement('div');
+          iconDiv.style.fontSize = '1.875rem';
+          iconDiv.style.marginBottom = '0.5rem';
+          iconDiv.textContent = '📭';
+
+          const pTitle = document.createElement('p');
+          pTitle.className = 'font-medium';
+          pTitle.style.margin = '0';
+          pTitle.textContent = 'Belum ada catatan pemakaian game.';
+
+          const pSub = document.createElement('p');
+          pSub.className = 'text-xs';
+          pSub.style.margin = '0.25rem 0 0';
+          pSub.textContent = 'Isi formulir di atas untuk mulai mencatat aktivitas bermain.';
+
+          td.append(iconDiv, pTitle, pSub);
+          tr.appendChild(td);
+          historyTableBody.appendChild(tr);
           return;
         }
 
+        const frag = document.createDocumentFragment();
+
         sortedLogs.forEach((log, index) => {
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50 dark:hover:bg-navy-700/50 transition';
 
           const startDateStr = formatDisplayDate(log.startTime);
           const endDateStr = formatDisplayDate(log.endTime);
@@ -1308,51 +2016,70 @@
             ? startDateStr 
             : `${startDateStr} → ${endDateStr}`;
 
-          let connBadgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
-          if (log.connection === 'Data Seluler') {
-            connBadgeClass = 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300';
-          } else if (log.connection === 'Offline') {
-            connBadgeClass = 'bg-slate-200 text-slate-700 dark:bg-slate-600/40 dark:text-slate-300';
-          }
+          const tdNo = document.createElement('td');
+          tdNo.className = 'text-center font-semibold';
+          tdNo.style.color = 'var(--text-muted)';
+          tdNo.textContent = String(index + 1);
 
-          let batColorClass = 'text-emerald-600 dark:text-emerald-400';
-          if (log.battery <= 20) batColorClass = 'text-rose-600 dark:text-rose-400';
-          else if (log.battery <= 50) batColorClass = 'text-amber-600 dark:text-amber-400';
+          const tdDate = document.createElement('td');
+          tdDate.className = 'font-medium';
+          tdDate.style.color = 'var(--text-sub)';
+          tdDate.textContent = dateDisplay;
 
-          tr.innerHTML = `
-            <td class="py-3.5 px-3 text-center font-semibold text-slate-500 dark:text-slate-400">${index + 1}</td>
-            <td class="py-3.5 px-3 whitespace-nowrap text-slate-700 dark:text-slate-300 font-medium">${escapeHtml(dateDisplay)}</td>
-            <td class="py-3.5 px-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">${escapeHtml(log.gameName)}</td>
-            <td class="py-3.5 px-3 whitespace-nowrap font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">${formatDisplayTime(log.startTime)}</td>
-            <td class="py-3.5 px-3 whitespace-nowrap font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300">${formatDisplayTime(log.endTime)}</td>
-            <td class="py-3.5 px-3 whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">${escapeHtml(formatDuration(log.durationMinutes))}</td>
-            <td class="py-3.5 px-3 text-center font-bold ${batColorClass}">${log.battery}%</td>
-            <td class="py-3.5 px-3 whitespace-nowrap">
-              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${connBadgeClass}">
-                ${escapeHtml(log.connection)}
-              </span>
-            </td>
-            <td class="py-3.5 px-3 text-center">
-              <button 
-                type="button"
-                data-id="${escapeHtml(log.id)}"
-                class="btn-delete-row px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600 text-rose-600 hover:text-white dark:text-rose-400 dark:hover:text-white text-xs font-bold transition"
-                title="Hapus catatan ini">
-                🗑️ Hapus
-              </button>
-            </td>
-          `;
+          const tdGame = document.createElement('td');
+          tdGame.className = 'font-bold';
+          tdGame.style.color = 'var(--text-heading)';
+          tdGame.textContent = log.gameName;
 
-          historyTableBody.appendChild(tr);
+          const tdStart = document.createElement('td');
+          tdStart.className = 'font-mono';
+          tdStart.style.color = 'var(--text-sub)';
+          tdStart.textContent = formatDisplayTime(log.startTime);
+
+          const tdEnd = document.createElement('td');
+          tdEnd.className = 'font-mono';
+          tdEnd.style.color = 'var(--text-sub)';
+          tdEnd.textContent = formatDisplayTime(log.endTime);
+
+          const tdDur = document.createElement('td');
+          tdDur.className = 'font-semibold text-blue';
+          tdDur.textContent = formatDuration(log.durationMinutes);
+
+          const tdBat = document.createElement('td');
+          const batClass = log.battery <= 20 ? 'bat-rose' : log.battery <= 50 ? 'bat-amber' : 'bat-green';
+          tdBat.className = `text-center font-bold ${batClass}`;
+          tdBat.textContent = `${log.battery}%`;
+
+          const tdConn = document.createElement('td');
+          const spanConn = document.createElement('span');
+          const connClass = log.connection === 'Data Seluler' ? 'pill-amber' : log.connection === 'Offline' ? 'pill-slate' : 'pill-blue';
+          spanConn.className = `pill ${connClass}`;
+          spanConn.textContent = log.connection;
+          tdConn.appendChild(spanConn);
+
+          const tdAct = document.createElement('td');
+          tdAct.className = 'text-center';
+          const btnDel = document.createElement('button');
+          btnDel.type = 'button';
+          btnDel.dataset.id = String(log.id);
+          btnDel.className = 'btn-delete-row';
+          btnDel.title = 'Hapus catatan ini';
+          btnDel.textContent = '🗑️ Hapus';
+          tdAct.appendChild(btnDel);
+
+          tr.append(tdNo, tdDate, tdGame, tdStart, tdEnd, tdDur, tdBat, tdConn, tdAct);
+          frag.appendChild(tr);
         });
 
-        document.querySelectorAll('.btn-delete-row').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const idToDelete = btn.getAttribute('data-id');
-            deleteSingleLog(idToDelete);
-          });
-        });
+        historyTableBody.appendChild(frag);
       }
+
+      historyTableBody.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-delete-row');
+        if (!btn) return;
+        const idToDelete = btn.dataset.id;
+        deleteSingleLog(idToDelete);
+      });
 
       function deleteSingleLog(id) {
         const logToDelete = gameLogs.find((item) => item.id === id);
@@ -1372,7 +2099,7 @@
       }
 
       // -------------------------------------------------------------------
-      // 6. BACKUP & PULIHKAN ZIP/JSON LOKAL + HAPUS SEMUA
+      // 6. BACKUP & PULIHKAN ZIP/JSON LOKAL (100% OFFLINE) + HAPUS SEMUA
       // -------------------------------------------------------------------
       btnBackupJson.addEventListener('click', async () => {
         if (gameLogs.length === 0) {
@@ -1381,7 +2108,6 @@
         }
 
         btnBackupJson.disabled = true;
-        btnBackupJson.classList.add('opacity-60');
 
         try {
           const payload = {
@@ -1416,11 +2142,9 @@
             a.remove();
           }, 60000);
         } catch (err) {
-          console.error('Unduhan cadangan ZIP gagal:', err);
           showToast('Gagal membuat cadangan ZIP: ' + err.message, 'error');
         } finally {
           btnBackupJson.disabled = false;
-          btnBackupJson.classList.remove('opacity-60');
         }
       });
 
@@ -1495,7 +2219,7 @@
       });
 
       // -------------------------------------------------------------------
-      // 7. PENGATURAN MODAL & GITHUB BACKUP API (ZIP MANDIRI)
+      // 7. PENGATURAN MODAL & GITHUB BACKUP API (SATU-SATUNYA FITUR ONLINE)
       // -------------------------------------------------------------------
       function loadGithubConfig() {
         try {
@@ -1527,29 +2251,26 @@
         btnToggleTokenVisibility.textContent = '👁️';
 
         if (cfg.token) {
-          tokenStatusHint.textContent = '🔒 Token tersimpan dengan aman di perangkat (tersembunyi).';
-          tokenStatusHint.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 mt-1';
+          tokenStatusHint.textContent = '🔒 Token tersimpan di perangkat (hanya dipakai saat Backup/Restore GitHub).';
+          tokenStatusHint.style.color = '#10b981';
         } else {
           tokenStatusHint.textContent = 'Token disimpan secara lokal di perangkat Anda dan tidak dikirim ke pihak ketiga.';
-          tokenStatusHint.className = 'text-[11px] text-slate-500 dark:text-slate-400 mt-1';
+          tokenStatusHint.style.color = 'var(--text-muted)';
         }
       }
 
       btnOpenSettings.addEventListener('click', () => {
         refreshGithubFormUI();
-        settingsModal.classList.remove('hidden');
-        settingsModal.classList.add('flex');
+        settingsModal.classList.add('open');
       });
 
       btnCloseSettings.addEventListener('click', () => {
-        settingsModal.classList.add('hidden');
-        settingsModal.classList.remove('flex');
+        settingsModal.classList.remove('open');
       });
 
       settingsModal.addEventListener('click', (e) => {
         if (e.target === settingsModal) {
-          settingsModal.classList.add('hidden');
-          settingsModal.classList.remove('flex');
+          settingsModal.classList.remove('open');
         }
       });
 
@@ -1582,6 +2303,16 @@
         refreshGithubFormUI();
         showToast('Konfigurasi GitHub berhasil disimpan di perangkat!', 'success');
       });
+
+      function mapGithubError(status, fallbackMsg) {
+        if (status === 401 || status === 403) {
+          return 'GitHub Token tidak valid atau tidak memiliki izin akses repository.';
+        }
+        if (status === 404) {
+          return 'Repository tidak ditemukan atau file belum ada di GitHub.';
+        }
+        return fallbackMsg || `HTTP ${status}`;
+      }
 
       btnGithubPush.addEventListener('click', async () => {
         const token = githubTokenInput.value.trim();
@@ -1619,10 +2350,13 @@
           showToast('Tidak ada data riwayat untuk dicadangkan ke GitHub!', 'warning');
           return;
         }
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          showToast('Tidak ada koneksi internet. Backup GitHub membutuhkan internet.', 'error');
+          return;
+        }
 
         btnSaveGithub.disabled = true;
         btnGithubPush.disabled = true;
-        btnGithubPush.classList.add('opacity-60');
         showToast('Mengompres data ke ZIP & mengunggah ke GitHub...', 'info');
 
         const encodedPath = filePath.split('/').map(encodeURIComponent).join('/');
@@ -1635,13 +2369,13 @@
 
         try {
           let fileSha = null;
-          const getRes = await fetch(apiUrl, { method: 'GET', headers });
+          const getRes = await fetch(apiUrl, { method: 'GET', headers, cache: 'no-store' });
           if (getRes.ok) {
             const existingData = await getRes.json();
             fileSha = existingData.sha;
           } else if (getRes.status !== 404) {
             const errData = await getRes.json().catch(() => ({}));
-            throw new Error(errData.message || `HTTP ${getRes.status}`);
+            throw new Error(mapGithubError(getRes.status, errData.message));
           }
 
           const backupPayload = {
@@ -1670,7 +2404,7 @@
 
           if (!putRes.ok) {
             const errPut = await putRes.json().catch(() => ({}));
-            throw new Error(errPut.message || `Gagal mengunggah (HTTP ${putRes.status})`);
+            throw new Error(mapGithubError(putRes.status, errPut.message));
           }
 
           showToast(
@@ -1678,25 +2412,27 @@
             'success'
           );
         } catch (err) {
-          showToast('GitHub Backup ZIP gagal: ' + err.message, 'error');
+          const msg = err.name === 'TypeError'
+            ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.'
+            : err.message;
+          showToast('GitHub Backup ZIP gagal: ' + msg, 'error');
         } finally {
           btnSaveGithub.disabled = false;
           btnGithubPush.disabled = false;
-          btnGithubPush.classList.remove('opacity-60');
         }
       }
 
       async function fetchGithubFileBinaryBytes(repo, filename, headers) {
         const encodedPath = filename.split('/').map(encodeURIComponent).join('/');
         const apiUrl = `https://api.github.com/repos/${repo}/contents/${encodedPath}`;
-        const res = await fetch(apiUrl, { method: 'GET', headers });
+        const res = await fetch(apiUrl, { method: 'GET', headers, cache: 'no-store' });
 
         if (!res.ok) {
           if (res.status === 404) {
-            throw new Error(`File "${filename}" belum ditemukan di repository ini.`);
+            throw new Error(`Repository atau file "${filename}" belum ditemukan di GitHub.`);
           }
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || `HTTP ${res.status}`);
+          throw new Error(mapGithubError(res.status, errData.message));
         }
 
         const data = await res.json();
@@ -1705,7 +2441,7 @@
         }
 
         if (data.git_url) {
-          const blobRes = await fetch(data.git_url, { method: 'GET', headers });
+          const blobRes = await fetch(data.git_url, { method: 'GET', headers, cache: 'no-store' });
           if (!blobRes.ok) {
             throw new Error(`Gagal mengunduh blob cadangan dari GitHub (HTTP ${blobRes.status})`);
           }
@@ -1717,8 +2453,12 @@
       }
 
       async function pullBackupFromGithub(token, repo, filePath = DEFAULT_GITHUB_FILE) {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          showToast('Tidak ada koneksi internet. Pulihkan GitHub membutuhkan internet.', 'error');
+          return;
+        }
+
         btnGithubPull.disabled = true;
-        btnGithubPull.classList.add('opacity-60');
         showToast('Mengunduh & mendekompres data cadangan dari GitHub...', 'info');
 
         const headers = {
@@ -1733,10 +2473,12 @@
 
           promptRestoreMethod(remoteLogs, `${formatLabel} (${repo}/${filePath})`);
         } catch (err) {
-          showToast(`Gagal memulihkan dari GitHub: ${err.message}`, 'error');
+          const msg = err.name === 'TypeError'
+            ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.'
+            : err.message;
+          showToast(`Gagal memulihkan dari GitHub: ${msg}`, 'error');
         } finally {
           btnGithubPull.disabled = false;
-          btnGithubPull.classList.remove('opacity-60');
         }
       }
 
