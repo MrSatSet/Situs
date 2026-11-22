@@ -2,472 +2,110 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
   <meta name="theme-color" content="#141D32">
   <title>📱 Waktu Pakai Smartphone</title>
   <script>
-    // Terapkan tema sebelum render pertama agar tidak berkedip (zero-FOUC)
-    (function () {
-      try {
-        var t = localStorage.getItem('waktu_pakai_smartphone_theme_v1');
-        if (t === 'light') {
-          document.documentElement.classList.remove('dark');
-        } else {
-          document.documentElement.classList.add('dark');
-        }
-      } catch (e) {}
-    })();
+    try{if(localStorage.getItem('waktu_pakai_smartphone_theme_v1')==='light')document.documentElement.classList.remove('dark')}catch(e){}
   </script>
   <style>
-    /* ==========================================================================
-       DESIGN TOKENS & ULTRA-LIGHTWEIGHT CSS (100% OFFLINE, 0ms Runtime Overhead)
-       ========================================================================== */
-    :root {
-      --bg-page: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-input: #f8fafc;
-      --bg-sub: #f1f5f9;
-      --bg-hover: #f8fafc;
-      --bg-btn-sec: #e2e8f0;
-      --bg-btn-sec-hover: #cbd5e1;
-      --text-main: #1e293b;
-      --text-heading: #0f172a;
-      --text-muted: #64748b;
-      --text-sub: #475569;
-      --border-main: #e2e8f0;
-      --border-strong: #cbd5e1;
-      --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
-    }
+    /* DESIGN TOKENS & ULTRA-LIGHTWEIGHT CSS (100% OFFLINE) */
+    :root{--bg-page:#f1f5f9;--bg-card:#fff;--bg-input:#f8fafc;--bg-sub:#f1f5f9;--bg-hover:#f8fafc;--bg-btn-sec:#e2e8f0;--bg-btn-sec-hover:#cbd5e1;--text-main:#1e293b;--text-heading:#0f172a;--text-muted:#64748b;--text-sub:#475569;--border-main:#e2e8f0;--border-strong:#cbd5e1;--shadow-card:0 1px 2px rgba(15,23,42,.05);--shadow-modal:0 20px 25px -5px rgba(0,0,0,.25)}
+    html.dark{--bg-page:#141D32;--bg-card:#1C2742;--bg-input:#344458;--bg-sub:#273554;--bg-hover:rgba(39,53,84,.65);--bg-btn-sec:#273554;--bg-btn-sec-hover:#33456b;--text-main:#f1f5f9;--text-heading:#fff;--text-muted:#94a3b8;--text-sub:#cbd5e1;--border-main:rgba(71,85,105,.55);--border-strong:#475569;--shadow-card:0 1px 3px rgba(0,0,0,.25);--shadow-modal:0 20px 25px -5px rgba(0,0,0,.6)}
+    *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+    body{margin:0;min-height:100vh;background:var(--bg-page);color:var(--text-main);-webkit-font-smoothing:antialiased}
+    button,a,select,input{font-family:inherit;touch-action:manipulation}
 
-    html.dark {
-      --bg-page: #141D32;
-      --bg-card: #1C2742;
-      --bg-input: #344458;
-      --bg-sub: #273554;
-      --bg-hover: rgba(39, 53, 84, 0.65);
-      --bg-btn-sec: #273554;
-      --bg-btn-sec-hover: #33456b;
-      --text-main: #f1f5f9;
-      --text-heading: #ffffff;
-      --text-muted: #94a3b8;
-      --text-sub: #cbd5e1;
-      --border-main: rgba(71, 85, 105, 0.55);
-      --border-strong: #475569;
-      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.25);
-      --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
-    }
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;border:none;border-radius:.75rem;font-weight:700;cursor:pointer;user-select:none;transition:transform .08s ease-out,background-color .12s}
+    .btn:active{transform:scale(.97)}.btn:disabled{opacity:.6;pointer-events:none}
+    .btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#3b82f6}
+    .btn-emerald{background:#059669;color:#fff}.btn-emerald:hover{background:#10b981}
+    .btn-orange{background:#ea580c;color:#fff}.btn-orange:hover{background:#f97316}
+    .btn-danger{background:#dc2626;color:#fff}.btn-danger:hover{background:#ef4444}
+    .btn-secondary{background:var(--bg-btn-sec);color:var(--text-main);border:1px solid var(--border-strong)}.btn-secondary:hover{background:var(--bg-btn-sec-hover)}
+    .btn-dark-neutral{background:#1e293b;color:#fff;border:1px solid #475569}.btn-dark-neutral:hover{background:#334155}
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .container{max-width:42rem;margin:0 auto;padding:1.25rem 1rem 2.5rem}
+    @media(min-width:640px){.container{padding:2rem 1rem 3rem}}
 
-    html {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
-      -webkit-text-size-adjust: 100%;
-    }
+    .app-header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border-strong)}
+    .app-title{margin:0;font-size:1.25rem;font-weight:800;letter-spacing:-.025em;color:#dc2626;display:flex;align-items:center;gap:.5rem}
+    html.dark .app-title{color:#ef4444}
+    @media(min-width:640px){.app-title{font-size:1.5rem}}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background-color: var(--bg-page);
-      color: var(--text-main);
-      -webkit-font-smoothing: antialiased;
-    }
+    .card{background:var(--bg-card);border:1px solid var(--border-main);border-radius:1rem;padding:1rem;margin-bottom:1.5rem;box-shadow:var(--shadow-card);contain:content}
+    @media(min-width:640px){.card{padding:1.5rem}}
 
-    button, a, select, input {
-      font-family: inherit;
-      touch-action: manipulation;
-    }
+    .form-stack{display:flex;flex-direction:column;gap:1rem}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+    @media(min-width:640px){.grid-2{gap:1rem}}
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
-      border: none;
-      border-radius: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.08s ease-out, background-color 0.12s ease;
-    }
-    .btn:active {
-      transform: scale(0.97);
-    }
-    .btn:disabled {
-      opacity: 0.6;
-      pointer-events: none;
-    }
+    .action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.625rem;padding-top:.375rem}
+    @media(min-width:640px){.action-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}}
 
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #3b82f6; }
+    .field-label{display:block;font-size:.875rem;font-weight:600;margin-bottom:.375rem;color:var(--text-main)}
+    .date-preview{font-size:.75rem;font-weight:400;color:var(--text-muted);margin-left:.25rem}
 
-    .btn-emerald { background: #059669; color: #fff; }
-    .btn-emerald:hover { background: #10b981; }
+    .form-control{width:100%;padding:.625rem .875rem;border-radius:.75rem;font-size:.9375rem;font-weight:500;background:var(--bg-input);color:var(--text-heading);border:1px solid var(--border-strong);outline:none;transition:border-color .12s,box-shadow .12s}
+    .form-control::placeholder{color:#94a3b8}
+    .form-control:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.35)}
+    html.dark input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
 
-    .btn-orange { background: #ea580c; color: #fff; }
-    .btn-orange:hover { background: #f97316; }
+    .history-header{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem}
+    @media(min-width:640px){.history-header{flex-direction:row;align-items:center;justify-content:space-between}}
 
-    .btn-danger { background: #dc2626; color: #fff; }
-    .btn-danger:hover { background: #ef4444; }
+    .badge-count{display:inline-block;padding:.125rem .625rem;font-size:.75rem;font-weight:700;border-radius:9999px;background:#dbeafe;color:#1d4ed8}
+    html.dark .badge-count{background:rgba(30,58,138,.65);color:#93c5fd}
 
-    .btn-secondary {
-      background: var(--bg-btn-sec);
-      color: var(--text-main);
-      border: 1px solid var(--border-strong);
-    }
-    .btn-secondary:hover {
-      background: var(--bg-btn-sec-hover);
-    }
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:.75rem;border:1px solid var(--border-strong)}
+    .table-wrap::-webkit-scrollbar{height:5px;width:5px}
+    .table-wrap::-webkit-scrollbar-track{background:rgba(148,163,184,.1)}
+    .table-wrap::-webkit-scrollbar-thumb{background:rgba(148,163,184,.45);border-radius:9999px}
 
-    .btn-dark-neutral {
-      background: #1e293b;
-      color: #fff;
-      border: 1px solid #475569;
-    }
-    .btn-dark-neutral:hover { background: #334155; }
+    table{width:100%;min-width:520px;border-collapse:collapse;text-align:left}
+    thead tr{background:var(--bg-sub);border-bottom:1px solid var(--border-strong);font-size:.8125rem;font-weight:700;color:var(--text-sub)}
+    th,td{padding:.75rem;white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--border-main);font-size:.8125rem;content-visibility:auto;contain-intrinsic-size:44px}
+    tbody tr:last-child{border-bottom:none}tbody tr:hover{background:var(--bg-hover)}
 
-    .container {
-      max-width: 42rem;
-      margin: 0 auto;
-      padding: 1.25rem 1rem 2.5rem;
-    }
-    @media (min-width: 640px) {
-      .container { padding: 2rem 1rem 3rem; }
-    }
+    .text-center{text-align:center}.font-bold{font-weight:700}.font-semibold{font-weight:600}
+    .text-blue{color:#2563eb}html.dark .text-blue{color:#60a5fa}
 
-    .app-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-strong);
-    }
-    .app-title {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.025em;
-      color: #dc2626;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    html.dark .app-title { color: #ef4444; }
-    @media (min-width: 640px) {
-      .app-title { font-size: 1.5rem; }
-    }
+    .pill{display:inline-block;padding:.15rem .5rem;border-radius:.375rem;font-size:.75rem;font-weight:700}
+    .pill-green{background:#d1fae5;color:#065f46}html.dark .pill-green{background:rgba(6,78,59,.55);color:#6ee7b7}
+    .pill-red{background:#fee2e2;color:#991b1b}html.dark .pill-red{background:rgba(127,29,29,.55);color:#fca5a5}
+    .pill-amber{background:#fef3c7;color:#92400e}html.dark .pill-amber{background:rgba(120,53,15,.55);color:#fcd34d}
+    .pill-slate{background:#f1f5f9;color:#334155}html.dark .pill-slate{background:#334155;color:#cbd5e1}
+    .pill-sky{background:#e0f2fe;color:#075985}html.dark .pill-sky{background:rgba(12,74,110,.55);color:#7dd3fc}
+    .pill-purple{background:#f3e8ff;color:#6b21a8}html.dark .pill-purple{background:rgba(88,28,135,.55);color:#d8b4fe}
 
-    .card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-main);
-      border-radius: 1rem;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      box-shadow: var(--shadow-card);
-      contain: content;
-    }
-    @media (min-width: 640px) {
-      .card { padding: 1.5rem; }
-    }
+    .btn-del-row{background:transparent;border:none;padding:.375rem;border-radius:.5rem;cursor:pointer;font-size:.95rem;line-height:1}
+    .btn-del-row:hover{background:rgba(239,68,68,.15)}
 
-    .form-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.75rem;
-    }
-    @media (min-width: 640px) {
-      .grid-2 { gap: 1rem; }
-    }
+    .legend{margin-top:1rem;padding-top:.875rem;border-top:1px solid var(--border-main);font-size:.75rem;color:var(--text-sub)}
+    .legend-list{display:flex;flex-wrap:wrap;gap:.375rem 1rem;margin-top:.375rem}
 
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.625rem;
-      padding-top: 0.375rem;
-    }
-    @media (min-width: 640px) {
-      .action-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.75rem;
-      }
-    }
+    .modal-backdrop{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(2,6,23,.78)}
+    .modal-backdrop.open{display:flex}
 
-    .field-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 0.375rem;
-      color: var(--text-main);
-    }
-    .date-preview {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-left: 0.25rem;
-    }
+    @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .modal-box{width:100%;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:1rem;box-shadow:var(--shadow-modal);overflow:hidden;animation:popIn .14s cubic-bezier(.16,1,.3,1) forwards}
+    .modal-sm{max-width:24rem;padding:1.25rem}.modal-md{max-width:28rem;padding:1.375rem}.modal-lg{max-width:32rem}
 
-    .form-control {
-      width: 100%;
-      padding: 0.625rem 0.875rem;
-      border-radius: 0.75rem;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      background-color: var(--bg-input);
-      color: var(--text-heading);
-      border: 1px solid var(--border-strong);
-      outline: none;
-      transition: border-color 0.12s ease, box-shadow 0.12s ease;
-    }
-    .form-control::placeholder { color: #94a3b8; }
-    .form-control:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
-    }
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:var(--bg-page);border-bottom:1px solid var(--border-main)}
+    .modal-body{padding:1.25rem;max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
 
-    html.dark input[type="date"]::-webkit-calendar-picker-indicator {
-      filter: invert(1);
-      cursor: pointer;
-    }
+    .theme-btn{padding:.875rem 1rem;border-radius:.75rem;font-weight:700;font-size:.95rem;border:2px solid var(--border-strong);background:var(--bg-input);color:var(--text-sub);display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer}
+    .theme-btn.active-dark{border-color:#3b82f6;background:#141D32;color:#fff}
+    .theme-btn.active-light{border-color:#2563eb;background:#eff6ff;color:#1e3a8a}
 
-    .history-header {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    @media (min-width: 640px) {
-      .history-header {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-      }
-    }
+    .toast-container{position:fixed;bottom:1rem;right:1rem;left:1rem;z-index:60;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+    @media(min-width:640px){.toast-container{left:auto;width:24rem}}
+    .toast-item{pointer-events:auto;display:flex;align-items:center;gap:.625rem;padding:.75rem 1rem;border-radius:.75rem;font-size:.875rem;font-weight:600;color:#fff;box-shadow:0 10px 15px -3px rgba(0,0,0,.3);opacity:0;transform:translateY(6px);transition:opacity .16s,transform .16s}
+    .toast-item.show{opacity:1;transform:translateY(0)}
 
-    .badge-count {
-      display: inline-block;
-      padding: 0.125rem 0.625rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border-radius: 9999px;
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-    html.dark .badge-count {
-      background: rgba(30, 58, 138, 0.65);
-      color: #93c5fd;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 0.75rem;
-      border: 1px solid var(--border-strong);
-    }
-    .table-wrap::-webkit-scrollbar { height: 5px; width: 5px; }
-    .table-wrap::-webkit-scrollbar-track { background: rgba(148, 163, 184, 0.1); }
-    .table-wrap::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.45); border-radius: 9999px; }
-
-    table {
-      width: 100%;
-      min-width: 520px;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    thead tr {
-      background-color: var(--bg-sub);
-      border-bottom: 1px solid var(--border-strong);
-      font-size: 0.8125rem;
-      font-weight: 700;
-      color: var(--text-sub);
-    }
-    th, td {
-      padding: 0.75rem;
-      white-space: nowrap;
-    }
-    tbody tr {
-      border-bottom: 1px solid var(--border-main);
-      font-size: 0.8125rem;
-      content-visibility: auto;
-      contain-intrinsic-size: 44px;
-    }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background-color: var(--bg-hover); }
-
-    .text-center { text-align: center; }
-    .font-bold { font-weight: 700; }
-    .font-semibold { font-weight: 600; }
-    .text-blue { color: #2563eb; }
-    html.dark .text-blue { color: #60a5fa; }
-
-    .pill {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 0.375rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .pill-green { background: #d1fae5; color: #065f46; }
-    html.dark .pill-green { background: rgba(6, 78, 59, 0.55); color: #6ee7b7; }
-
-    .pill-red { background: #fee2e2; color: #991b1b; }
-    html.dark .pill-red { background: rgba(127, 29, 29, 0.55); color: #fca5a5; }
-
-    .pill-amber { background: #fef3c7; color: #92400e; }
-    html.dark .pill-amber { background: rgba(120, 53, 15, 0.55); color: #fcd34d; }
-
-    .pill-slate { background: #f1f5f9; color: #334155; }
-    html.dark .pill-slate { background: #334155; color: #cbd5e1; }
-
-    .pill-sky { background: #e0f2fe; color: #075985; }
-    html.dark .pill-sky { background: rgba(12, 74, 110, 0.55); color: #7dd3fc; }
-
-    .pill-purple { background: #f3e8ff; color: #6b21a8; }
-    html.dark .pill-purple { background: rgba(88, 28, 135, 0.55); color: #d8b4fe; }
-
-    .btn-del-row {
-      background: transparent;
-      border: none;
-      padding: 0.375rem;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      font-size: 0.95rem;
-      line-height: 1;
-    }
-    .btn-del-row:hover { background: rgba(239, 68, 68, 0.15); }
-
-    .legend {
-      margin-top: 1rem;
-      padding-top: 0.875rem;
-      border-top: 1px solid var(--border-main);
-      font-size: 0.75rem;
-      color: var(--text-sub);
-    }
-    .legend-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem 1rem;
-      margin-top: 0.375rem;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 50;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      background: rgba(2, 6, 23, 0.78);
-    }
-    .modal-backdrop.open { display: flex; }
-
-    @keyframes popIn {
-      from { opacity: 0; transform: translateY(8px) scale(0.97); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .modal-box {
-      width: 100%;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-strong);
-      border-radius: 1rem;
-      box-shadow: var(--shadow-modal);
-      overflow: hidden;
-      animation: popIn 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .modal-sm { max-width: 24rem; padding: 1.25rem; }
-    .modal-md { max-width: 28rem; padding: 1.375rem; }
-    .modal-lg { max-width: 32rem; }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.25rem;
-      background-color: var(--bg-page);
-      border-bottom: 1px solid var(--border-main);
-    }
-    .modal-body {
-      padding: 1.25rem;
-      max-height: 82vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    .theme-btn {
-      padding: 0.875rem 1rem;
-      border-radius: 0.75rem;
-      font-weight: 700;
-      font-size: 0.95rem;
-      border: 2px solid var(--border-strong);
-      background: var(--bg-input);
-      color: var(--text-sub);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-    .theme-btn.active-dark {
-      border-color: #3b82f6;
-      background: #141D32;
-      color: #ffffff;
-    }
-    .theme-btn.active-light {
-      border-color: #2563eb;
-      background: #eff6ff;
-      color: #1e3a8a;
-    }
-
-    .toast-container {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      left: 1rem;
-      z-index: 60;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      pointer-events: none;
-    }
-    @media (min-width: 640px) {
-      .toast-container { left: auto; width: 24rem; }
-    }
-    .toast-item {
-      pointer-events: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.625rem;
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #fff;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.16s ease, transform 0.16s ease;
-    }
-    .toast-item.show { opacity: 1; transform: translateY(0); }
-
-    .hidden { display: none !important; }
-    .w-full { width: 100%; }
-    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-    .text-sm { font-size: 0.875rem; }
-    .text-xs { font-size: 0.75rem; }
+    .hidden{display:none!important}.w-full{width:100%}.py-3{padding-top:.75rem;padding-bottom:.75rem}.px-3{padding-left:.75rem;padding-right:.75rem}.text-sm{font-size:.875rem}.text-xs{font-size:.75rem}
   </style>
 </head>
 <body>
@@ -479,7 +117,7 @@
         <span>📱</span>
         <span>Waktu Pakai Smartphone</span>
       </h1>
-      <button id="btnOpenSettings" type="button" aria-label="Pengaturan" class="btn btn-secondary" style="padding: 0.6rem 0.875rem; font-size: 0.875rem; flex-shrink: 0;">
+      <button id="btnOpenSettings" type="button" aria-label="Pengaturan" class="btn btn-secondary" style="padding:.6rem .875rem;font-size:.875rem;flex-shrink:0">
         <span>⚙️</span>
         <span>Pengaturan</span>
       </button>
@@ -488,7 +126,6 @@
     <!-- FORM PENCATATAN -->
     <section class="card">
       <form id="usageForm" novalidate class="form-stack">
-        <!-- Tanggal -->
         <div>
           <label for="inputDate" class="field-label">
             📅 Tanggal <span id="formattedDatePreview" class="date-preview"></span>
@@ -496,7 +133,6 @@
           <input type="date" id="inputDate" required class="form-control">
         </div>
 
-        <!-- Jam & Menit -->
         <div class="grid-2">
           <div>
             <label for="inputHours" class="field-label">⏳ Jam</label>
@@ -508,13 +144,11 @@
           </div>
         </div>
 
-        <!-- Baterai -->
         <div>
           <label for="inputBattery" class="field-label">🔋 Baterai (%)</label>
           <input type="number" id="inputBattery" min="0" max="100" placeholder="Contoh: 85" inputmode="numeric" enterkeyhint="done" required class="form-control">
         </div>
 
-        <!-- Cas & Koneksi -->
         <div class="grid-2">
           <div>
             <label for="inputCharging" class="field-label">⚡ Cas</label>
@@ -532,20 +166,11 @@
           </div>
         </div>
 
-        <!-- Tombol Aksi -->
         <div class="action-grid">
-          <button type="submit" id="btnSaveRecord" class="btn btn-primary py-3 px-3 text-sm">
-            <span>💾</span><span>Simpan</span>
-          </button>
-          <button type="button" id="btnBackup" class="btn btn-emerald py-3 px-3 text-sm">
-            <span>🗜️</span><span>Cadangan</span>
-          </button>
-          <button type="button" id="btnRestore" class="btn btn-orange py-3 px-3 text-sm">
-            <span>📂</span><span>Pulihkan</span>
-          </button>
-          <button type="button" id="btnDeleteAll" class="btn btn-danger py-3 px-3 text-sm">
-            <span>🗑️</span><span>Hapus Semua</span>
-          </button>
+          <button type="submit" id="btnSaveRecord" class="btn btn-primary py-3 px-3 text-sm"><span>💾</span><span>Simpan</span></button>
+          <button type="button" id="btnBackup" class="btn btn-emerald py-3 px-3 text-sm"><span>🗜️</span><span>Cadangan</span></button>
+          <button type="button" id="btnRestore" class="btn btn-orange py-3 px-3 text-sm"><span>📂</span><span>Pulihkan</span></button>
+          <button type="button" id="btnDeleteAll" class="btn btn-danger py-3 px-3 text-sm"><span>🗑️</span><span>Hapus Semua</span></button>
         </div>
 
         <input type="file" id="fileRestoreInput" accept=".zip,.json,application/zip,application/x-zip-compressed,application/json" class="hidden">
@@ -555,14 +180,14 @@
     <!-- RIWAYAT CATATAN -->
     <section class="card">
       <div class="history-header">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <h2 style="margin:0; font-size:1.125rem; font-weight:700; color:var(--text-heading);">📋 Riwayat Catatan</h2>
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <h2 style="margin:0;font-size:1.125rem;font-weight:700;color:var(--text-heading)">📋 Riwayat Catatan</h2>
           <span id="recordCountBadge" class="badge-count">0</span>
         </div>
 
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <label for="sortSelect" class="text-xs font-semibold" style="color:var(--text-muted); white-space:nowrap;">Urutkan:</label>
-          <select id="sortSelect" class="form-control" style="padding:0.45rem 0.75rem; font-size:0.8125rem; width:auto; flex:1;">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <label for="sortSelect" class="text-xs font-semibold" style="color:var(--text-muted);white-space:nowrap">Urutkan:</label>
+          <select id="sortSelect" class="form-control" style="padding:.45rem .75rem;font-size:.8125rem;width:auto;flex:1">
             <option value="date_desc">Tanggal terbaru → terlama</option>
             <option value="date_asc">Tanggal terlama → terbaru</option>
             <option value="duration_desc">Waktu terbesar → terkecil</option>
@@ -575,27 +200,27 @@
         <table>
           <thead>
             <tr>
-              <th class="text-center" style="width:3rem;">No</th>
+              <th class="text-center" style="width:3rem">No</th>
               <th>📅 Tanggal</th>
               <th>⏳ Waktu</th>
               <th class="text-center">🔋 Baterai</th>
               <th class="text-center">⚡ Cas</th>
               <th class="text-center">🌐 Koneksi</th>
-              <th class="text-center" style="width:3.5rem;">🗑️</th>
+              <th class="text-center" style="width:3.5rem">🗑️</th>
             </tr>
           </thead>
           <tbody id="historyTableBody"></tbody>
         </table>
       </div>
 
-      <div id="emptyState" class="hidden text-center" style="padding:2rem 0;">
-        <p class="text-sm" style="margin:0; color:var(--text-muted);">Belum ada catatan waktu pakai smartphone. Silakan tambahkan catatan di atas.</p>
+      <div id="emptyState" class="hidden text-center" style="padding:2rem 0">
+        <p class="text-sm" style="margin:0;color:var(--text-muted)">Belum ada catatan waktu pakai smartphone. Silakan tambahkan catatan di atas.</p>
       </div>
 
       <div class="legend">
-        <div class="font-semibold" style="color:var(--text-muted);">Keterangan Icon:</div>
+        <div class="font-semibold" style="color:var(--text-muted)">Keterangan Icon:</div>
         <div class="legend-list">
-          <span><strong style="color:var(--text-heading);">No</strong> = Nomor urut</span>
+          <span><strong style="color:var(--text-heading)">No</strong> = Nomor urut</span>
           <span>📅 Tanggal</span>
           <span>⏳ Waktu</span>
           <span>🔋 Baterai</span>
@@ -611,42 +236,40 @@
   <div id="settingsModal" class="modal-backdrop">
     <div class="modal-box modal-lg">
       <div class="modal-header">
-        <h2 style="margin:0; font-size:1.125rem; font-weight:700; color:var(--text-heading); display:flex; align-items:center; gap:0.5rem;">
+        <h2 style="margin:0;font-size:1.125rem;font-weight:700;color:var(--text-heading);display:flex;align-items:center;gap:.5rem">
           <span>⚙️</span><span>Pengaturan</span>
         </h2>
-        <button type="button" id="btnCloseSettings" aria-label="Tutup Pengaturan" class="btn btn-secondary" style="padding:0.4rem 0.65rem;">✕</button>
+        <button type="button" id="btnCloseSettings" aria-label="Tutup Pengaturan" class="btn btn-secondary" style="padding:.4rem .65rem">✕</button>
       </div>
 
       <div class="modal-body">
-        <!-- 1. TAMPILAN -->
         <div>
-          <h3 style="margin:0 0 0.25rem; font-size:1rem; font-weight:700; color:var(--text-heading);">1. Tampilan</h3>
-          <p class="text-xs" style="margin:0 0 0.75rem; color:var(--text-muted);">Mode Tema</p>
+          <h3 style="margin:0 0 .25rem;font-size:1rem;font-weight:700;color:var(--text-heading)">1. Tampilan</h3>
+          <p class="text-xs" style="margin:0 0 .75rem;color:var(--text-muted)">Mode Tema</p>
           <div class="grid-2">
             <button type="button" id="btnThemeDark" class="theme-btn"><span>🌙</span><span>Gelap</span></button>
             <button type="button" id="btnThemeLight" class="theme-btn"><span>☀️</span><span>Terang</span></button>
           </div>
         </div>
 
-        <hr style="border:none; border-top:1px solid var(--border-main); margin:0;">
+        <hr style="border:none;border-top:1px solid var(--border-main);margin:0">
 
-        <!-- 2. GITHUB BACKUP -->
         <div>
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
-            <h3 style="margin:0; font-size:1rem; font-weight:700; color:var(--text-heading);">2. GitHub Backup</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--text-heading)">2. GitHub Backup</h3>
             <span class="pill pill-green">🗜️ Kompresi ZIP</span>
           </div>
 
           <div class="form-stack">
             <div>
               <label for="inputGithubToken" class="field-label">GitHub Token</label>
-              <div style="position:relative;">
-                <input type="password" id="inputGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" class="form-control" style="padding-right:2.75rem;">
-                <button type="button" id="btnToggleToken" aria-label="Tampilkan Token" style="position:absolute; top:0; right:0; bottom:0; padding:0 0.75rem; background:transparent; border:none; cursor:pointer; font-size:1rem;">
+              <div style="position:relative">
+                <input type="password" id="inputGithubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" class="form-control" style="padding-right:2.75rem">
+                <button type="button" id="btnToggleToken" aria-label="Tampilkan Token" style="position:absolute;top:0;right:0;bottom:0;padding:0 .75rem;background:transparent;border:none;cursor:pointer;font-size:1rem">
                   <span id="eyeIcon">👁️</span>
                 </button>
               </div>
-              <p class="text-xs" style="margin:0.35rem 0 0; color:var(--text-muted);">Disimpan lokal di perangkat ini. Hanya digunakan saat Anda menekan tombol cadangan/pemulihan GitHub.</p>
+              <p class="text-xs" style="margin:.35rem 0 0;color:var(--text-muted)">Disimpan lokal di perangkat ini. Hanya digunakan saat Anda menekan tombol cadangan/pemulihan GitHub.</p>
             </div>
 
             <div>
@@ -654,17 +277,11 @@
               <input type="text" id="inputGithubRepo" value="geminiveo600-byte/backup" placeholder="geminiveo600-byte/backup" class="form-control">
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:0.625rem; padding-top:0.25rem;">
-              <button type="button" id="btnSaveGithub" class="btn btn-primary w-full py-3 text-sm">
-                <span>💾</span><span>Simpan GitHub</span>
-              </button>
+            <div style="display:flex;flex-direction:column;gap:.625rem;padding-top:.25rem">
+              <button type="button" id="btnSaveGithub" class="btn btn-primary w-full py-3 text-sm"><span>💾</span><span>Simpan GitHub</span></button>
               <div class="grid-2">
-                <button type="button" id="btnGithubUpload" class="btn btn-emerald py-3 px-3 text-sm">
-                  <span>☁️</span><span>Cadangkan ZIP</span>
-                </button>
-                <button type="button" id="btnGithubRestore" class="btn btn-orange py-3 px-3 text-sm">
-                  <span>📥</span><span>Pulihkan ZIP</span>
-                </button>
+                <button type="button" id="btnGithubUpload" class="btn btn-emerald py-3 px-3 text-sm"><span>☁️</span><span>Cadangkan ZIP</span></button>
+                <button type="button" id="btnGithubRestore" class="btn btn-orange py-3 px-3 text-sm"><span>📥</span><span>Pulihkan ZIP</span></button>
               </div>
             </div>
           </div>
@@ -676,11 +293,11 @@
   <!-- MODAL KONFIRMASI -->
   <div id="confirmModal" class="modal-backdrop">
     <div class="modal-box modal-sm">
-      <h3 id="confirmTitle" style="margin:0 0 0.5rem; font-size:1.125rem; font-weight:700; color:var(--text-heading);">Konfirmasi</h3>
-      <p id="confirmMessage" class="text-sm" style="margin:0 0 1.25rem; color:var(--text-sub);">Apakah Anda yakin?</p>
-      <div style="display:flex; justify-content:flex-end; gap:0.625rem;">
-        <button type="button" id="btnConfirmCancel" class="btn btn-secondary" style="padding:0.6rem 1rem; font-size:0.875rem;">Batal</button>
-        <button type="button" id="btnConfirmYes" class="btn btn-danger" style="padding:0.6rem 1rem; font-size:0.875rem;">Ya, Lanjutkan</button>
+      <h3 id="confirmTitle" style="margin:0 0 .5rem;font-size:1.125rem;font-weight:700;color:var(--text-heading)">Konfirmasi</h3>
+      <p id="confirmMessage" class="text-sm" style="margin:0 0 1.25rem;color:var(--text-sub)">Apakah Anda yakin?</p>
+      <div style="display:flex;justify-content:flex-end;gap:.625rem">
+        <button type="button" id="btnConfirmCancel" class="btn btn-secondary" style="padding:.6rem 1rem;font-size:.875rem">Batal</button>
+        <button type="button" id="btnConfirmYes" class="btn btn-danger" style="padding:.6rem 1rem;font-size:.875rem">Ya, Lanjutkan</button>
       </div>
     </div>
   </div>
@@ -688,17 +305,17 @@
   <!-- MODAL GABUNG / TIMPA -->
   <div id="restoreMergeModal" class="modal-backdrop">
     <div class="modal-box modal-md">
-      <div style="display:flex; align-items:flex-start; gap:0.875rem; margin-bottom:1.25rem;">
-        <span style="font-size:1.75rem; line-height:1;">📂</span>
+      <div style="display:flex;align-items:flex-start;gap:.875rem;margin-bottom:1.25rem">
+        <span style="font-size:1.75rem;line-height:1">📂</span>
         <div>
-          <h3 style="margin:0 0 0.5rem; font-size:1.125rem; font-weight:700; color:var(--text-heading);">Konfirmasi Pemulihan Data</h3>
-          <p id="restoreMergeMessage" class="text-sm" style="margin:0; color:var(--text-sub); line-height:1.55;"></p>
+          <h3 style="margin:0 0 .5rem;font-size:1.125rem;font-weight:700;color:var(--text-heading)">Konfirmasi Pemulihan Data</h3>
+          <p id="restoreMergeMessage" class="text-sm" style="margin:0;color:var(--text-sub);line-height:1.55"></p>
         </div>
       </div>
-      <div style="display:flex; flex-wrap:wrap; justify-content:flex-end; gap:0.625rem;">
-        <button type="button" id="btnRestoreMergeCancel" class="btn btn-secondary" style="padding:0.6rem 0.9rem; font-size:0.8125rem;">Batal</button>
-        <button type="button" id="btnRestoreMergeCombine" class="btn btn-primary" style="padding:0.6rem 0.9rem; font-size:0.8125rem;">Gabungkan</button>
-        <button type="button" id="btnRestoreMergeOverwrite" class="btn btn-orange" style="padding:0.6rem 0.9rem; font-size:0.8125rem;">Timpa Data Lama</button>
+      <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.625rem">
+        <button type="button" id="btnRestoreMergeCancel" class="btn btn-secondary" style="padding:.6rem .9rem;font-size:.8125rem">Batal</button>
+        <button type="button" id="btnRestoreMergeCombine" class="btn btn-primary" style="padding:.6rem .9rem;font-size:.8125rem">Gabungkan</button>
+        <button type="button" id="btnRestoreMergeOverwrite" class="btn btn-orange" style="padding:.6rem .9rem;font-size:.8125rem">Timpa Data Lama</button>
       </div>
     </div>
   </div>
@@ -706,18 +323,14 @@
   <!-- MODAL PILIH METODE BACKUP/RESTORE -->
   <div id="backupChoiceModal" class="modal-backdrop">
     <div class="modal-box modal-sm">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
-        <h3 id="choiceModalTitle" style="margin:0; font-size:1.125rem; font-weight:700; color:var(--text-heading);">Pilih Metode</h3>
-        <button type="button" id="btnCloseChoiceModal" class="btn btn-secondary" style="padding:0.35rem 0.6rem;">✕</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <h3 id="choiceModalTitle" style="margin:0;font-size:1.125rem;font-weight:700;color:var(--text-heading)">Pilih Metode</h3>
+        <button type="button" id="btnCloseChoiceModal" class="btn btn-secondary" style="padding:.35rem .6rem">✕</button>
       </div>
-      <p id="choiceModalDesc" class="text-sm" style="margin:0 0 1rem; color:var(--text-sub);"></p>
-      <div style="display:flex; flex-direction:column; gap:0.625rem;">
-        <button type="button" id="btnChoiceLocal" class="btn btn-primary w-full py-3 px-3 text-sm">
-          <span>🗜️</span><span id="choiceLocalText">File ZIP (Perangkat)</span>
-        </button>
-        <button type="button" id="btnChoiceGithub" class="btn btn-dark-neutral w-full py-3 px-3 text-sm">
-          <span>🐙</span><span id="choiceGithubText">Repository GitHub (ZIP)</span>
-        </button>
+      <p id="choiceModalDesc" class="text-sm" style="margin:0 0 1rem;color:var(--text-sub)"></p>
+      <div style="display:flex;flex-direction:column;gap:.625rem">
+        <button type="button" id="btnChoiceLocal" class="btn btn-primary w-full py-3 px-3 text-sm"><span>🗜️</span><span id="choiceLocalText">File ZIP (Perangkat)</span></button>
+        <button type="button" id="btnChoiceGithub" class="btn btn-dark-neutral w-full py-3 px-3 text-sm"><span>🐙</span><span id="choiceGithubText">Repository GitHub (ZIP)</span></button>
       </div>
     </div>
   </div>
@@ -725,15 +338,15 @@
   <!-- MODAL UNDUHAN ZIP LOKAL -->
   <div id="localDownloadModal" class="modal-backdrop">
     <div class="modal-box modal-sm">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-        <h3 style="margin:0; font-size:1.125rem; font-weight:700; color:var(--text-heading); display:flex; align-items:center; gap:0.5rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <h3 style="margin:0;font-size:1.125rem;font-weight:700;color:var(--text-heading);display:flex;align-items:center;gap:.5rem">
           <span>🗜️</span><span>Arsip ZIP Siap</span>
         </h3>
-        <button type="button" id="btnCloseLocalDownload" class="btn btn-secondary" style="padding:0.35rem 0.6rem;">✕</button>
+        <button type="button" id="btnCloseLocalDownload" class="btn btn-secondary" style="padding:.35rem .6rem">✕</button>
       </div>
-      <p id="localDownloadInfo" class="text-sm" style="margin:0 0 1rem; color:var(--text-sub);"></p>
-      <div style="display:flex; flex-direction:column; gap:0.625rem;">
-        <a id="directZipDownloadLink" href="#" download="cadangan-waktu-pakai.zip" class="btn btn-emerald w-full py-3 px-3 text-sm" style="text-decoration:none;">
+      <p id="localDownloadInfo" class="text-sm" style="margin:0 0 1rem;color:var(--text-sub)"></p>
+      <div style="display:flex;flex-direction:column;gap:.625rem">
+        <a id="directZipDownloadLink" href="#" download="cadangan-waktu-pakai.zip" class="btn btn-emerald w-full py-3 px-3 text-sm" style="text-decoration:none">
           <span>📥</span><span>Simpan File ZIP ke HP</span>
         </a>
         <button type="button" id="btnCopyBackupJson" class="btn btn-secondary w-full py-3 px-3 text-xs">
@@ -743,61 +356,52 @@
     </div>
   </div>
 
-  <!-- TOAST -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- ENGINE ZIP MURNI JAVASCRIPT (100% OFFLINE, TANPA PUSTAKA EKSTERNAL / KARAKTER BINER) -->
   <script>
     (function () {
       'use strict';
 
       // =========================================================================
-      // NATIVE PURE-JS ZIP ENGINE (DEFLATE/STORE + CRC32, 100% COMPATIBLE)
+      // 1. NATIVE PURE-JS ZIP ENGINE (DEFLATE/STORE + CRC32, 100% OFFLINE)
       // =========================================================================
-      const CRC32_TABLE = new Uint32Array(256);
-      for (let i = 0; i < 256; i++) {
-        let c = i;
-        for (let k = 0; k < 8; k++) {
-          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      const CRC32_TABLE = (() => {
+        const t = new Uint32Array(256);
+        for (let i = 0; i < 256; i++) {
+          let c = i;
+          for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          t[i] = c >>> 0;
         }
-        CRC32_TABLE[i] = c >>> 0;
-      }
+        return t;
+      })();
 
-      function computeCrc32(bytes) {
+      function computeCrc32(u8) {
         let crc = 0xFFFFFFFF;
-        for (let i = 0; i < bytes.length; i++) {
-          crc = CRC32_TABLE[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
-        }
+        for (let i = 0; i < u8.length; i++) crc = CRC32_TABLE[(crc ^ u8[i]) & 0xFF] ^ (crc >>> 8);
         return (crc ^ 0xFFFFFFFF) >>> 0;
       }
 
-      function uint8ToBase64(bytes) {
+      function uint8ToBase64(u8) {
         const chunks = [];
-        const step = 0x8000;
-        for (let i = 0; i < bytes.length; i += step) {
-          chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + step)));
-        }
+        for (let i = 0; i < u8.length; i += 0x8000) chunks.push(String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)));
         return btoa(chunks.join(''));
       }
 
       function base64ToUint8(b64) {
         const bin = atob(b64.replace(/\s/g, ''));
-        const bytes = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) {
-          bytes[i] = bin.charCodeAt(i);
-        }
-        return bytes;
+        const u8 = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        return u8;
       }
 
       async function deflateRawBytes(rawBytes) {
         if (typeof CompressionStream !== 'undefined') {
           try {
             const cs = new CompressionStream('deflate-raw');
-            const writer = cs.writable.getWriter();
-            writer.write(rawBytes);
-            writer.close();
-            const buf = await new Response(cs.readable).arrayBuffer();
-            return { data: new Uint8Array(buf), method: 8 };
+            const w = cs.writable.getWriter();
+            w.write(rawBytes);
+            w.close();
+            return { data: new Uint8Array(await new Response(cs.readable).arrayBuffer()), method: 8 };
           } catch (e) {}
         }
         return { data: rawBytes, method: 0 };
@@ -808,11 +412,10 @@
         if (method === 8) {
           if (typeof DecompressionStream !== 'undefined') {
             const ds = new DecompressionStream('deflate-raw');
-            const writer = ds.writable.getWriter();
-            writer.write(compBytes);
-            writer.close();
-            const buf = await new Response(ds.readable).arrayBuffer();
-            return new Uint8Array(buf);
+            const w = ds.writable.getWriter();
+            w.write(compBytes);
+            w.close();
+            return new Uint8Array(await new Response(ds.readable).arrayBuffer());
           }
           throw new Error('Browser tidak mendukung dekompresi DEFLATE.');
         }
@@ -820,166 +423,94 @@
       }
 
       async function buildZipArchiveBytes(entryName, jsonText) {
-        const encoder = new TextEncoder();
-        const nameBytes = encoder.encode(entryName);
-        const rawBytes = encoder.encode(jsonText);
+        const enc = new TextEncoder();
+        const nameBytes = enc.encode(entryName);
+        const rawBytes = enc.encode(jsonText);
         const crc = computeCrc32(rawBytes);
         const { data: compBytes, method } = await deflateRawBytes(rawBytes);
 
         const now = new Date();
-        const dosTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((Math.floor(now.getSeconds() / 2)) & 31);
+        const dosTime = ((now.getHours() & 31) << 11) | ((now.getMinutes() & 63) << 5) | ((now.getSeconds() >> 1) & 31);
         const dosDate = (((Math.max(1980, now.getFullYear()) - 1980) & 127) << 9) | (((now.getMonth() + 1) & 15) << 5) | (now.getDate() & 31);
 
-        const localHeaderLen = 30 + nameBytes.length;
-        const centralHeaderLen = 46 + nameBytes.length;
-        const eocdLen = 22;
-        const totalLen = localHeaderLen + compBytes.length + centralHeaderLen + eocdLen;
+        const nLen = nameBytes.length, cLen = compBytes.length, rLen = rawBytes.length;
+        const lhLen = 30 + nLen, cdOff = lhLen + cLen, cdLen = 46 + nLen;
+        const out = new Uint8Array(cdOff + cdLen + 22);
+        const v = new DataView(out.buffer);
 
-        const out = new Uint8Array(totalLen);
-        const view = new DataView(out.buffer);
-        let pos = 0;
+        // Local File Header
+        v.setUint32(0, 0x04034b50, true); v.setUint16(4, 20, true); v.setUint16(6, 0x0800, true);
+        v.setUint16(8, method, true); v.setUint16(10, dosTime, true); v.setUint16(12, dosDate, true);
+        v.setUint32(14, crc, true); v.setUint32(18, cLen, true); v.setUint32(22, rLen, true);
+        v.setUint16(26, nLen, true);
+        out.set(nameBytes, 30);
+        out.set(compBytes, lhLen);
 
-        // 1. Local File Header (0x04034b50)
-        view.setUint32(pos, 0x04034b50, true); pos += 4;
-        view.setUint16(pos, 20, true); pos += 2;
-        view.setUint16(pos, 0x0800, true); pos += 2; // UTF-8 flag
-        view.setUint16(pos, method, true); pos += 2;
-        view.setUint16(pos, dosTime, true); pos += 2;
-        view.setUint16(pos, dosDate, true); pos += 2;
-        view.setUint32(pos, crc, true); pos += 4;
-        view.setUint32(pos, compBytes.length, true); pos += 4;
-        view.setUint32(pos, rawBytes.length, true); pos += 4;
-        view.setUint16(pos, nameBytes.length, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        out.set(nameBytes, pos); pos += nameBytes.length;
+        // Central Directory Header
+        let p = cdOff;
+        v.setUint32(p, 0x02014b50, true); v.setUint16(p + 4, 20, true); v.setUint16(p + 6, 20, true);
+        v.setUint16(p + 8, 0x0800, true); v.setUint16(p + 10, method, true); v.setUint16(p + 12, dosTime, true);
+        v.setUint16(p + 14, dosDate, true); v.setUint32(p + 16, crc, true); v.setUint32(p + 20, cLen, true);
+        v.setUint32(p + 24, rLen, true); v.setUint16(p + 28, nLen, true);
+        out.set(nameBytes, p + 46);
 
-        // 2. File Data
-        out.set(compBytes, pos); pos += compBytes.length;
-
-        // 3. Central Directory File Header (0x02014b50)
-        const centralOffset = pos;
-        view.setUint32(pos, 0x02014b50, true); pos += 4;
-        view.setUint16(pos, 20, true); pos += 2;
-        view.setUint16(pos, 20, true); pos += 2;
-        view.setUint16(pos, 0x0800, true); pos += 2;
-        view.setUint16(pos, method, true); pos += 2;
-        view.setUint16(pos, dosTime, true); pos += 2;
-        view.setUint16(pos, dosDate, true); pos += 2;
-        view.setUint32(pos, crc, true); pos += 4;
-        view.setUint32(pos, compBytes.length, true); pos += 4;
-        view.setUint32(pos, rawBytes.length, true); pos += 4;
-        view.setUint16(pos, nameBytes.length, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint32(pos, 0, true); pos += 4;
-        view.setUint32(pos, 0, true); pos += 4;
-        out.set(nameBytes, pos); pos += nameBytes.length;
-
-        // 4. End of Central Directory Record (0x06054b50)
-        view.setUint32(pos, 0x06054b50, true); pos += 4;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint16(pos, 0, true); pos += 2;
-        view.setUint16(pos, 1, true); pos += 2;
-        view.setUint16(pos, 1, true); pos += 2;
-        view.setUint32(pos, centralHeaderLen, true); pos += 4;
-        view.setUint32(pos, centralOffset, true); pos += 4;
-        view.setUint16(pos, 0, true);
+        // End of Central Directory
+        p = cdOff + cdLen;
+        v.setUint32(p, 0x06054b50, true); v.setUint16(p + 8, 1, true); v.setUint16(p + 10, 1, true);
+        v.setUint32(p + 12, cdLen, true); v.setUint32(p + 16, cdOff, true);
 
         return out;
       }
 
       async function extractJsonFromZipBytes(zipBytes, preferredName) {
-        if (!(zipBytes instanceof Uint8Array)) {
-          zipBytes = new Uint8Array(zipBytes);
-        }
-        if (zipBytes.length < 22) {
-          throw new Error('File ZIP rusak atau terlalu kecil.');
-        }
+        if (!(zipBytes instanceof Uint8Array)) zipBytes = new Uint8Array(zipBytes);
+        if (zipBytes.length < 22) throw new Error('File ZIP rusak atau terlalu kecil.');
 
-        const view = new DataView(zipBytes.buffer, zipBytes.byteOffset, zipBytes.byteLength);
-        const decoder = new TextDecoder('utf-8');
+        const v = new DataView(zipBytes.buffer, zipBytes.byteOffset, zipBytes.byteLength);
+        const dec = new TextDecoder('utf-8');
 
-        // Cari End of Central Directory (0x06054b50) dari belakang
         let eocdOffset = -1;
-        const minSearch = Math.max(0, zipBytes.length - 65557);
-        for (let i = zipBytes.length - 22; i >= minSearch; i--) {
-          if (view.getUint32(i, true) === 0x06054b50) {
-            eocdOffset = i;
-            break;
-          }
+        for (let i = zipBytes.length - 22; i >= Math.max(0, zipBytes.length - 65557); i--) {
+          if (v.getUint32(i, true) === 0x06054b50) { eocdOffset = i; break; }
         }
-        if (eocdOffset === -1) {
-          throw new Error('Format file bukan arsip ZIP yang valid.');
-        }
+        if (eocdOffset === -1) throw new Error('Format file bukan arsip ZIP yang valid.');
 
-        const totalEntries = view.getUint16(eocdOffset + 10, true);
-        const centralOffset = view.getUint32(eocdOffset + 16, true);
-
-        let ptr = centralOffset;
-        let chosenEntry = null;
+        const totalEntries = v.getUint16(eocdOffset + 10, true);
+        let ptr = v.getUint32(eocdOffset + 16, true), chosenEntry = null;
 
         for (let i = 0; i < totalEntries; i++) {
-          if (ptr + 46 > zipBytes.length || view.getUint32(ptr, true) !== 0x02014b50) {
-            throw new Error('Struktur direktori ZIP rusak.');
-          }
-          const method = view.getUint16(ptr + 10, true);
-          const expectedCrc = view.getUint32(ptr + 16, true);
-          const compSize = view.getUint32(ptr + 20, true);
-          const nameLen = view.getUint16(ptr + 28, true);
-          const extraLen = view.getUint16(ptr + 30, true);
-          const commentLen = view.getUint16(ptr + 32, true);
-          const localHeaderOffset = view.getUint32(ptr + 42, true);
-
-          const fileName = decoder.decode(zipBytes.subarray(ptr + 46, ptr + 46 + nameLen));
-          ptr += 46 + nameLen + extraLen + commentLen;
+          if (ptr + 46 > zipBytes.length || v.getUint32(ptr, true) !== 0x02014b50) throw new Error('Struktur direktori ZIP rusak.');
+          const method = v.getUint16(ptr + 10, true);
+          const expectedCrc = v.getUint32(ptr + 16, true);
+          const compSize = v.getUint32(ptr + 20, true);
+          const nameLen = v.getUint16(ptr + 28, true);
+          const localHeaderOffset = v.getUint32(ptr + 42, true);
+          const fileName = dec.decode(zipBytes.subarray(ptr + 46, ptr + 46 + nameLen));
+          ptr += 46 + nameLen + v.getUint16(ptr + 30, true) + v.getUint16(ptr + 32, true);
 
           if (!fileName.endsWith('/')) {
-            if (fileName === preferredName) {
-              chosenEntry = { method, expectedCrc, compSize, localHeaderOffset };
-              break;
-            }
-            if (!chosenEntry && fileName.toLowerCase().endsWith('.json')) {
-              chosenEntry = { method, expectedCrc, compSize, localHeaderOffset };
-            }
+            if (fileName === preferredName) { chosenEntry = { method, expectedCrc, compSize, localHeaderOffset }; break; }
+            if (!chosenEntry && fileName.toLowerCase().endsWith('.json')) chosenEntry = { method, expectedCrc, compSize, localHeaderOffset };
           }
         }
 
-        if (!chosenEntry) {
-          throw new Error('File JSON cadangan tidak ditemukan di dalam arsip ZIP.');
-        }
+        if (!chosenEntry) throw new Error('File JSON cadangan tidak ditemukan di dalam arsip ZIP.');
 
         const lh = chosenEntry.localHeaderOffset;
-        if (lh + 30 > zipBytes.length || view.getUint32(lh, true) !== 0x04034b50) {
-          throw new Error('Header file lokal ZIP rusak.');
-        }
-        const lhNameLen = view.getUint16(lh + 26, true);
-        const lhExtraLen = view.getUint16(lh + 28, true);
-        const dataStart = lh + 30 + lhNameLen + lhExtraLen;
+        if (lh + 30 > zipBytes.length || v.getUint32(lh, true) !== 0x04034b50) throw new Error('Header file lokal ZIP rusak.');
+        const dataStart = lh + 30 + v.getUint16(lh + 26, true) + v.getUint16(lh + 28, true);
         const dataEnd = dataStart + chosenEntry.compSize;
+        if (dataEnd > zipBytes.length) throw new Error('Data di dalam arsip ZIP terpotong atau rusak.');
 
-        if (dataEnd > zipBytes.length) {
-          throw new Error('Data di dalam arsip ZIP terpotong atau rusak.');
-        }
+        const rawBytes = await inflateRawBytes(zipBytes.subarray(dataStart, dataEnd), chosenEntry.method);
+        if (chosenEntry.expectedCrc !== 0 && computeCrc32(rawBytes) !== chosenEntry.expectedCrc) throw new Error('Checksum CRC32 tidak cocok (file ZIP korup).');
 
-        const compSlice = zipBytes.subarray(dataStart, dataEnd);
-        const rawBytes = await inflateRawBytes(compSlice, chosenEntry.method);
-
-        if (chosenEntry.expectedCrc !== 0 && computeCrc32(rawBytes) !== chosenEntry.expectedCrc) {
-          throw new Error('Checksum CRC32 tidak cocok (file ZIP korup).');
-        }
-
-        const rawText = decoder.decode(rawBytes);
-        try {
-          return JSON.parse(rawText);
-        } catch (e) {
-          throw new Error('Isi JSON di dalam arsip ZIP tidak valid.');
-        }
+        try { return JSON.parse(dec.decode(rawBytes)); }
+        catch (e) { throw new Error('Isi JSON di dalam arsip ZIP tidak valid.'); }
       }
 
       // =========================================================================
-      // KONFIGURASI & STATE APLIKASI
+      // 2. KONFIGURASI & STATE APLIKASI
       // =========================================================================
       const STORAGE_KEYS = {
         RECORDS: 'waktu_pakai_smartphone_records_v1',
@@ -1003,7 +534,6 @@
       let renderScheduled = false;
       let isBusy = false;
 
-      // DOM Cache
       const $ = (id) => document.getElementById(id);
       const htmlEl = document.documentElement;
       const usageForm = $('usageForm');
@@ -1074,46 +604,27 @@
       }
 
       function showToast(message, type = 'success') {
-        const bgMap = {
-          success: '#059669',
-          error: '#dc2626',
-          info: '#2563eb',
-          warning: '#ea580c',
-        };
+        const bgMap = { success: '#059669', error: '#dc2626', info: '#2563eb', warning: '#ea580c' };
         const iconMap = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
 
-        while (toastContainer.children.length >= 2) {
-          toastContainer.firstChild.remove();
-        }
+        while (toastContainer.children.length >= 2) toastContainer.firstChild.remove();
 
         const toast = document.createElement('div');
         toast.className = 'toast-item';
         toast.style.backgroundColor = bgMap[type] || bgMap.info;
-
-        const iconSpan = document.createElement('span');
-        iconSpan.textContent = iconMap[type] || 'ℹ️';
-        const textSpan = document.createElement('span');
-        textSpan.textContent = message;
-
-        toast.append(iconSpan, textSpan);
+        toast.innerHTML = `<span>${iconMap[type] || 'ℹ️'}</span><span></span>`;
+        toast.lastChild.textContent = message;
         toastContainer.appendChild(toast);
 
         requestAnimationFrame(() => toast.classList.add('show'));
-
-        setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => toast.remove(), 180);
-        }, 3000);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 180); }, 3000);
       }
 
       function toggleModal(el, show) {
-        if (show) {
-          el.classList.add('open');
-        } else {
+        if (show) el.classList.add('open');
+        else {
           el.classList.remove('open');
-          if (el === localDownloadModal) {
-            revokeActiveBlobUrl();
-          }
+          if (el === localDownloadModal) revokeActiveBlobUrl();
         }
       }
 
@@ -1130,22 +641,13 @@
       }
 
       btnConfirmCancel.addEventListener('click', closeConfirmDialog);
-      btnConfirmYes.addEventListener('click', () => {
-        if (typeof confirmCallback === 'function') confirmCallback();
-        closeConfirmDialog();
-      });
+      btnConfirmYes.addEventListener('click', () => { if (typeof confirmCallback === 'function') confirmCallback(); closeConfirmDialog(); });
 
-      function formatDateToDDMMYYYY(isoDate) {
-        if (!isoDate || isoDate.length < 10) return isoDate || '-';
-        return `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}/${isoDate.slice(0, 4)}`;
-      }
+      const formatDateToDDMMYYYY = (iso) => (!iso || iso.length < 10) ? (iso || '-') : `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
 
       function getTodayISO() {
         const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       }
 
       function updateDatePreview() {
@@ -1155,73 +657,46 @@
       function applyTheme(theme) {
         currentTheme = theme === 'light' ? 'light' : 'dark';
         try { localStorage.setItem(STORAGE_KEYS.THEME, currentTheme); } catch (e) {}
-
+        const isDark = currentTheme === 'dark';
+        htmlEl.classList.toggle('dark', isDark);
+        btnThemeDark.className = isDark ? 'theme-btn active-dark' : 'theme-btn';
+        btnThemeLight.className = isDark ? 'theme-btn' : 'theme-btn active-light';
         const metaTheme = document.querySelector('meta[name="theme-color"]');
-        if (currentTheme === 'dark') {
-          htmlEl.classList.add('dark');
-          btnThemeDark.className = 'theme-btn active-dark';
-          btnThemeLight.className = 'theme-btn';
-          if (metaTheme) metaTheme.setAttribute('content', '#141D32');
-        } else {
-          htmlEl.classList.remove('dark');
-          btnThemeLight.className = 'theme-btn active-light';
-          btnThemeDark.className = 'theme-btn';
-          if (metaTheme) metaTheme.setAttribute('content', '#f1f5f9');
-        }
+        if (metaTheme) metaTheme.setAttribute('content', isDark ? '#141D32' : '#f1f5f9');
       }
 
       function loadRecords() {
         try {
-          const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
-          const parsed = raw ? JSON.parse(raw) : [];
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.RECORDS) || '[]');
           records = Array.isArray(parsed) ? parsed : [];
-        } catch (err) {
-          records = [];
-        }
+        } catch (e) { records = []; }
       }
 
       function saveRecords() {
-        try {
-          localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
-          return true;
-        } catch (err) {
-          showToast('Penyimpanan penuh atau diblokir oleh browser.', 'error');
-          return false;
-        }
+        try { localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records)); return true; }
+        catch (e) { showToast('Penyimpanan penuh atau diblokir oleh browser.', 'error'); return false; }
       }
 
-      function encodeToken(token) {
-        if (!token) return '';
-        try { return btoa(unescape(encodeURIComponent(token.split('').reverse().join('')))); } catch (e) { return token; }
-      }
-
-      function decodeToken(encoded) {
-        if (!encoded) return '';
-        try { return decodeURIComponent(escape(atob(encoded))).split('').reverse().join(''); } catch (e) { return encoded; }
-      }
+      const encodeToken = (t) => { if (!t) return ''; try { return btoa(unescape(encodeURIComponent(t.split('').reverse().join('')))); } catch (e) { return t; } };
+      const decodeToken = (e) => { if (!e) return ''; try { return decodeURIComponent(escape(atob(e))).split('').reverse().join(''); } catch (err) { return e; } };
 
       function loadGithubSettings() {
         try {
           inputGithubToken.value = decodeToken(localStorage.getItem(STORAGE_KEYS.GH_TOKEN) || '');
           inputGithubRepo.value = localStorage.getItem(STORAGE_KEYS.GH_REPO) || DEFAULT_REPO;
-        } catch (e) {
-          inputGithubRepo.value = DEFAULT_REPO;
-        }
+        } catch (e) { inputGithubRepo.value = DEFAULT_REPO; }
       }
 
       function scheduleRenderHistory() {
         if (renderScheduled) return;
         renderScheduled = true;
-        requestAnimationFrame(() => {
-          renderScheduled = false;
-          renderHistoryNow();
-        });
+        requestAnimationFrame(() => { renderScheduled = false; renderHistoryNow(); });
       }
 
       function renderHistoryNow() {
         recordCountBadge.textContent = records.length;
 
-        if (records.length === 0) {
+        if (!records.length) {
           historyTableBody.textContent = '';
           emptyState.classList.remove('hidden');
           return;
@@ -1230,12 +705,8 @@
         emptyState.classList.add('hidden');
 
         const sorted = records.slice().sort((a, b) => {
-          if (currentSort === 'date_desc') {
-            return b.date !== a.date ? b.date.localeCompare(a.date) : (b.createdAt || 0) - (a.createdAt || 0);
-          }
-          if (currentSort === 'date_asc') {
-            return a.date !== b.date ? a.date.localeCompare(b.date) : (a.createdAt || 0) - (b.createdAt || 0);
-          }
+          if (currentSort === 'date_desc') return b.date !== a.date ? b.date.localeCompare(a.date) : (b.createdAt || 0) - (a.createdAt || 0);
+          if (currentSort === 'date_asc') return a.date !== b.date ? a.date.localeCompare(b.date) : (a.createdAt || 0) - (b.createdAt || 0);
           const minA = (Number(a.hours) || 0) * 60 + (Number(a.minutes) || 0);
           const minB = (Number(b.hours) || 0) * 60 + (Number(b.minutes) || 0);
           return currentSort === 'duration_desc' ? minB - minA : minA - minB;
@@ -1252,39 +723,28 @@
           const isCharging = item.charging === 'Yes';
           const isWifi = item.connection === 'WiFi';
 
-          const tdNo = document.createElement('td');
-          tdNo.className = 'text-center font-bold';
-          tdNo.style.color = 'var(--text-sub)';
-          tdNo.textContent = String(i + 1);
+          const cells = [
+            { text: String(i + 1), cls: 'text-center font-bold', color: 'var(--text-sub)' },
+            { text: formatDateToDDMMYYYY(item.date), cls: 'font-semibold' },
+            { text: `${totalMinutes} menit`, cls: 'font-bold text-blue' },
+            { pill: batClass, text: `${bat}%`, center: true },
+            { pill: isCharging ? 'pill-amber' : 'pill-slate', text: isCharging ? 'Yes' : 'No', center: true },
+            { pill: isWifi ? 'pill-sky' : 'pill-purple', text: isWifi ? 'WiFi' : 'Data', center: true }
+          ];
 
-          const tdDate = document.createElement('td');
-          tdDate.className = 'font-semibold';
-          tdDate.textContent = formatDateToDDMMYYYY(item.date);
-
-          const tdDur = document.createElement('td');
-          tdDur.className = 'font-bold text-blue';
-          tdDur.textContent = `${totalMinutes} menit`;
-
-          const tdBat = document.createElement('td');
-          tdBat.className = 'text-center';
-          const spanBat = document.createElement('span');
-          spanBat.className = `pill ${batClass}`;
-          spanBat.textContent = `${bat}%`;
-          tdBat.appendChild(spanBat);
-
-          const tdCas = document.createElement('td');
-          tdCas.className = 'text-center';
-          const spanCas = document.createElement('span');
-          spanCas.className = `pill ${isCharging ? 'pill-amber' : 'pill-slate'}`;
-          spanCas.textContent = isCharging ? 'Yes' : 'No';
-          tdCas.appendChild(spanCas);
-
-          const tdConn = document.createElement('td');
-          tdConn.className = 'text-center';
-          const spanConn = document.createElement('span');
-          spanConn.className = `pill ${isWifi ? 'pill-sky' : 'pill-purple'}`;
-          spanConn.textContent = isWifi ? 'WiFi' : 'Data';
-          tdConn.appendChild(spanConn);
+          cells.forEach(c => {
+            const td = document.createElement('td');
+            if (c.cls) td.className = c.cls;
+            if (c.center) td.className = 'text-center';
+            if (c.color) td.style.color = c.color;
+            if (c.pill) {
+              const s = document.createElement('span');
+              s.className = `pill ${c.pill}`;
+              s.textContent = c.text;
+              td.appendChild(s);
+            } else td.textContent = c.text;
+            tr.appendChild(td);
+          });
 
           const tdAct = document.createElement('td');
           tdAct.className = 'text-center';
@@ -1297,7 +757,7 @@
           btnDel.textContent = '🗑️';
           tdAct.appendChild(btnDel);
 
-          tr.append(tdNo, tdDate, tdDur, tdBat, tdCas, tdConn, tdAct);
+          tr.appendChild(tdAct);
           frag.appendChild(tr);
         }
 
@@ -1305,68 +765,32 @@
         historyTableBody.appendChild(frag);
       }
 
-      inputHours.addEventListener('input', () => {
-        if (inputHours.value.length >= 2) inputMinutes.focus();
-      });
-      inputMinutes.addEventListener('input', () => {
-        if (inputMinutes.value.length >= 2) inputBattery.focus();
-      });
+      inputHours.addEventListener('input', () => { if (inputHours.value.length >= 2) inputMinutes.focus(); });
+      inputMinutes.addEventListener('input', () => { if (inputMinutes.value.length >= 2) inputBattery.focus(); });
 
       usageForm.addEventListener('submit', (e) => {
         e.preventDefault();
-
         const dateVal = inputDate.value.trim();
         const hoursVal = inputHours.value === '' ? 0 : parseInt(inputHours.value, 10);
         const minutesVal = inputMinutes.value === '' ? 0 : parseInt(inputMinutes.value, 10);
         const batteryRaw = inputBattery.value.trim();
 
-        if (!dateVal) {
-          showToast('Silakan pilih tanggal terlebih dahulu.', 'error');
-          inputDate.focus();
-          return;
-        }
-        if (isNaN(hoursVal) || hoursVal < 0 || hoursVal > 24) {
-          showToast('Jam harus antara 0 hingga 24.', 'error');
-          inputHours.focus();
-          return;
-        }
-        if (isNaN(minutesVal) || minutesVal < 0 || minutesVal > 59) {
-          showToast('Menit harus antara 0 hingga 59.', 'error');
-          inputMinutes.focus();
-          return;
-        }
-        if (hoursVal === 0 && minutesVal === 0) {
-          showToast('Masukkan waktu minimal 1 menit.', 'error');
-          inputHours.focus();
-          return;
-        }
-        if (hoursVal === 24 && minutesVal > 0) {
-          showToast('Total waktu maksimal 24 jam per hari.', 'error');
-          inputMinutes.focus();
-          return;
-        }
-        if (batteryRaw === '') {
-          showToast('Silakan isi persentase baterai (0–100).', 'error');
-          inputBattery.focus();
-          return;
-        }
+        if (!dateVal) { inputDate.focus(); return showToast('Silakan pilih tanggal terlebih dahulu.', 'error'); }
+        if (isNaN(hoursVal) || hoursVal < 0 || hoursVal > 24) { inputHours.focus(); return showToast('Jam harus antara 0 hingga 24.', 'error'); }
+        if (isNaN(minutesVal) || minutesVal < 0 || minutesVal > 59) { inputMinutes.focus(); return showToast('Menit harus antara 0 hingga 59.', 'error'); }
+        if (hoursVal === 0 && minutesVal === 0) { inputHours.focus(); return showToast('Masukkan waktu minimal 1 menit.', 'error'); }
+        if (hoursVal === 24 && minutesVal > 0) { inputMinutes.focus(); return showToast('Total waktu maksimal 24 jam per hari.', 'error'); }
+        if (batteryRaw === '') { inputBattery.focus(); return showToast('Silakan isi persentase baterai (0–100).', 'error'); }
 
         const batteryVal = parseInt(batteryRaw, 10);
-        if (isNaN(batteryVal) || batteryVal < 0 || batteryVal > 100) {
-          showToast('Baterai harus bernilai 0 hingga 100%.', 'error');
-          inputBattery.focus();
-          return;
-        }
+        if (isNaN(batteryVal) || batteryVal < 0 || batteryVal > 100) { inputBattery.focus(); return showToast('Baterai harus bernilai 0 hingga 100%.', 'error'); }
 
         records.push({
           id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-          date: dateVal,
-          hours: hoursVal,
-          minutes: minutesVal,
-          battery: batteryVal,
+          date: dateVal, hours: hoursVal, minutes: minutesVal, battery: batteryVal,
           charging: inputCharging.value === 'Yes' ? 'Yes' : 'No',
           connection: inputConnection.value === 'Data' ? 'Data' : 'WiFi',
-          createdAt: Date.now(),
+          createdAt: Date.now()
         });
 
         if (saveRecords()) {
@@ -1393,10 +817,7 @@
       });
 
       btnDeleteAll.addEventListener('click', () => {
-        if (records.length === 0) {
-          showToast('Tidak ada catatan untuk dihapus.', 'warning');
-          return;
-        }
+        if (!records.length) return showToast('Tidak ada catatan untuk dihapus.', 'warning');
         openConfirmDialog('Hapus Semua Catatan', `Semua (${records.length}) catatan akan dihapus permanen. Lanjutkan?`, () => {
           records = [];
           saveRecords();
@@ -1405,30 +826,22 @@
         });
       });
 
-      sortSelect.addEventListener('change', (e) => {
-        currentSort = e.target.value;
-        scheduleRenderHistory();
-      });
+      sortSelect.addEventListener('change', (e) => { currentSort = e.target.value; scheduleRenderHistory(); });
 
       // =========================================================================
-      // KOMPRESI & DEKOMPRESI ZIP 100% OFFLINE
+      // 3. KOMPRESI & DEKOMPRESI ZIP 100% OFFLINE
       // =========================================================================
-      function buildBackupJsonString() {
-        return JSON.stringify({
-          app: 'Waktu Pakai Smartphone',
-          compression: 'ZIP (DEFLATE)',
-          exportedAt: new Date().toISOString(),
-          totalRecords: records.length,
-          records: records,
-        });
-      }
+      const buildBackupJsonString = () => JSON.stringify({
+        app: 'Waktu Pakai Smartphone',
+        compression: 'ZIP (DEFLATE)',
+        exportedAt: new Date().toISOString(),
+        totalRecords: records.length,
+        records
+      });
 
       async function compressRecordsToZip(outputType = 'blob') {
         const zipBytes = await buildZipArchiveBytes(INTERNAL_ZIP_JSON_NAME, buildBackupJsonString());
-        if (outputType === 'base64') {
-          return uint8ToBase64(zipBytes);
-        }
-        return new Blob([zipBytes], { type: 'application/zip' });
+        return outputType === 'base64' ? uint8ToBase64(zipBytes) : new Blob([zipBytes], { type: 'application/zip' });
       }
 
       async function decompressZipToData(zipSource, isBase64 = false) {
@@ -1438,10 +851,7 @@
 
       async function downloadZipBackup() {
         if (isBusy) return;
-        if (records.length === 0) {
-          showToast('Belum ada data catatan untuk dicadangkan.', 'warning');
-          return;
-        }
+        if (!records.length) return showToast('Belum ada data catatan untuk dicadangkan.', 'warning');
 
         isBusy = true;
         btnBackup.disabled = true;
@@ -1477,34 +887,28 @@
       }
 
       btnCloseLocalDownload.addEventListener('click', () => toggleModal(localDownloadModal, false));
-      localDownloadModal.addEventListener('click', (e) => {
-        if (e.target === localDownloadModal) toggleModal(localDownloadModal, false);
-      });
+      localDownloadModal.addEventListener('click', (e) => { if (e.target === localDownloadModal) toggleModal(localDownloadModal, false); });
 
       btnCopyBackupJson.addEventListener('click', async () => {
         const text = buildBackupJsonString();
         try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(text);
-          } else {
+          if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+          else {
             const ta = document.createElement('textarea');
             ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.left = '-9999px';
+            ta.style.cssText = 'position:fixed;left:-9999px';
             document.body.appendChild(ta);
             ta.select();
             document.execCommand('copy');
             ta.remove();
           }
           showToast('Teks cadangan berhasil disalin!', 'success');
-        } catch (err) {
-          showToast('Gagal menyalin teks cadangan.', 'error');
-        }
+        } catch (e) { showToast('Gagal menyalin teks cadangan.', 'error'); }
       });
 
       function parseIncomingRecords(parsedData) {
-        const list = Array.isArray(parsedData) ? parsedData : (parsedData && Array.isArray(parsedData.records) ? parsedData.records : null);
-        if (!list) throw new Error('Format struktur data JSON tidak valid.');
+        const list = Array.isArray(parsedData) ? parsedData : parsedData?.records;
+        if (!Array.isArray(list)) throw new Error('Format struktur data JSON tidak valid.');
 
         return list
           .filter((item) => item && typeof item.date === 'string' && item.date.trim().length >= 8)
@@ -1516,7 +920,7 @@
             battery: Math.max(0, Math.min(100, parseInt(item.battery, 10) || 0)),
             charging: item.charging === 'Yes' ? 'Yes' : 'No',
             connection: item.connection === 'Data' ? 'Data' : 'WiFi',
-            createdAt: Number(item.createdAt) || Date.now() + idx,
+            createdAt: Number(item.createdAt) || Date.now() + idx
           }));
       }
 
@@ -1527,10 +931,8 @@
 
       function handleRestoredData(parsedData, sourceDescription, sourceLabel) {
         const validRecords = parseIncomingRecords(parsedData);
-        if (validRecords.length === 0) {
-          showToast('Tidak ditemukan catatan valid di dalam file cadangan.', 'warning');
-          return;
-        }
+        if (!validRecords.length) return showToast('Tidak ditemukan catatan valid di dalam file cadangan.', 'warning');
+
         if (records.length > 0) {
           pendingRestoreContext = { validRecords, sourceLabel };
           restoreMergeMessage.textContent = `Ditemukan ${validRecords.length} catatan pada ${sourceDescription}, sementara saat ini sudah ada ${records.length} catatan tersimpan. Pilih metode pemulihan:`;
@@ -1543,24 +945,22 @@
         showToast(`Berhasil memulihkan ${validRecords.length} catatan (${sourceLabel})!`, 'success');
       }
 
-      btnRestoreMergeCancel.addEventListener('click', () => {
-        closeRestoreMergeModal();
-        showToast('Pemulihan data dibatalkan.', 'info');
-      });
+      btnRestoreMergeCancel.addEventListener('click', () => { closeRestoreMergeModal(); showToast('Pemulihan data dibatalkan.', 'info'); });
 
       btnRestoreMergeCombine.addEventListener('click', () => {
         if (!pendingRestoreContext) return;
         const { validRecords, sourceLabel } = pendingRestoreContext;
+        const sig = (r) => `${r.date}|${r.hours}|${r.minutes}|${r.battery}|${r.charging}|${r.connection}`;
         const existingIds = new Set(records.map((r) => String(r.id)));
-        const existingSigs = new Set(records.map((r) => `${r.date}|${r.hours}|${r.minutes}|${r.battery}|${r.charging}|${r.connection}`));
+        const existingSigs = new Set(records.map(sig));
 
         let added = 0;
         for (const item of validRecords) {
-          const sig = `${item.date}|${item.hours}|${item.minutes}|${item.battery}|${item.charging}|${item.connection}`;
-          if (!existingIds.has(String(item.id)) && !existingSigs.has(sig)) {
+          const s = sig(item);
+          if (!existingIds.has(String(item.id)) && !existingSigs.has(s)) {
             records.push(item);
             existingIds.add(String(item.id));
-            existingSigs.add(sig);
+            existingSigs.add(s);
             added++;
           }
         }
@@ -1568,13 +968,7 @@
         saveRecords();
         scheduleRenderHistory();
         closeRestoreMergeModal();
-
-        showToast(
-          added > 0
-            ? `Berhasil menggabungkan +${added} catatan baru (Total: ${records.length})!`
-            : `Semua catatan dari ${sourceLabel} sudah ada di riwayat.`,
-          added > 0 ? 'success' : 'info'
-        );
+        showToast(added > 0 ? `Berhasil menggabungkan +${added} catatan baru (Total: ${records.length})!` : `Semua catatan dari ${sourceLabel} sudah ada di riwayat.`, added > 0 ? 'success' : 'info');
       });
 
       btnRestoreMergeOverwrite.addEventListener('click', () => {
@@ -1587,9 +981,7 @@
         showToast(`Data lama ditimpa dengan ${validRecords.length} catatan (${sourceLabel})!`, 'success');
       });
 
-      restoreMergeModal.addEventListener('click', (e) => {
-        if (e.target === restoreMergeModal) closeRestoreMergeModal();
-      });
+      restoreMergeModal.addEventListener('click', (e) => { if (e.target === restoreMergeModal) closeRestoreMergeModal(); });
 
       fileRestoreInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
@@ -1601,21 +993,14 @@
         try {
           const lowerName = file.name.toLowerCase();
           if (lowerName.endsWith('.zip')) {
-            const buf = await file.arrayBuffer();
-            const parsed = await decompressZipToData(buf, false);
+            const parsed = await decompressZipToData(await file.arrayBuffer(), false);
             handleRestoredData(parsed, `file lokal (${file.name})`, 'ZIP Lokal');
           } else if (lowerName.endsWith('.json')) {
-            const rawText = await file.text();
             let parsed;
-            try {
-              parsed = JSON.parse(rawText);
-            } catch (jsonErr) {
-              throw new Error('File JSON rusak atau sintaks JSON tidak valid.');
-            }
+            try { parsed = JSON.parse(await file.text()); }
+            catch (jsonErr) { throw new Error('File JSON rusak atau sintaks JSON tidak valid.'); }
             handleRestoredData(parsed, `file lokal (${file.name})`, 'JSON Lokal');
-          } else {
-            throw new Error('Format file tidak didukung. Pilih file .zip atau .json.');
-          }
+          } else throw new Error('Format file tidak didukung. Pilih file .zip atau .json.');
         } catch (err) {
           showToast('Gagal memulihkan file: ' + err.message, 'error');
         } finally {
@@ -1626,86 +1011,50 @@
       });
 
       // =========================================================================
-      // GITHUB BACKUP & RESTORE
+      // 4. GITHUB BACKUP & RESTORE
       // =========================================================================
-      function getGithubCredentials() {
-        return {
-          token: decodeToken(localStorage.getItem(STORAGE_KEYS.GH_TOKEN) || ''),
-          repo: (localStorage.getItem(STORAGE_KEYS.GH_REPO) || DEFAULT_REPO).trim(),
-        };
-      }
+      const getGithubCredentials = () => ({
+        token: decodeToken(localStorage.getItem(STORAGE_KEYS.GH_TOKEN) || ''),
+        repo: (localStorage.getItem(STORAGE_KEYS.GH_REPO) || DEFAULT_REPO).trim()
+      });
 
-      function mapGithubError(status, fallbackMsg) {
-        if (status === 401 || status === 403) return 'GitHub Token tidak valid atau tidak memiliki izin akses repository.';
-        if (status === 404) return 'Repository tidak ditemukan atau file belum ada di GitHub.';
-        return fallbackMsg || `Kesalahan server GitHub (HTTP ${status})`;
-      }
+      const mapGithubError = (s, fb) => (s === 401 || s === 403) ? 'GitHub Token tidak valid atau tidak memiliki izin akses repository.' : s === 404 ? 'Repository tidak ditemukan atau file belum ada di GitHub.' : (fb || `Kesalahan server GitHub (HTTP ${s})`);
 
       async function backupToGithub() {
         if (isBusy) return;
         const { token, repo } = getGithubCredentials();
-        if (!token) {
-          showToast('GitHub Token belum diatur. Silakan isi di Pengaturan.', 'error');
-          openSettings();
-          return;
-        }
-        if (!repo || !repo.includes('/')) {
-          showToast('Format Repository harus "user/repo".', 'error');
-          openSettings();
-          return;
-        }
-        if (records.length === 0) {
-          showToast('Belum ada data catatan untuk dicadangkan ke GitHub.', 'warning');
-          return;
-        }
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-          showToast('Tidak ada koneksi internet. Cadangan GitHub membutuhkan internet.', 'error');
-          return;
-        }
+        if (!token) { showToast('GitHub Token belum diatur. Silakan isi di Pengaturan.', 'error'); return openSettings(); }
+        if (!repo.includes('/')) { showToast('Format Repository harus "user/repo".', 'error'); return openSettings(); }
+        if (!records.length) return showToast('Belum ada data catatan untuk dicadangkan ke GitHub.', 'warning');
+        if (navigator.onLine === false) return showToast('Tidak ada koneksi internet. Cadangan GitHub membutuhkan internet.', 'error');
 
         isBusy = true;
         btnGithubUpload.disabled = true;
         showToast('Mengompres & mengunggah ZIP ke GitHub...', 'info');
 
         const apiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_ZIP_FILENAME}`;
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-          'Content-Type': 'application/json',
-        };
+        const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
 
         try {
           let existingSha = null;
-          const getRes = await fetch(apiUrl, { method: 'GET', headers, cache: 'no-store' });
-          if (getRes.ok) {
-            existingSha = (await getRes.json()).sha;
-          } else if (getRes.status !== 404) {
-            const errData = await getRes.json().catch(() => ({}));
-            throw new Error(mapGithubError(getRes.status, errData.message));
-          }
-
-          const zipBase64Content = await compressRecordsToZip('base64');
-          const bodyData = {
-            message: `Backup ZIP Waktu Pakai Smartphone (${getTodayISO()})`,
-            content: zipBase64Content,
-          };
-          if (existingSha) bodyData.sha = existingSha;
+          const getRes = await fetch(apiUrl, { headers, cache: 'no-store' });
+          if (getRes.ok) existingSha = (await getRes.json()).sha;
+          else if (getRes.status !== 404) throw new Error(mapGithubError(getRes.status, (await getRes.json().catch(() => ({}))).message));
 
           const putRes = await fetch(apiUrl, {
             method: 'PUT',
             headers,
-            body: JSON.stringify(bodyData),
+            body: JSON.stringify({
+              message: `Backup ZIP Waktu Pakai Smartphone (${getTodayISO()})`,
+              content: await compressRecordsToZip('base64'),
+              ...(existingSha ? { sha: existingSha } : {})
+            })
           });
 
-          if (!putRes.ok) {
-            const errData = await putRes.json().catch(() => ({}));
-            throw new Error(mapGithubError(putRes.status, errData.message));
-          }
-
+          if (!putRes.ok) throw new Error(mapGithubError(putRes.status, (await putRes.json().catch(() => ({}))).message));
           showToast(`Cadangan ZIP berhasil diunggah ke GitHub (${repo})!`, 'success');
         } catch (err) {
-          const msg = err.name === 'TypeError' ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.' : err.message;
-          showToast(`Gagal cadangan GitHub: ${msg}`, 'error');
+          showToast(`Gagal cadangan GitHub: ${err.name === 'TypeError' ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.' : err.message}`, 'error');
         } finally {
           isBusy = false;
           btnGithubUpload.disabled = false;
@@ -1715,20 +1064,9 @@
       async function restoreFromGithub() {
         if (isBusy) return;
         const { token, repo } = getGithubCredentials();
-        if (!token) {
-          showToast('GitHub Token belum diatur. Silakan isi di Pengaturan.', 'error');
-          openSettings();
-          return;
-        }
-        if (!repo || !repo.includes('/')) {
-          showToast('Format Repository harus "user/repo".', 'error');
-          openSettings();
-          return;
-        }
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-          showToast('Tidak ada koneksi internet. Pemulihan GitHub membutuhkan internet.', 'error');
-          return;
-        }
+        if (!token) { showToast('GitHub Token belum diatur. Silakan isi di Pengaturan.', 'error'); return openSettings(); }
+        if (!repo.includes('/')) { showToast('Format Repository harus "user/repo".', 'error'); return openSettings(); }
+        if (navigator.onLine === false) return showToast('Tidak ada koneksi internet. Pemulihan GitHub membutuhkan internet.', 'error');
 
         isBusy = true;
         btnGithubRestore.disabled = true;
@@ -1736,60 +1074,45 @@
 
         const zipApiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_BACKUP_ZIP_FILENAME}`;
         const legacyJsonApiUrl = `https://api.github.com/repos/${repo}/contents/${GITHUB_LEGACY_JSON_FILENAME}`;
-        const headers = {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/vnd.github+json',
-        };
+        const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
 
         try {
-          const resZip = await fetch(zipApiUrl, { method: 'GET', headers, cache: 'no-store' });
+          const resZip = await fetch(zipApiUrl, { headers, cache: 'no-store' });
           if (resZip.ok) {
             const data = await resZip.json();
             let parsedData = null;
-            if (data.content && data.content.trim().length > 0) {
-              parsedData = await decompressZipToData(data.content, true);
-            } else if (data.git_url) {
-              const blobRes = await fetch(data.git_url, { method: 'GET', headers, cache: 'no-store' });
+            if (data.content?.trim()) parsedData = await decompressZipToData(data.content, true);
+            else if (data.git_url) {
+              const blobRes = await fetch(data.git_url, { headers, cache: 'no-store' });
               if (!blobRes.ok) throw new Error('Gagal mengunduh blob ZIP dari GitHub.');
-              const blobData = await blobRes.json();
-              parsedData = await decompressZipToData(blobData.content, true);
-            } else {
-              throw new Error('Konten arsip ZIP di GitHub kosong.');
-            }
-            handleRestoredData(parsedData, `GitHub (${repo})`, 'ZIP GitHub');
-            return;
+              parsedData = await decompressZipToData((await blobRes.json()).content, true);
+            } else throw new Error('Konten arsip ZIP di GitHub kosong.');
+            return handleRestoredData(parsedData, `GitHub (${repo})`, 'ZIP GitHub');
           }
 
           if (resZip.status === 404) {
-            const resLegacy = await fetch(legacyJsonApiUrl, { method: 'GET', headers, cache: 'no-store' });
+            const resLegacy = await fetch(legacyJsonApiUrl, { headers, cache: 'no-store' });
             if (resLegacy.ok) {
               const legacyData = await resLegacy.json();
-              const cleanBase64 = legacyData.content.replace(/\s/g, '');
-              const parsed = JSON.parse(decodeURIComponent(escape(atob(cleanBase64))));
-              handleRestoredData(parsed, `GitHub (${repo})`, 'JSON GitHub');
-              return;
+              const parsed = JSON.parse(decodeURIComponent(escape(atob(legacyData.content.replace(/\s/g, '')))));
+              return handleRestoredData(parsed, `GitHub (${repo})`, 'JSON GitHub');
             }
             throw new Error('Repository atau file cadangan ZIP tidak ditemukan di GitHub.');
           }
 
-          const errData = await resZip.json().catch(() => ({}));
-          throw new Error(mapGithubError(resZip.status, errData.message));
+          throw new Error(mapGithubError(resZip.status, (await resZip.json().catch(() => ({}))).message));
         } catch (err) {
-          const msg = err.name === 'TypeError' ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.' : err.message;
-          showToast(`Gagal pulihkan dari GitHub: ${msg}`, 'error');
+          showToast(`Gagal pulihkan dari GitHub: ${err.name === 'TypeError' ? 'Koneksi internet terputus atau gagal terhubung ke GitHub.' : err.message}`, 'error');
         } finally {
           isBusy = false;
           btnGithubRestore.disabled = false;
         }
       }
 
-      // Choice Modal
+      // Choice & Settings Modals
       function openChoiceModal(mode) {
         choiceMode = mode;
-        if (!localStorage.getItem(STORAGE_KEYS.GH_TOKEN)) {
-          mode === 'backup' ? downloadZipBackup() : fileRestoreInput.click();
-          return;
-        }
+        if (!localStorage.getItem(STORAGE_KEYS.GH_TOKEN)) return mode === 'backup' ? downloadZipBackup() : fileRestoreInput.click();
         if (mode === 'backup') {
           choiceModalTitle.textContent = '🗜️ Cadangkan Data (ZIP)';
           choiceModalDesc.textContent = 'Pilih tujuan penyimpanan arsip ZIP cadangan catatan Anda:';
@@ -1807,50 +1130,21 @@
       btnBackup.addEventListener('click', () => openChoiceModal('backup'));
       btnRestore.addEventListener('click', () => openChoiceModal('restore'));
       btnCloseChoiceModal.addEventListener('click', () => toggleModal(backupChoiceModal, false));
-      backupChoiceModal.addEventListener('click', (e) => {
-        if (e.target === backupChoiceModal) toggleModal(backupChoiceModal, false);
-      });
+      backupChoiceModal.addEventListener('click', (e) => { if (e.target === backupChoiceModal) toggleModal(backupChoiceModal, false); });
 
-      btnChoiceLocal.addEventListener('click', () => {
-        toggleModal(backupChoiceModal, false);
-        choiceMode === 'backup' ? downloadZipBackup() : fileRestoreInput.click();
-      });
+      btnChoiceLocal.addEventListener('click', () => { toggleModal(backupChoiceModal, false); choiceMode === 'backup' ? downloadZipBackup() : fileRestoreInput.click(); });
+      btnChoiceGithub.addEventListener('click', () => { toggleModal(backupChoiceModal, false); choiceMode === 'backup' ? backupToGithub() : restoreFromGithub(); });
 
-      btnChoiceGithub.addEventListener('click', () => {
-        toggleModal(backupChoiceModal, false);
-        choiceMode === 'backup' ? backupToGithub() : restoreFromGithub();
-      });
-
-      // Settings Modal
-      function openSettings() {
-        loadGithubSettings();
-        toggleModal(settingsModal, true);
-      }
-
-      function closeSettings() {
-        toggleModal(settingsModal, false);
-        inputGithubToken.type = 'password';
-        eyeIcon.textContent = '👁️';
-      }
+      function openSettings() { loadGithubSettings(); toggleModal(settingsModal, true); }
+      function closeSettings() { toggleModal(settingsModal, false); inputGithubToken.type = 'password'; eyeIcon.textContent = '👁️'; }
 
       btnOpenSettings.addEventListener('click', openSettings);
       btnCloseSettings.addEventListener('click', closeSettings);
-      settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) closeSettings();
-      });
-      confirmModal.addEventListener('click', (e) => {
-        if (e.target === confirmModal) closeConfirmDialog();
-      });
+      settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+      confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) closeConfirmDialog(); });
 
-      btnThemeDark.addEventListener('click', () => {
-        applyTheme('dark');
-        showToast('Tema Gelap diaktifkan.', 'info');
-      });
-
-      btnThemeLight.addEventListener('click', () => {
-        applyTheme('light');
-        showToast('Tema Terang diaktifkan.', 'info');
-      });
+      btnThemeDark.addEventListener('click', () => { applyTheme('dark'); showToast('Tema Gelap diaktifkan.', 'info'); });
+      btnThemeLight.addEventListener('click', () => { applyTheme('light'); showToast('Tema Terang diaktifkan.', 'info'); });
 
       btnToggleToken.addEventListener('click', () => {
         const isPass = inputGithubToken.type === 'password';
@@ -1859,29 +1153,22 @@
       });
 
       btnSaveGithub.addEventListener('click', () => {
-        const tokenVal = inputGithubToken.value.trim();
-        const repoVal = inputGithubRepo.value.trim();
-        if (!repoVal || !repoVal.includes('/')) {
-          showToast('Repository harus berformat "user/repo".', 'error');
-          inputGithubRepo.focus();
-          return;
-        }
+        const tokenVal = inputGithubToken.value.trim(), repoVal = inputGithubRepo.value.trim();
+        if (!repoVal.includes('/')) { inputGithubRepo.focus(); return showToast('Repository harus berformat "user/repo".', 'error'); }
         tokenVal ? localStorage.setItem(STORAGE_KEYS.GH_TOKEN, encodeToken(tokenVal)) : localStorage.removeItem(STORAGE_KEYS.GH_TOKEN);
         localStorage.setItem(STORAGE_KEYS.GH_REPO, repoVal);
         showToast('Pengaturan GitHub berhasil disimpan!', 'success');
       });
 
       btnGithubUpload.addEventListener('click', () => {
-        const tokenVal = inputGithubToken.value.trim();
-        const repoVal = inputGithubRepo.value.trim();
+        const tokenVal = inputGithubToken.value.trim(), repoVal = inputGithubRepo.value.trim();
         if (tokenVal) localStorage.setItem(STORAGE_KEYS.GH_TOKEN, encodeToken(tokenVal));
         if (repoVal) localStorage.setItem(STORAGE_KEYS.GH_REPO, repoVal);
         backupToGithub();
       });
 
       btnGithubRestore.addEventListener('click', () => {
-        const tokenVal = inputGithubToken.value.trim();
-        const repoVal = inputGithubRepo.value.trim();
+        const tokenVal = inputGithubToken.value.trim(), repoVal = inputGithubRepo.value.trim();
         if (tokenVal) localStorage.setItem(STORAGE_KEYS.GH_TOKEN, encodeToken(tokenVal));
         if (repoVal) localStorage.setItem(STORAGE_KEYS.GH_REPO, repoVal);
         restoreFromGithub();
