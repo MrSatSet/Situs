@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Jam ke Menit</title>
+    <style>
+        /* Variabel Warna untuk Mode Terang (Default) */
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-input: #f8fafc;
+            --bg-result: #eff6ff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --border-focus: #2563eb;
+            --accent-primary: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-text: #ffffff;
+            --btn-secondary-bg: #e2e8f0;
+            --btn-secondary-hover: #cbd5e1;
+            --btn-secondary-text: #1e293b;
+            --error-bg: #fef2f2;
+            --error-border: #f87171;
+            --error-text: #b91c1c;
+            --success-bg: #10b981;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Variabel Warna untuk Mode Gelap */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f172a;
+            --bg-result: #172554;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --border-focus: #60a5fa;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-text: #ffffff;
+            --btn-secondary-bg: #334155;
+            --btn-secondary-hover: #475569;
+            --btn-secondary-text: #f1f5f9;
+            --error-bg: #450a0a;
+            --error-border: #ef4444;
+            --error-text: #fca5a5;
+            --success-bg: #059669;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Reset & Gaya Dasar */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            transition: background-color 0.25s ease, color 0.25s ease;
+            line-height: 1.5;
+        }
+
+        /* Kontainer Utama */
+        .container {
+            width: 100%;
+            max-width: 460px;
+            background-color: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        /* Bagian Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .title-group h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .title-group p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Tombol Ganti Tema */
+        .theme-toggle {
+            background-color: var(--btn-secondary-bg);
+            color: var(--btn-secondary-text);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            min-height: 44px;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--btn-secondary-hover);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.96);
+        }
+
+        .theme-toggle svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Grid Input */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 360px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: var(--bg-input);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+            min-height: 52px;
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--border-focus);
+        }
+
+        /* Pesan Peringatan / Error Validasi */
+        .alert-box {
+            display: none;
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error-text);
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .alert-box.show {
+            display: block;
+        }
+
+        /* Grup Tombol Aksi */
+        .button-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            user-select: none;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: var(--accent-text);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-secondary-bg);
+            color: var(--btn-secondary-text);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--btn-secondary-hover);
+        }
+
+        /* Kotak Tampilan Hasil */
+        .result-card {
+            background-color: var(--bg-result);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 2.35rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            word-break: break-word;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .result-detail {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        /* Animasi Halus Saat Hasil Diperbarui */
+        .animate-pop {
+            animation: popIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0.3;
+                transform: translateY(6px) scale(0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tombol Salin Hasil */
+        .btn-copy {
+            width: 100%;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 11px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        .btn-copy:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .btn-copy.copied {
+            background-color: var(--success-bg);
+            color: #ffffff;
+            border-color: var(--success-bg);
+        }
+
+        .btn-copy svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Footer Informasi Rumus */
+        .footer-note {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container" role="main">
+        <!-- Header & Pengalih Tema -->
+        <header class="header">
+            <div class="title-group">
+                <h1>Jam ke Menit</h1>
+                <p>Konversi satuan waktu instan</p>
+            </div>
+            <button type="button" id="themeToggle" class="theme-toggle" aria-label="Ganti mode tampilan">
+                <!-- Ikon Matahari / Bulan diatur oleh JavaScript -->
+                <span id="themeIcon"></span>
+                <span id="themeText">Gelap</span>
+            </button>
+        </header>
+
+        <!-- Form Input -->
+        <form id="calcForm" novalidate>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="hoursInput">Jam</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="hoursInput" 
+                            inputmode="numeric" 
+                            pattern="[0-9]*" 
+                            placeholder="0" 
+                            autocomplete="off"
+                            aria-describedby="errorMessage"
+                        >
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="minutesInput">Menit</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="minutesInput" 
+                            inputmode="numeric" 
+                            pattern="[0-9]*" 
+                            placeholder="0" 
+                            autocomplete="off"
+                            aria-describedby="errorMessage"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kotak Pesan Validasi -->
+            <div id="errorMessage" class="alert-box" role="alert"></div>
+
+            <!-- Tombol Hitung & Reset -->
+            <div class="button-group">
+                <button type="submit" id="calcBtn" class="btn btn-primary">
+                    Hitung
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-secondary">
+                    Reset
+                </button>
+            </div>
+        </form>
+
+        <!-- Area Tampilan Hasil -->
+        <section class="result-card" aria-live="polite">
+            <div class="result-label">Total Konversi</div>
+            <div id="resultDisplay" class="result-value">0 MENIT</div>
+            <div id="detailDisplay" class="result-detail">0 jam 0 menit = 0 menit.</div>
+            
+            <button type="button" id="copyBtn" class="btn-copy">
+                <svg viewBox="0 0 24 24">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span id="copyBtnText">Salin Hasil</span>
+            </button>
+        </section>
+
+        <footer class="footer-note">
+            Rumus: Total menit = (Jam &times; 60) + Menit &bull; 100% Offline
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            // Referensi Elemen DOM
+            const htmlEl = document.documentElement;
+            const themeToggle = document.getElementById("themeToggle");
+            const themeIcon = document.getElementById("themeIcon");
+            const themeText = document.getElementById("themeText");
+
+            const calcForm = document.getElementById("calcForm");
+            const hoursInput = document.getElementById("hoursInput");
+            const minutesInput = document.getElementById("minutesInput");
+            const errorMessage = document.getElementById("errorMessage");
+            const resetBtn = document.getElementById("resetBtn");
+
+            const resultDisplay = document.getElementById("resultDisplay");
+            const detailDisplay = document.getElementById("detailDisplay");
+            const copyBtn = document.getElementById("copyBtn");
+            const copyBtnText = document.getElementById("copyBtnText");
+
+            // Variabel penyimpan teks hasil terbaru untuk disalin
+            let latestCopyText = "0 jam 0 menit = 0 menit.";
+            let copyTimeout = null;
+
+            // Ikon SVG Inline (Mandiri tanpa pustaka eksternal)
+            const sunSVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+            const moonSVG = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+
+            /**
+             * Pembungkus aman untuk localStorage agar tidak error di mode privat / file lokal terbatas
+             */
+            function getSavedTheme() {
+                try {
+                    return window.localStorage.getItem("kalkulator_tema");
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function saveTheme(theme) {
+                try {
+                    window.localStorage.setItem("kalkulator_tema", theme);
+                } catch (e) {
+                    // Abaikan jika storage diblokir browser
+                }
+            }
+
+            /**
+             * Terapkan Tema Terang atau Gelap
+             */
+            function applyTheme(theme) {
+                if (theme === "dark") {
+                    htmlEl.setAttribute("data-theme", "dark");
+                    themeIcon.innerHTML = sunSVG;
+                    themeText.textContent = "Terang";
+                } else {
+                    htmlEl.removeAttribute("data-theme");
+                    themeIcon.innerHTML = moonSVG;
+                    themeText.textContent = "Gelap";
+                }
+            }
+
+            // Inisialisasi tema saat halaman dibuka
+            const initialTheme = getSavedTheme() || "light";
+            applyTheme(initialTheme);
+
+            // Event klik tombol tema
+            themeToggle.addEventListener("click", function () {
+                const isDark = htmlEl.getAttribute("data-theme") === "dark";
+                const nextTheme = isDark ? "light" : "dark";
+                applyTheme(nextTheme);
+                saveTheme(nextTheme);
+            });
+
+            /**
+             * Format angka dengan pemisah ribuan titik (contoh: 1.500) agar mudah dibaca
+             */
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            /**
+             * Tampilkan atau sembunyikan pesan kesalahan
+             */
+            function showError(msg) {
+                errorMessage.textContent = msg;
+                errorMessage.classList.add("show");
+            }
+
+            function hideError() {
+                errorMessage.textContent = "";
+                errorMessage.classList.remove("show");
+            }
+
+            /**
+             * Validasi ketat untuk input bilangan bulat positif (atau kosong = 0)
+             */
+            function parseStrictPositiveInt(rawValue, fieldName) {
+                const trimmed = rawValue.trim();
+
+                // Kosong dianggap 0
+                if (trimmed === "") {
+                    return { valid: true, value: 0 };
+                }
+
+                // Tolak angka negatif secara eksplisit
+                if (trimmed.startsWith("-")) {
+                    return {
+                        valid: false,
+                        error: "Kolom " + fieldName + " tidak boleh bernilai negatif."
+                    };
+                }
+
+                // Pastikan hanya digit angka 0-9 (menolak desimal, huruf, simbol)
+                if (!/^\d+$/.test(trimmed)) {
+                    return {
+                        valid: false,
+                        error: "Kolom " + fieldName + " hanya boleh diisi bilangan bulat positif."
+                    };
+                }
+
+                const parsed = Number(trimmed);
+
+                // Periksa batas aman bilangan bulat JavaScript (Number.MAX_SAFE_INTEGER)
+                if (!Number.isSafeInteger(parsed)) {
+                    return {
+                        valid: false,
+                        error: "Angka pada kolom " + fieldName + " terlalu besar untuk dihitung dengan aman."
+                    };
+                }
+
+                return { valid: true, value: parsed };
+            }
+
+            /**
+             * Memicu animasi ulang pada kotak hasil
+             */
+            function triggerResultAnimation() {
+                resultDisplay.classList.remove("animate-pop");
+                detailDisplay.classList.remove("animate-pop");
+                // Memaksa reflow DOM agar animasi CSS berjalan kembali
+                void resultDisplay.offsetWidth;
+                resultDisplay.classList.add("animate-pop");
+                detailDisplay.classList.add("animate-pop");
+            }
+
+            /**
+             * Fungsi utama perhitungan Jam ke Menit
+             */
+            function calculateMinutes() {
+                hideError();
+
+                const hoursCheck = parseStrictPositiveInt(hoursInput.value, "Jam");
+                if (!hoursCheck.valid) {
+                    showError(hoursCheck.error);
+                    hoursInput.focus();
+                    return;
+                }
+
+                const minutesCheck = parseStrictPositiveInt(minutesInput.value, "Menit");
+                if (!minutesCheck.valid) {
+                    showError(minutesCheck.error);
+                    minutesInput.focus();
+                    return;
+                }
+
+                const hours = hoursCheck.value;
+                const minutes = minutesCheck.value;
+
+                // Rumus: Total menit = (Jam * 60) + Menit
+                const totalMinutes = (hours * 60) + minutes;
+
+                // Pastikan hasil akhir tidak melebihi batas aman integer JavaScript
+                if (!Number.isSafeInteger(totalMinutes)) {
+                    showError("Hasil perhitungan melebihi batas angka aman JavaScript.");
+                    return;
+                }
+
+                const formattedHours = formatNumber(hours);
+                const formattedMinutes = formatNumber(minutes);
+                const formattedTotal = formatNumber(totalMinutes);
+
+                // Perbarui tampilan hasil
+                resultDisplay.textContent = formattedTotal + " MENIT";
+                const detailString = formattedHours + " jam " + formattedMinutes + " menit = " + formattedTotal + " menit.";
+                detailDisplay.textContent = detailString;
+
+                // Simpan teks untuk tombol salin (format bersih sesuai contoh)
+                latestCopyText = hours + " jam " + minutes + " menit = " + totalMinutes + " menit.";
+
+                triggerResultAnimation();
+            }
+
+            // Event Submit Form (Tombol Hitung atau tekan Enter)
+            calcForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                calculateMinutes();
+            });
+
+            // Sembunyikan pesan error saat pengguna memperbaiki ketikan
+            hoursInput.addEventListener("input", hideError);
+            minutesInput.addEventListener("input", hideError);
+
+            // Event Tombol Reset
+            resetBtn.addEventListener("click", function () {
+                hoursInput.value = "";
+                minutesInput.value = "";
+                hideError();
+
+                resultDisplay.textContent = "0 MENIT";
+                detailDisplay.textContent = "0 jam 0 menit = 0 menit.";
+                latestCopyText = "0 jam 0 menit = 0 menit.";
+
+                triggerResultAnimation();
+                hoursInput.focus();
+            });
+
+            // Event Tombol Salin Hasil (100% Offline dengan fallback kompatibel)
+            copyBtn.addEventListener("click", function () {
+                const textToCopy = latestCopyText;
+                let copied = false;
+
+                // Gunakan textarea sementara + execCommand agar berjalan lancar di file:// dan semua browser
+                const tempTextArea = document.createElement("textarea");
+                tempTextArea.value = textToCopy;
+                tempTextArea.setAttribute("readonly", "");
+                tempTextArea.style.position = "fixed";
+                tempTextArea.style.left = "-9999px";
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                tempTextArea.setSelectionRange(0, 99999);
+
+                try {
+                    copied = document.execCommand("copy");
+                } catch (err) {
+                    copied = false;
+                }
+
+                document.body.removeChild(tempTextArea);
+
+                // Coba API modern jika execCommand gagal dan konteks mengizinkan
+                if (!copied && navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textToCopy).catch(function () {});
+                }
+
+                // Umpan balik visual tombol berhasil disalin
+                copyBtn.classList.add("copied");
+                copyBtnText.textContent = "Hasil Tersalin!";
+
+                if (copyTimeout) {
+                    clearTimeout(copyTimeout);
+                }
+
+                copyTimeout = setTimeout(function () {
+                    copyBtn.classList.remove("copied");
+                    copyBtnText.textContent = "Salin Hasil";
+                }, 2000);
+            });
+        })();
+    </script>
+</body>
+</html>
