@@ -416,27 +416,27 @@ const PureZipEngine=(()=>{
     try{
       try{Object.defineProperty(window,'CompressionStream',{value:undefined,configurable:true});Object.defineProperty(window,'DecompressionStream',{value:undefined,configurable:true});}catch(e){}
       const smp=JSON.stringify({app:'Waktu Pakai Smartphone',records:[{id:'1',date:'2026-11-20',hours:4,minutes:35,battery:82,charging:'Yes',connection:'WiFi'},{id:'2',date:'2026-11-21',hours:5,minutes:10,battery:64,charging:'No',connection:'Data'}]}),
-            rSmp=enc.encode(smp),zD=createZip('waktu-pakai-smartphone-data.json',rSmp,8),eD=extractZip(zD.bytes,'waktu-pakai-smartphone-data.json');
+            rSmp=enc.encode(smp),zD=createZip('smartphone-data.json',rSmp,8),eD=extractZip(zD.bytes,'smartphone-data.json');
       ok(zD.method===8&&eD.method===8&&dec.decode(eD.bytes)===smp,'DEFLATE gagal');
       logs.push(`[OK] 2. ZIP DEFLATE Method 8 (${rSmp.length}B -> ${zD.compressedSize}B) & Tanpa Browser Stream API`);
-      const zS=createZip('waktu-pakai-smartphone-data.json',rSmp,0),eS=extractZip(zS.bytes,'waktu-pakai-smartphone-data.json');
+      const zS=createZip('smartphone-data.json',rSmp,0),eS=extractZip(zS.bytes,'smartphone-data.json');
       ok(zS.method===0&&eS.method===0&&dec.decode(eS.bytes)===smp,'STORE gagal');
       logs.push(`[OK] 3. ZIP STORE Method 0 (${zS.compressedSize}B) & Kompatibilitas`);
       const leg='[{"date":"2025-08-17","hours":3,"minutes":20,"battery":90,"charging":"No","connection":"WiFi"}]',
-            zL=createZip('backup-lama-v0.json',enc.encode(leg),0),eL=extractZip(zL.bytes,'waktu-pakai-smartphone-data.json');
+            zL=createZip('backup-lama-v0.json',enc.encode(leg),0),eL=extractZip(zL.bytes,'smartphone-data.json');
       ok(dec.decode(eL.bytes)===leg,'Fallback ZIP lama gagal');
       logs.push('[OK] 4. Kompatibilitas ZIP versi aplikasi sebelumnya (fallback *.json)');
       const bigArr=[];
       for(let i=0;i<1500;i++)bigArr.push({id:`rec_big_${i}`,date:`2026-11-${String((i%28)+1).padStart(2,'0')}`,hours:i%12,minutes:i%60,battery:(i*7)%101,charging:i%2===0?'Yes':'No',connection:i%3===0?'Data':'WiFi',createdAt:1700000000000+i});
       const bJ=JSON.stringify({app:'Waktu Pakai Smartphone',records:bigArr}),bR=enc.encode(bJ),t0=performance.now(),
-            bZ=createZip('waktu-pakai-smartphone-data.json',bR,8),bO=extractZip(bZ.bytes,'waktu-pakai-smartphone-data.json'),el=(performance.now()-t0).toFixed(1);
+            bZ=createZip('smartphone-data.json',bR,8),bO=extractZip(bZ.bytes,'smartphone-data.json'),el=(performance.now()-t0).toFixed(1);
       ok(dec.decode(bO.bytes)===bJ,'Data besar 1.500 catatan gagal');
       logs.push(`[OK] 5. Uji Data Besar (${(bR.length/1024).toFixed(1)} KB -> ${(bZ.compressedSize/1024).toFixed(1)} KB dalam ${el} ms)`);
       const cD=new Uint8Array(zD.bytes);cD[zD.payloadOffset+Math.floor(zD.compressedSize/2)]^=255;
-      let f1=false;try{extractZip(cD,'waktu-pakai-smartphone-data.json');}catch(e){f1=true;}
+      let f1=false;try{extractZip(cD,'smartphone-data.json');}catch(e){f1=true;}
       const cS=new Uint8Array(zS.bytes);cS[zS.payloadOffset+Math.floor(zS.compressedSize/2)]^=85;
-      let f2=false;try{extractZip(cS,'waktu-pakai-smartphone-data.json');}catch(e){f2=true;}
-      let f3=false;try{extractZip(new Uint8Array([80,75,3,4,0]),'waktu-pakai-smartphone-data.json');}catch(e){f3=true;}
+      let f2=false;try{extractZip(cS,'smartphone-data.json');}catch(e){f2=true;}
+      let f3=false;try{extractZip(new Uint8Array([80,75,3,4,0]),'smartphone-data.json');}catch(e){f3=true;}
       ok(f1&&f2&&f3,'Validasi ZIP rusak gagal');
       logs.push('[OK] 6. Penanganan ZIP Rusak/Korup (CRC32 Payload & Struktur Terpotong ditolak aman)');
     }finally{
@@ -454,7 +454,7 @@ const b64ToU8=b64=>{const b=atob(b64.replace(/\s/g,'')),u=new Uint8Array(b.lengt
 // 2. STATE & PENGELOLAAN DOM
 // =========================================================================
 const SK={REC:'smartphone_records_v1',THM:'smartphone_theme_v1',TOK:'smartphone_gh_token_v1',REP:'smartphone_gh_repo_v1'},
-      DEF_REPO='geminiveo600-byte/backup',GH_ZIP='Smartphone.zip',GH_LEG='waktu-pakai-smartphone-backup.json',INT_JSON='waktu-pakai-smartphone-data.json',
+      DEF_REPO='geminiveo600-byte/backup',GH_ZIP='Smartphone.zip',GH_LEG='smartphone-backup.json',INT_JSON='smartphone-data.json',
       $=id=>document.getElementById(id),htmlEl=document.documentElement;
 
 let records=[],currentSort='date_desc',confirmCb=null,choiceMode='backup',pendingRestore=null,blobUrl=null,renderSched=false,isBusy=false;
