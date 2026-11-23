@@ -1,266 +1,294 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,viewport-fit=cover">
-<meta name="theme-color" content="#040812">
-<title>Daftar Pemakaian Smartphone</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
-<script>try{if(JSON.parse(localStorage.getItem('dps_app_settings_v1')||'{}').theme==='light')document.documentElement.classList.remove('dark')}catch(e){}</script>
-<style>
-*{box-sizing:border-box;font-family:'Poppins',system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;background:#040812;color:#fff;overflow-x:hidden;transition:background .3s,color .3s}
-html:not(.dark) body{background:#E8F1FC;color:#090D16}
-::selection{background:#0284C7;color:#fff}
-.hidden{display:none!important}
-svg{pointer-events:none}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>Daftar Pemakaian Smartphone</title>
+    <style>
+        /* Variabel Dasar & Tema Gelap */
+        :root {
+            --bg: radial-gradient(circle at 50% 0%, #101b33 0%, #070b14 65%, #04060b 100%);
+            --txt: #f8fafc;
+            --sub: #94a3b8;
+            --h-grad: linear-gradient(135deg, #38bdf8, #34d399 50%, #a855f7);
+            --card-bg: rgba(15, 23, 42, .72);
+            --blur: blur(12px);
+            --tgl-bg: rgba(30, 41, 59, .8);
+            --tgl-bdr: rgba(148, 163, 184, .25);
+            --tgl-ico: #fbbf24;
+            --act-bg: rgba(255, 255, 255, .03);
+            --shd-a: .28;
+            --shd-h: .45;
+            --ins-a: .08;
+            --ins-h: .15;
+            --ico-a: .12;
+        }
 
-/* Tipografi Gradasi Tajam */
-[class*="grad-"]{-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.grad-main{background-image:linear-gradient(100deg,#10B981,#06B6D4 48%,#0EA5E9)}
-html:not(.dark) .grad-main{background-image:linear-gradient(100deg,#047857,#0E7490 48%,#0369A1)}
-.grad-sub{background-image:linear-gradient(90deg,#22C55E,#06B6D4 55%,#3B82F6)}
-html:not(.dark) .grad-sub{background-image:linear-gradient(90deg,#15803D,#0E7490 55%,#1D4ED8)}
-.grad-d-blue{background-image:linear-gradient(90deg,#38BDF8,#0EA5E9 50%,#3B82F6)}
-html:not(.dark) .grad-d-blue{background-image:linear-gradient(90deg,#0369A1,#1D4ED8)}
-.grad-t-apps{background-image:linear-gradient(95deg,#06B6D4,#10B981 55%,#34D399)}
-html:not(.dark) .grad-t-apps{background-image:linear-gradient(95deg,#0E7490,#047857 55%,#065F46)}
-.grad-d-em{background-image:linear-gradient(90deg,#34D399,#14B8A6 55%,#22D3EE)}
-html:not(.dark) .grad-d-em{background-image:linear-gradient(90deg,#065F46,#0F766E 55%,#0E7490)}
-.grad-t-calc{background-image:linear-gradient(95deg,#0EA5E9,#6366F1 50%,#A855F7)}
-html:not(.dark) .grad-t-calc{background-image:linear-gradient(95deg,#0369A1,#4338CA 50%,#7E22CE)}
-.grad-d-pink{background-image:linear-gradient(90deg,#A855F7,#D946EF 55%,#EC4899)}
-html:not(.dark) .grad-d-pink{background-image:linear-gradient(90deg,#6B21A8,#A21CAF 55%,#BE185D)}
+        /* Tema Terang */
+        [data-theme="light"] {
+            --bg: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+            --txt: #0f172a;
+            --sub: #475569;
+            --h-grad: linear-gradient(135deg, #0284c7, #059669 50%, #7c3aed);
+            --card-bg: #fff;
+            --blur: none;
+            --tgl-bg: #fff;
+            --tgl-bdr: rgba(15, 23, 42, .12);
+            --tgl-ico: #4f46e5;
+            --act-bg: rgba(15, 23, 42, .04);
+            --shd-a: .16;
+            --shd-h: .28;
+            --ins-a: 0;
+            --ins-h: 0;
+            --ico-a: .1;
+        }
 
-/* Tata Letak & Navigasi */
-.main-wrap{position:relative;z-index:10;width:100%;max-width:28rem;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:1.5rem 1.25rem 3rem}
-.page-view{flex:1;display:flex;flex-direction:column;animation:fadeUp .26s cubic-bezier(.16,1,.36,1)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        /* Identitas Warna Setiap Kartu (Scoped CSS Variables) */
+        .c-blue   { --rgb: 34, 211, 238;  --acc: #22d3ee; --t-grad: linear-gradient(90deg, #38bdf8, #22d3ee); }
+        .c-green  { --rgb: 16, 185, 129;  --acc: #10b981; --t-grad: linear-gradient(90deg, #34d399, #2dd4bf); }
+        .c-orange { --rgb: 245, 158, 11;  --acc: #f59e0b; --t-grad: linear-gradient(90deg, #fbbf24, #f97316); }
+        .c-purple { --rgb: 168, 85, 247;  --acc: #a855f7; --t-grad: linear-gradient(90deg, #c084fc, #818cf8); }
 
-.top-bar{display:flex;justify-content:flex-end;margin-bottom:.75rem}
-.btn-gear{padding:.875rem;border-radius:1rem;background:rgba(14,165,233,.2);border:1.5px solid rgba(56,189,248,.55);color:#38BDF8;cursor:pointer;display:inline-flex;box-shadow:0 10px 20px -3px rgba(14,165,233,.2);transition:transform .15s,background .2s}
-.btn-gear:hover{background:rgba(14,165,233,.3)}.btn-gear:active{transform:scale(.9)}
-html:not(.dark) .btn-gear{background:#fff;border-color:#0284C7;color:#0284C7;box-shadow:0 8px 18px -4px rgba(2,132,199,.2)}
+        [data-theme="light"] .c-blue   { --rgb: 2, 132, 199;  --acc: #0284c7; --t-grad: linear-gradient(90deg, #0369a1, #0891b2); }
+        [data-theme="light"] .c-green  { --rgb: 5, 150, 105;  --acc: #059669; --t-grad: linear-gradient(90deg, #047857, #0d9488); }
+        [data-theme="light"] .c-orange { --rgb: 217, 119, 6;  --acc: #d97706; --t-grad: linear-gradient(90deg, #b45309, #ea580c); }
+        [data-theme="light"] .c-purple { --rgb: 124, 58, 237; --acc: #7c3aed; --t-grad: linear-gradient(90deg, #6d28d9, #4f46e5); }
 
-.hero-header{text-align:center;padding:0 .5rem;margin:.25rem 0 2rem}
-.hero-title{margin:0;font-size:1.9375rem;font-weight:800;font-style:italic;line-height:1.18;letter-spacing:-.025em}
-.hero-sub{margin:.75rem 0 0;font-size:.875rem;font-weight:600}
-@media(min-width:640px){.hero-title{font-size:2.125rem}.hero-sub{font-size:.9375rem}}
+        /* Reset & Tata Letak Utama */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-/* Kartu Menu dengan Kontras Tajam */
-.cards-stack{display:flex;flex-direction:column;gap:1.5rem;margin:auto 0}
-.menu-card{display:block;text-decoration:none;border-radius:40px;padding:1.75rem;cursor:pointer;user-select:none;position:relative;overflow:hidden;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s,background .3s}
-.menu-card:active{transform:scale(.975)}
-.menu-card:hover .card-arrow{transform:translateX(4px)}
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            transition: background .35s ease, color .35s ease;
+        }
 
-.card-hp{background:linear-gradient(145deg,#0C1C38,#071124);border:2px solid #0EA5E9;box-shadow:0 14px 36px -8px rgba(14,165,233,.38),inset 0 1px 0 rgba(255,255,255,.14)}
-html:not(.dark) .card-hp{background:linear-gradient(145deg,#fff,#E0F2FE);border:2px solid #0284C7;box-shadow:0 14px 32px -10px rgba(2,132,199,.3)}
+        .wrap {
+            width: 100%;
+            max-width: 540px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+            display: flex;
+            flex-direction: column;
+        }
 
-.card-apps{background:linear-gradient(145deg,#0B2036,#061322);border:2px solid #10B981;box-shadow:0 14px 36px -8px rgba(16,185,129,.32),inset 0 1px 0 rgba(255,255,255,.12)}
-html:not(.dark) .card-apps{background:linear-gradient(145deg,#fff,#D1FAE5);border:2px solid #059669;box-shadow:0 14px 32px -10px rgba(5,150,105,.25)}
+        /* Tombol Pengubah Tema */
+        .top { display: flex; justify-content: flex-end; margin-bottom: 12px; }
 
-.card-calc{background:linear-gradient(145deg,#13193A,#090E24);border:2px solid #8B5CF6;box-shadow:0 14px 36px -8px rgba(139,92,246,.32),inset 0 1px 0 rgba(255,255,255,.12)}
-html:not(.dark) .card-calc{background:linear-gradient(145deg,#fff,#EDE9FE);border:2px solid #7C3AED;box-shadow:0 14px 32px -10px rgba(124,58,237,.25)}
+        .tgl {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--tgl-bg);
+            border: 1px solid var(--tgl-bdr);
+            color: var(--tgl-ico);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+            transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), background .3s, border-color .3s;
+        }
+        .tgl:hover { transform: scale(1.08); }
+        .tgl:active { transform: scale(.92); }
+        .tgl svg { width: 22px; height: 22px; }
 
-.card-glow{position:absolute;right:-2.5rem;top:-2.5rem;width:9rem;height:9rem;border-radius:50%;filter:blur(30px);pointer-events:none}
-.card-row{display:flex;align-items:flex-start;gap:1.25rem}
-.card-icon{width:4rem;height:4rem;border-radius:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 2px 4px rgba(0,0,0,.2)}
-.card-body{flex:1;min-width:0}
-.card-title{margin:0;font-size:1.4375rem;font-weight:800;letter-spacing:-.025em;line-height:1.3}
-.card-desc{margin:.375rem 0 0;font-size:.875rem;line-height:1.625;font-weight:600}
-.card-footer{margin-top:1.25rem;display:flex;justify-content:flex-end}
-.card-arrow{display:inline-flex;align-items:center;gap:.375rem;font-size:.9375rem;font-weight:800;transition:transform .15s}
+        /* Header */
+        header { text-align: center; margin-bottom: 32px; padding: 0 8px; }
 
-/* Halaman Pengaturan */
-.settings-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.btn-back{display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1rem;border-radius:1rem;background:#0F1D36;border:1.5px solid #38BDF8;font-size:.875rem;font-weight:700;color:#38BDF8;cursor:pointer;transition:transform .15s}
-.btn-back:active{transform:scale(.95)}
-html:not(.dark) .btn-back{background:#fff;border-color:#0284C7;color:#0284C7;box-shadow:0 4px 10px rgba(2,132,199,.12)}
+        h1 {
+            font-size: clamp(1.65rem, 6vw, 2.15rem);
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -.02em;
+            background: var(--h-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
 
-.auto-badge{font-size:.75rem;font-weight:600;color:#10B981;display:flex;align-items:center;gap:.375rem}
-html:not(.dark) .auto-badge{color:#047857}
-.auto-dot{width:.5rem;height:.5rem;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
-.settings-heading{margin:0 0 1.25rem;font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:.625rem}
-@media(min-width:640px){.settings-heading{font-size:1.75rem}}
+        .sub { font-size: clamp(.92rem, 3.6vw, 1.05rem); color: var(--sub); line-height: 1.5; }
 
-.settings-panel{border-radius:38px;padding:1.5rem;background:linear-gradient(160deg,#0C1C38,#071124);border:1.5px solid rgba(56,189,248,.4);box-shadow:0 20px 45px -12px rgba(0,0,0,.65);display:flex;flex-direction:column;gap:1.5rem}
-@media(min-width:640px){.settings-panel{padding:1.75rem}}
-html:not(.dark) .settings-panel{background:linear-gradient(160deg,#fff,#F1F5F9);border:1.5px solid #94A3B8;box-shadow:0 20px 40px -12px rgba(15,23,42,.15)}
+        /* Daftar & Desain Kartu Menu */
+        .list { display: flex; flex-direction: column; gap: 20px; }
 
-.sec-head{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem}
-.sec-num{width:1.5rem;height:1.5rem;border-radius:50%;background:rgba(14,165,233,.25);color:#38BDF8;font-size:.75rem;font-weight:800;display:flex;align-items:center;justify-content:center}
-html:not(.dark) .sec-num{background:#E0F2FE;color:#0369A1}
-.sec-title{margin:0;font-size:1rem;font-weight:800;letter-spacing:.025em;color:#38BDF8}
-html:not(.dark) .sec-title{color:#0369A1}
-.mode-lbl{display:block;font-size:.75rem;font-weight:600;color:#E2E8F0;margin-bottom:.75rem}
-html:not(.dark) .mode-lbl{color:#334155}
+        .card {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 22px 20px;
+            border-radius: 26px;
+            background: var(--card-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1.5px solid rgba(var(--rgb), .45);
+            box-shadow: 0 8px 28px -6px rgba(var(--rgb), var(--shd-a)), inset 0 0 18px rgba(var(--rgb), var(--ins-a));
+            cursor: pointer;
+            user-select: none;
+            transition: transform .25s cubic-bezier(.25, .8, .25, 1), box-shadow .3s ease, background .35s ease;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 34px -4px rgba(var(--rgb), var(--shd-h)), inset 0 0 22px rgba(var(--rgb), var(--ins-h));
+        }
+        .card:active { transform: scale(.97) !important; }
 
-.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-.theme-btn{padding:.875rem 1rem;border-radius:1rem;font-weight:700;font-size:.875rem;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;transition:all .2s;border:1.5px solid #334155;background:#0F172A;color:#E2E8F0}
-.theme-btn:hover{background:#1E293B}
-html:not(.dark) .theme-btn{background:#F1F5F9;color:#1E293B;border-color:#94A3B8}
-html:not(.dark) .theme-btn:hover{background:#E2E8F0}
-.theme-btn.active{background:#0284C7!important;color:#fff!important;border-color:#38BDF8!important;box-shadow:0 10px 18px -3px rgba(2,132,199,.45)}
+        .ico {
+            flex-shrink: 0;
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(var(--rgb), var(--ico-a));
+            color: var(--acc);
+            border: 1px solid rgba(var(--rgb), .45);
+            transition: transform .3s ease;
+        }
+        .card:hover .ico { transform: scale(1.06); }
+        .ico svg { width: 30px; height: 30px; }
 
-/* Toast */
-.toast-wrap{position:fixed;top:1.25rem;left:50%;transform:translateX(-50%);z-index:50;pointer-events:none;width:90%;max-width:24rem;display:flex;flex-direction:column;align-items:center}
-.toast-msg{padding:.625rem 1rem;border-radius:1rem;font-size:.75rem;font-weight:700;box-shadow:0 20px 25px -5px rgba(0,0,0,.35);border:1.5px solid #38BDF8;background:rgba(7,17,36,.95);color:#38BDF8;backdrop-filter:blur(8px);transition:all .28s}
-html:not(.dark) .toast-msg{background:#fff;color:#0369A1;border-color:#0284C7}
-</style>
+        .body { flex: 1; min-width: 0; }
+
+        h2 {
+            font-size: clamp(1.12rem, 4.2vw, 1.25rem);
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            background: var(--t-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .desc { font-size: clamp(.86rem, 3.4vw, .94rem); color: var(--sub); line-height: 1.45; margin-bottom: 14px; }
+
+        .foot { display: flex; justify-content: flex-end; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .92rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+            padding: 6px 12px;
+            border-radius: 12px;
+            color: var(--acc);
+            background: var(--act-bg);
+            transition: transform .2s ease;
+        }
+        .btn span { display: inline-block; transition: transform .25s ease; }
+        .card:hover .btn { transform: translateX(3px); }
+        .card:hover .btn span { transform: translateX(4px); }
+
+        /* Responsif Tablet & Desktop */
+        @media (min-width: 640px) {
+            .wrap { padding: 40px 20px 56px; }
+            header { margin-bottom: 38px; }
+            .card { padding: 26px 24px; gap: 22px; }
+            .ico { width: 68px; height: 68px; }
+            .ico svg { width: 34px; height: 34px; }
+        }
+    </style>
 </head>
 <body>
-
-<div id="toast-container" class="toast-wrap"></div>
-
-<main class="main-wrap">
-    <!-- HALAMAN 1: MENU UTAMA -->
-    <section id="view-home" class="page-view">
-        <header class="top-bar">
-            <button type="button" id="btn-open-settings" aria-label="Buka Pengaturan" class="btn-gear">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <main class="wrap">
+        <div class="top">
+            <button type="button" id="tglBtn" class="tgl" aria-label="Ubah Tema" title="Ubah Tema">
+                <svg id="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <svg id="moon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
+        </div>
+
+        <header>
+            <h1>Daftar Pemakaian Smartphone</h1>
+            <p class="sub">Pilih aplikasi yang ingin kamu gunakan</p>
         </header>
 
-        <div class="hero-header">
-            <h1 class="hero-title grad-main">Daftar Pemakaian<br>Smartphone</h1>
-            <p class="hero-sub grad-sub">Pilih aplikasi yang ingin kamu gunakan</p>
-        </div>
-
-        <div class="cards-stack">
-            <!-- KARTU 1: Pemakaian Smartphone -->
-            <a href="Smartphone.html" class="menu-card card-hp">
-                <div class="card-glow" style="background:rgba(14,165,233,.2)"></div>
-                <div class="card-row">
-                    <div class="card-icon" style="background:rgba(14,165,233,.2);border:1.5px solid #38BDF8;color:#38BDF8">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2.5"/><line x1="9" y1="5" x2="15" y2="5" stroke-width="1.8"/></svg>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="card-title grad-main">Pemakaian Smartphone</h2>
-                        <p class="card-desc grad-d-blue">Catatan pemakaian smartphone secara umum.</p>
-                        <div class="card-footer">
-                            <span class="card-arrow" style="color:#0EA5E9">Buka <span aria-hidden="true">→</span></span>
-                        </div>
-                    </div>
+        <nav class="list" aria-label="Menu Utama">
+            <article class="card c-blue" role="button" tabindex="0" data-href="Smartphone.html">
+                <div class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M12 18h.01M9 5h6"/></svg>
                 </div>
-            </a>
-
-            <!-- KARTU 2: Aplikasi -->
-            <a href="Aplikasi.html" class="menu-card card-apps">
-                <div class="card-glow" style="background:rgba(16,185,129,.2)"></div>
-                <div class="card-row">
-                    <div class="card-icon" style="background:rgba(16,185,129,.2);border:1.5px solid #10B981;color:#10B981">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/></svg>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="card-title grad-t-apps">Aplikasi</h2>
-                        <p class="card-desc grad-d-em">Daftar dan catatan pemakaian aplikasi harian.</p>
-                        <div class="card-footer">
-                            <span class="card-arrow" style="color:#10B981">Buka <span aria-hidden="true">→</span></span>
-                        </div>
-                    </div>
+                <div class="body">
+                    <h2>Pemakaian Smartphone</h2>
+                    <p class="desc">Catatan pemakaian smartphone secara umum.</p>
+                    <div class="foot"><span class="btn">Buka <span>→</span></span></div>
                 </div>
-            </a>
+            </article>
 
-            <!-- KARTU 3: Catatan Waktu -->
-            <a href="Catatan-Waktu.html" class="menu-card card-calc">
-                <div class="card-glow" style="background:rgba(139,92,246,.2)"></div>
-                <div class="card-row">
-                    <div class="card-icon" style="background:rgba(139,92,246,.2);border:1.5px solid #8B5CF6;color:#A855F7">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3M19 5l1.5 1.5"/></svg>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="card-title grad-t-calc">Catatan Waktu</h2>
-                        <p class="card-desc grad-d-pink">Catatan durasi dan waktu pemakaian smartphone.</p>
-                        <div class="card-footer">
-                            <span class="card-arrow" style="color:#A855F7">Buka <span aria-hidden="true">→</span></span>
-                        </div>
-                    </div>
+            <article class="card c-green" role="button" tabindex="0" data-href="Aplikasi.html">
+                <div class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/></svg>
                 </div>
-            </a>
-        </div>
-    </section>
-
-    <!-- HALAMAN 2: PENGATURAN -->
-    <section id="view-settings" class="page-view hidden">
-        <div class="settings-nav">
-            <button type="button" id="btn-back-home" class="btn-back"><span>←</span> Kembali</button>
-            <span class="auto-badge"><span class="auto-dot"></span> Tersimpan Otomatis</span>
-        </div>
-
-        <h1 class="settings-heading">
-            <span>⚙️</span>
-            <span class="grad-main">Pengaturan</span>
-        </h1>
-
-        <div class="settings-panel">
-            <div>
-                <div class="sec-head">
-                    <span class="sec-num">1</span>
-                    <h2 class="sec-title">Tampilan</h2>
+                <div class="body">
+                    <h2>Aplikasi</h2>
+                    <p class="desc">Daftar dan catatan pemakaian aplikasi harian.</p>
+                    <div class="foot"><span class="btn">Buka <span>→</span></span></div>
                 </div>
-                <label class="mode-lbl">Mode Tema</label>
-                <div class="theme-grid">
-                    <button type="button" id="btn-theme-dark" class="theme-btn"><span>🌙</span> Gelap</button>
-                    <button type="button" id="btn-theme-light" class="theme-btn"><span>☀️</span> Terang</button>
+            </article>
+
+            <article class="card c-orange" role="button" tabindex="0" data-href="kalkulator.html">
+                <div class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2.5"/><path d="M8 6h8M16 14v4M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
                 </div>
-            </div>
-        </div>
-    </section>
-</main>
+                <div class="body">
+                    <h2>Kalkulator</h2>
+                    <p class="desc">Hitung durasi dan total waktu pemakaian smartphone.</p>
+                    <div class="foot"><span class="btn">Buka <span>→</span></span></div>
+                </div>
+            </article>
 
-<script>
-(()=>{
-'use strict';
-const KEY='dps_app_settings_v1',$=id=>document.getElementById(id);
-let theme='dark';
+            <article class="card c-purple" role="button" tabindex="0" data-href="Catatan_Waktu.html">
+                <div class="ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6M12 2v3M18.5 6.5L20 5"/></svg>
+                </div>
+                <div class="body">
+                    <h2>Catatan Waktu</h2>
+                    <p class="desc">Catatan durasi dan waktu pemakaian smartphone.</p>
+                    <div class="foot"><span class="btn">Buka <span>→</span></span></div>
+                </div>
+            </article>
+        </nav>
+    </main>
 
-const showToast=msg=>{
-    const box=$('toast-container');if(!box)return;
-    const t=document.createElement('div');
-    t.className='toast-msg';t.textContent=msg;
-    box.replaceChildren(t);
-    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(-6px)';setTimeout(()=>t.remove(),280)},1800);
-};
+    <script>
+        (() => {
+            const KEY = 'dps_app_theme_v1';
+            const root = document.documentElement;
+            const btn = document.getElementById('tglBtn');
+            const sun = document.getElementById('sun');
+            const moon = document.getElementById('moon');
 
-const applyTheme=(t,save=false)=>{
-    theme=t==='light'?'light':'dark';
-    const isDark=theme==='dark';
-    document.documentElement.classList.toggle('dark',isDark);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isDark?'#040812':'#E8F1FC');
-    $('btn-theme-dark')?.classList.toggle('active',isDark);
-    $('btn-theme-light')?.classList.toggle('active',!isDark);
-    if(save){
-        try{localStorage.setItem(KEY,JSON.stringify({theme}))}catch(e){}
-        showToast(isDark?'Mode Gelap aktif':'Mode Terang aktif');
-    }
-};
+            // Terapkan & simpan pilihan tema
+            const setTheme = t => {
+                const isDark = t !== 'light';
+                root.dataset.theme = isDark ? 'dark' : 'light';
+                sun.style.display = isDark ? 'block' : 'none';
+                moon.style.display = isDark ? 'none' : 'block';
+                btn.title = isDark ? 'Ubah ke Mode Terang' : 'Ubah ke Mode Gelap';
+                try { localStorage.setItem(KEY, root.dataset.theme); } catch {}
+            };
 
-const navigateTo=view=>{
-    const toSet=view==='settings';
-    $('view-home')?.classList.toggle('hidden',toSet);
-    $('view-settings')?.classList.toggle('hidden',!toSet);
-    try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){window.scrollTo(0,0)}
-};
+            // Muat tema tersimpan
+            try { setTheme(localStorage.getItem(KEY)); } catch { setTheme('dark'); }
 
-const init=()=>{
-    try{
-        const s=JSON.parse(localStorage.getItem(KEY)||'{}');
-        if(s.theme==='dark'||s.theme==='light')theme=s.theme;
-    }catch(e){}
-    applyTheme(theme,false);
-    $('btn-open-settings')?.addEventListener('click',()=>navigateTo('settings'));
-    $('btn-back-home')?.addEventListener('click',()=>navigateTo('home'));
-    $('btn-theme-dark')?.addEventListener('click',()=>applyTheme('dark',true));
-    $('btn-theme-light')?.addEventListener('click',()=>applyTheme('light',true));
-};
+            btn.onclick = () => setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
 
-window.navigateTo=navigateTo;
-window.setTheme=t=>applyTheme(t,true);
-document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
-})();
-</script>
+            // Navigasi kartu menu
+            document.querySelectorAll('.card').forEach(c => {
+                const go = () => c.dataset.href && (location.href = c.dataset.href);
+                c.onclick = go;
+                c.onkeydown = e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), go());
+            });
+        })();
+    </script>
 </body>
 </html>
