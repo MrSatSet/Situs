@@ -1,718 +1,364 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Jam ke Menit</title>
-    <style>
-        /* Variabel Warna untuk Mode Terang (Default) */
-        :root {
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --bg-input: #f8fafc;
-            --bg-result: #eff6ff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --border-focus: #2563eb;
-            --accent-primary: #2563eb;
-            --accent-hover: #1d4ed8;
-            --accent-text: #ffffff;
-            --btn-secondary-bg: #e2e8f0;
-            --btn-secondary-hover: #cbd5e1;
-            --btn-secondary-text: #1e293b;
-            --error-bg: #fef2f2;
-            --error-border: #f87171;
-            --error-text: #b91c1c;
-            --success-bg: #10b981;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Variabel Warna untuk Mode Gelap */
-        [data-theme="dark"] {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #0f172a;
-            --bg-result: #172554;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --border-focus: #60a5fa;
-            --accent-primary: #3b82f6;
-            --accent-hover: #2563eb;
-            --accent-text: #ffffff;
-            --btn-secondary-bg: #334155;
-            --btn-secondary-hover: #475569;
-            --btn-secondary-text: #f1f5f9;
-            --error-bg: #450a0a;
-            --error-border: #ef4444;
-            --error-text: #fca5a5;
-            --success-bg: #059669;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Reset & Gaya Dasar */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            transition: background-color 0.25s ease, color 0.25s ease;
-            line-height: 1.5;
-        }
-
-        /* Kontainer Utama */
-        .container {
-            width: 100%;
-            max-width: 460px;
-            background-color: var(--bg-card);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        /* Bagian Header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            gap: 12px;
-        }
-
-        .title-group h1 {
-            font-size: 1.35rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--text-primary);
-        }
-
-        .title-group p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        /* Tombol Ganti Tema */
-        .theme-toggle {
-            background-color: var(--btn-secondary-bg);
-            color: var(--btn-secondary-text);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 12px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-            min-height: 44px;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--btn-secondary-hover);
-        }
-
-        .theme-toggle:active {
-            transform: scale(0.96);
-        }
-
-        .theme-toggle svg {
-            width: 18px;
-            height: 18px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Grid Input */
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 18px;
-        }
-
-        @media (max-width: 360px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group label {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            background-color: var(--bg-input);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            outline: none;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-            min-height: 52px;
-        }
-
-        .input-wrapper input::placeholder {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
-
-        .input-wrapper input:focus {
-            border-color: var(--border-focus);
-        }
-
-        /* Pesan Peringatan / Error Validasi */
-        .alert-box {
-            display: none;
-            background-color: var(--error-bg);
-            border: 1px solid var(--error-border);
-            color: var(--error-text);
-            padding: 12px 14px;
-            border-radius: 12px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 16px;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .alert-box.show {
-            display: block;
-        }
-
-        /* Grup Tombol Aksi */
-        .button-group {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-            margin-bottom: 22px;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            min-height: 50px;
-            user-select: none;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-primary);
-            color: var(--accent-text);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-secondary {
-            background-color: var(--btn-secondary-bg);
-            color: var(--btn-secondary-text);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--btn-secondary-hover);
-        }
-
-        /* Kotak Tampilan Hasil */
-        .result-card {
-            background-color: var(--bg-result);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            transition: background-color 0.25s ease, border-color 0.25s ease;
-        }
-
-        .result-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .result-value {
-            font-size: 2.35rem;
-            font-weight: 800;
-            color: var(--accent-primary);
-            word-break: break-word;
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
-
-        .result-detail {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-
-        /* Animasi Halus Saat Hasil Diperbarui */
-        .animate-pop {
-            animation: popIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes popIn {
-            0% {
-                opacity: 0.3;
-                transform: translateY(6px) scale(0.97);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Tombol Salin Hasil */
-        .btn-copy {
-            width: 100%;
-            background-color: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 11px 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            min-height: 44px;
-        }
-
-        .btn-copy:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        .btn-copy.copied {
-            background-color: var(--success-bg);
-            color: #ffffff;
-            border-color: var(--success-bg);
-        }
-
-        .btn-copy svg {
-            width: 16px;
-            height: 16px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Footer Informasi Rumus */
-        .footer-note {
-            margin-top: 18px;
-            text-align: center;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kalkulator Serbaguna</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','-apple-system','sans-serif']}}}}</script>
+<style>
+.fade-slide-in{animation:f .3s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes f{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+</style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 selection:bg-blue-600 selection:text-white">
 
-    <main class="container" role="main">
-        <!-- Header & Pengalih Tema -->
-        <header class="header">
-            <div class="title-group">
-                <h1>Jam ke Menit</h1>
-                <p>Konversi satuan waktu instan</p>
-            </div>
-            <button type="button" id="themeToggle" class="theme-toggle" aria-label="Ganti mode tampilan">
-                <!-- Ikon Matahari / Bulan diatur oleh JavaScript -->
-                <span id="themeIcon"></span>
-                <span id="themeText">Gelap</span>
-            </button>
-        </header>
+<header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors duration-300">
+<div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-600/20">
+<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
+</div>
+<div>
+<h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight">Kalkulator Serbaguna</h1>
+<p class="text-[11px] font-medium text-blue-600 dark:text-blue-400">100% Offline • Mandiri</p>
+</div>
+</div>
+<button id="btnTheme" type="button" aria-label="Ubah Tema" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95">
+<svg class="w-5 h-5 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+<svg class="w-5 h-5 hidden dark:block text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+</button>
+</div>
+</header>
 
-        <!-- Form Input -->
-        <form id="calcForm" novalidate>
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="hoursInput">Jam</label>
-                    <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="hoursInput" 
-                            inputmode="numeric" 
-                            pattern="[0-9]*" 
-                            placeholder="0" 
-                            autocomplete="off"
-                            aria-describedby="errorMessage"
-                        >
-                    </div>
-                </div>
+<main class="flex-1 w-full max-w-lg mx-auto px-4 pt-5 pb-28">
+<div class="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl mb-5">
+<button id="tabUsia" onclick="switchMenu('usia')" type="button" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm">
+<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M2 21h20M7 8v3m5-3v3m5-3v3M7 4h.01M12 4h.01M17 4h.01"/></svg>
+Hitung Usia
+</button>
+<button id="tabWaktu" onclick="switchMenu('waktu')" type="button" class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200">
+<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+Jam ke Menit
+</button>
+</div>
 
-                <div class="input-group">
-                    <label for="minutesInput">Menit</label>
-                    <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="minutesInput" 
-                            inputmode="numeric" 
-                            pattern="[0-9]*" 
-                            placeholder="0" 
-                            autocomplete="off"
-                            aria-describedby="errorMessage"
-                        >
-                    </div>
-                </div>
-            </div>
+<!-- MENU 1: USIA -->
+<section id="secUsia" class="space-y-4 fade-slide-in">
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-800 space-y-4">
+<div>
+<h2 class="text-base font-bold text-blue-600 dark:text-blue-400">Kalkulator Hitung Usia</h2>
+<p id="txtToday" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hari ini: -</p>
+</div>
+<div class="space-y-1.5">
+<label for="inLahir" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Pilih Tanggal Lahir</label>
+<div class="relative flex items-center">
+<input type="date" id="inLahir" class="w-full bg-slate-100/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer">
+<button type="button" onclick="openPicker()" aria-label="Buka Kalender" class="absolute right-2.5 p-2 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors">
+<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+</button>
+</div>
+</div>
+<div id="errUsia" class="hidden items-center gap-2.5 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/80 text-red-700 dark:text-red-300 text-xs font-medium">
+<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+<span id="errUsiaTxt">Tanggal lahir tidak valid.</span>
+</div>
+<div class="grid grid-cols-5 gap-2.5 pt-1">
+<button type="button" onclick="resetUsia()" class="col-span-2 flex items-center justify-center gap-1.5 py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold tracking-wide transition-all active:scale-95">
+<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+RESET
+</button>
+<button type="button" onclick="hitungUsia()" class="col-span-3 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold tracking-wide shadow-sm shadow-blue-600/25 transition-all active:scale-95">HITUNG USIA</button>
+</div>
+</div>
 
-            <!-- Kotak Pesan Validasi -->
-            <div id="errorMessage" class="alert-box" role="alert"></div>
+<div id="cardUsia" class="hidden bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-800 space-y-4 fade-slide-in">
+<div class="flex items-center justify-between gap-2">
+<h3 class="text-base font-bold text-blue-600 dark:text-blue-400">Hasil Perhitungan</h3>
+<button type="button" onclick="copyText(lastUsia,'Hasil perhitungan usia berhasil disalin!')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all active:scale-95">
+<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+SALIN HASIL
+</button>
+</div>
+<div class="grid grid-cols-3 gap-2.5">
+<div class="bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-3.5 text-center"><div id="rThn" class="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-300">0</div><div class="text-xs font-semibold text-blue-600/80 dark:text-blue-400 mt-0.5">Tahun</div></div>
+<div class="bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-3.5 text-center"><div id="rBln" class="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-300">0</div><div class="text-xs font-semibold text-blue-600/80 dark:text-blue-400 mt-0.5">Bulan</div></div>
+<div class="bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-3.5 text-center"><div id="rHr" class="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-300">0</div><div class="text-xs font-semibold text-blue-600/80 dark:text-blue-400 mt-0.5">Hari</div></div>
+</div>
+<hr class="border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2.5">Total Keseluruhan</p>
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-500 dark:text-slate-400">Total Bulan</div><div id="rTotBln" class="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">0</div></div>
+<div class="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-500 dark:text-slate-400">Total Minggu</div><div id="rTotMgg" class="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">0</div></div>
+<div class="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl p-3 text-center"><div class="text-[11px] text-slate-500 dark:text-slate-400">Total Hari</div><div id="rTotHr" class="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">0</div></div>
+</div>
+</div>
+<hr class="border-slate-100 dark:border-slate-800">
+<div class="space-y-3 text-sm">
+<div class="flex items-start gap-2.5"><span class="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0"></span><div><div class="text-xs text-slate-500 dark:text-slate-400">Hari & Tanggal Lahir</div><div id="rLahir" class="font-semibold text-slate-900 dark:text-slate-100">-</div></div></div>
+<div class="flex items-start gap-2.5"><span class="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0"></span><div><div class="text-xs text-slate-500 dark:text-slate-400">Ulang Tahun Berikutnya</div><div id="rUltah" class="font-semibold text-slate-900 dark:text-slate-100">-</div></div></div>
+<div class="flex items-start gap-2.5 p-3 rounded-xl bg-teal-50 dark:bg-teal-950/50 border border-teal-100 dark:border-teal-900/60"><span class="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400 mt-1.5 shrink-0"></span><div><div class="text-xs text-teal-700 dark:text-teal-300">Hitung Mundur Menuju Ulang Tahun</div><div id="rMundur" class="font-bold text-teal-800 dark:text-teal-200">-</div></div></div>
+</div>
+</div>
+</section>
 
-            <!-- Tombol Hitung & Reset -->
-            <div class="button-group">
-                <button type="submit" id="calcBtn" class="btn btn-primary">
-                    Hitung
-                </button>
-                <button type="button" id="resetBtn" class="btn btn-secondary">
-                    Reset
-                </button>
-            </div>
-        </form>
+<!-- MENU 2: WAKTU -->
+<section id="secWaktu" class="hidden space-y-4 fade-slide-in">
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-800 space-y-4">
+<div>
+<h2 class="text-base font-bold text-blue-600 dark:text-blue-400">Konversi Jam ke Menit</h2>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Mendukung bilangan bulat maupun angka desimal (contoh: 2,5 jam).</p>
+</div>
+<div class="space-y-1.5">
+<label for="inJam" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Jumlah Jam</label>
+<div class="relative flex items-center">
+<input type="text" inputmode="decimal" id="inJam" placeholder="Contoh: 2 atau 1,5" class="w-full bg-slate-100/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-14 py-3.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+<span class="absolute right-4 text-xs font-bold text-slate-400">jam</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label for="inMenit" class="block text-xs font-semibold text-slate-600 dark:text-slate-300">Tambahan Menit (Opsional)</label>
+<div class="relative flex items-center">
+<input type="text" inputmode="decimal" id="inMenit" placeholder="Contoh: 30" class="w-full bg-slate-100/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-16 py-3.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+<span class="absolute right-4 text-xs font-bold text-slate-400">menit</span>
+</div>
+</div>
+<div id="errWaktu" class="hidden items-center gap-2.5 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/80 text-red-700 dark:text-red-300 text-xs font-medium">
+<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+<span id="errWaktuTxt">Input waktu tidak valid.</span>
+</div>
+<div class="grid grid-cols-5 gap-2.5 pt-1">
+<button type="button" onclick="resetWaktu()" class="col-span-2 flex items-center justify-center gap-1.5 py-3.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold tracking-wide transition-all active:scale-95">
+<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+RESET
+</button>
+<button type="button" onclick="konversiWaktu()" class="col-span-3 py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold tracking-wide shadow-sm shadow-blue-600/25 transition-all active:scale-95">KONVERSI</button>
+</div>
+</div>
 
-        <!-- Area Tampilan Hasil -->
-        <section class="result-card" aria-live="polite">
-            <div class="result-label">Total Konversi</div>
-            <div id="resultDisplay" class="result-value">0 MENIT</div>
-            <div id="detailDisplay" class="result-detail">0 jam 0 menit = 0 menit.</div>
-            
-            <button type="button" id="copyBtn" class="btn-copy">
-                <svg viewBox="0 0 24 24">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span id="copyBtnText">Salin Hasil</span>
-            </button>
-        </section>
+<div id="cardWaktu" class="hidden bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-800 space-y-4 fade-slide-in">
+<div class="flex items-center justify-between gap-2">
+<h3 class="text-base font-bold text-blue-600 dark:text-blue-400">Hasil Konversi</h3>
+<button type="button" onclick="copyText(lastWaktu,'Hasil konversi waktu berhasil disalin!')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all active:scale-95">
+<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+SALIN HASIL
+</button>
+</div>
+<div class="bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-5 text-center">
+<div class="text-[11px] font-bold tracking-wider text-blue-600/80 dark:text-blue-400 uppercase">Total Menit</div>
+<div id="rTotMnt" class="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-300 mt-1">0 Menit</div>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<div class="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl p-3.5 text-center"><div class="text-[11px] text-slate-500 dark:text-slate-400">Total Detik</div><div id="rTotDtk" class="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">0 detik</div></div>
+<div class="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl p-3.5 text-center"><div class="text-[11px] text-slate-500 dark:text-slate-400">Format Jam & Menit</div><div id="rFmtJm" class="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1">0 jam 0 menit</div></div>
+</div>
+</div>
+</section>
+</main>
 
-        <footer class="footer-note">
-            Rumus: Total menit = (Jam &times; 60) + Menit &bull; 100% Offline
-        </footer>
-    </main>
+<nav class="fixed bottom-0 inset-x-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800">
+<div class="max-w-lg mx-auto grid grid-cols-2 h-16">
+<button id="navUsia" onclick="switchMenu('usia')" type="button" class="flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-400 font-bold text-xs transition-colors">
+<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M2 21h20M7 8v3m5-3v3m5-3v3M7 4h.01M12 4h.01M17 4h.01"/></svg>
+<span>Hitung Usia</span>
+</button>
+<button id="navWaktu" onclick="switchMenu('waktu')" type="button" class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 font-medium text-xs transition-colors">
+<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+<span>Jam ke Menit</span>
+</button>
+</div>
+</nav>
 
-    <script>
-        (function () {
-            "use strict";
+<div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-2">
+<div class="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 whitespace-nowrap">
+<svg class="w-4 h-4 text-emerald-400 dark:text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+<span id="toastTxt">Berhasil disalin!</span>
+</div>
+</div>
 
-            // Referensi Elemen DOM
-            const htmlEl = document.documentElement;
-            const themeToggle = document.getElementById("themeToggle");
-            const themeIcon = document.getElementById("themeIcon");
-            const themeText = document.getElementById("themeText");
+<script>
+const $ = id => document.getElementById(id),
+      HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'],
+      BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
+      KEY = 'kalkulator_serbaguna_tema',
+      html = document.documentElement;
 
-            const calcForm = document.getElementById("calcForm");
-            const hoursInput = document.getElementById("hoursInput");
-            const minutesInput = document.getElementById("minutesInput");
-            const errorMessage = document.getElementById("errorMessage");
-            const resetBtn = document.getElementById("resetBtn");
+let lastUsia = '', lastWaktu = '', tTimer;
 
-            const resultDisplay = document.getElementById("resultDisplay");
-            const detailDisplay = document.getElementById("detailDisplay");
-            const copyBtn = document.getElementById("copyBtn");
-            const copyBtnText = document.getElementById("copyBtnText");
+// Tema
+const setTheme = d => { html.classList.toggle('dark', d); html.classList.toggle('light', !d); };
+try {
+    const s = localStorage.getItem(KEY);
+    setTheme(s ? s === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+} catch { setTheme(false); }
 
-            // Variabel penyimpan teks hasil terbaru untuk disalin
-            let latestCopyText = "0 jam 0 menit = 0 menit.";
-            let copyTimeout = null;
+$('btnTheme').onclick = () => {
+    const d = !html.classList.contains('dark');
+    setTheme(d);
+    try { localStorage.setItem(KEY, d ? 'dark' : 'light'); } catch {}
+};
 
-            // Ikon SVG Inline (Mandiri tanpa pustaka eksternal)
-            const sunSVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
-            const moonSVG = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+// Navigasi
+function switchMenu(m) {
+    const u = m === 'usia';
+    $('secUsia').classList.toggle('hidden', !u);
+    $('secWaktu').classList.toggle('hidden', u);
+    const act = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm',
+          inact = 'flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200',
+          bAct = 'flex flex-col items-center justify-center gap-1 text-blue-600 dark:text-blue-400 font-bold text-xs transition-colors',
+          bInact = 'flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 font-medium text-xs transition-colors';
+    $('tabUsia').className = u ? act : inact;
+    $('tabWaktu').className = u ? inact : act;
+    $('navUsia').className = u ? bAct : bInact;
+    $('navWaktu').className = u ? bInact : bAct;
+}
 
-            /**
-             * Pembungkus aman untuk localStorage agar tidak error di mode privat / file lokal terbatas
-             */
-            function getSavedTheme() {
-                try {
-                    return window.localStorage.getItem("kalkulator_tema");
-                } catch (e) {
-                    return null;
-                }
-            }
+// Utilitas
+const fmtTgl = d => `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`,
+      fmtNum = (n, d = 2) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: d }).format(n);
 
-            function saveTheme(theme) {
-                try {
-                    window.localStorage.setItem("kalkulator_tema", theme);
-                } catch (e) {
-                    // Abaikan jika storage diblokir browser
-                }
-            }
+function showToast(msg) {
+    $('toastTxt').textContent = msg;
+    $('toast').classList.remove('opacity-0', 'translate-y-2');
+    clearTimeout(tTimer);
+    tTimer = setTimeout(() => $('toast').classList.add('opacity-0', 'translate-y-2'), 2400);
+}
 
-            /**
-             * Terapkan Tema Terang atau Gelap
-             */
-            function applyTheme(theme) {
-                if (theme === "dark") {
-                    htmlEl.setAttribute("data-theme", "dark");
-                    themeIcon.innerHTML = sunSVG;
-                    themeText.textContent = "Terang";
-                } else {
-                    htmlEl.removeAttribute("data-theme");
-                    themeIcon.innerHTML = moonSVG;
-                    themeText.textContent = "Gelap";
-                }
-            }
+function copyText(txt, msg) {
+    if (!txt) return;
+    const t = document.createElement('textarea');
+    t.value = txt; t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); showToast(msg); } catch { showToast('Gagal menyalin teks.'); }
+    t.remove();
+}
 
-            // Inisialisasi tema saat halaman dibuka
-            const initialTheme = getSavedTheme() || "light";
-            applyTheme(initialTheme);
+const showErr = (box, txtEl, card, msg) => {
+    $(txtEl).textContent = msg;
+    $(box).classList.replace('hidden', 'flex');
+    $(card).classList.add('hidden');
+}, hideErr = box => $(box).classList.replace('flex', 'hidden');
 
-            // Event klik tombol tema
-            themeToggle.addEventListener("click", function () {
-                const isDark = htmlEl.getAttribute("data-theme") === "dark";
-                const nextTheme = isDark ? "light" : "dark";
-                applyTheme(nextTheme);
-                saveTheme(nextTheme);
-            });
+// Fitur 1: Hitung Usia
+(() => {
+    const now = new Date();
+    $('txtToday').textContent = `Tanggal hari ini: ${fmtTgl(now)}`;
+    $('inLahir').max = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+})();
 
-            /**
-             * Format angka dengan pemisah ribuan titik (contoh: 1.500) agar mudah dibaca
-             */
-            function formatNumber(num) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
+function openPicker() {
+    const el = $('inLahir');
+    try { el.showPicker ? el.showPicker() : el.focus(); } catch { el.focus(); }
+}
 
-            /**
-             * Tampilkan atau sembunyikan pesan kesalahan
-             */
-            function showError(msg) {
-                errorMessage.textContent = msg;
-                errorMessage.classList.add("show");
-            }
+function resetUsia() {
+    $('inLahir').value = '';
+    hideErr('errUsia');
+    $('cardUsia').classList.add('hidden');
+    lastUsia = '';
+}
 
-            function hideError() {
-                errorMessage.textContent = "";
-                errorMessage.classList.remove("show");
-            }
+function hitungUsia() {
+    const val = $('inLahir').value;
+    if (!val) return showErr('errUsia', 'errUsiaTxt', 'cardUsia', 'Silakan pilih tanggal lahir terlebih dahulu.');
+    const [y, m, d] = val.split('-').map(Number),
+          lahir = new Date(y, m - 1, d),
+          now = new Date(),
+          today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (isNaN(lahir)) return showErr('errUsia', 'errUsiaTxt', 'cardUsia', 'Format tanggal lahir tidak valid.');
+    if (lahir > today) return showErr('errUsia', 'errUsiaTxt', 'cardUsia', 'Tanggal lahir tidak boleh berada di masa depan.');
+    hideErr('errUsia');
 
-            /**
-             * Validasi ketat untuk input bilangan bulat positif (atau kosong = 0)
-             */
-            function parseStrictPositiveInt(rawValue, fieldName) {
-                const trimmed = rawValue.trim();
+    let thn = today.getFullYear() - lahir.getFullYear(),
+        bln = today.getMonth() - lahir.getMonth(),
+        hr = today.getDate() - lahir.getDate();
+    if (hr < 0) { bln--; hr += new Date(today.getFullYear(), today.getMonth(), 0).getDate(); }
+    if (bln < 0) { thn--; bln += 12; }
 
-                // Kosong dianggap 0
-                if (trimmed === "") {
-                    return { valid: true, value: 0 };
-                }
+    const totHr = Math.floor((today - lahir) / 864e5),
+          totMgg = Math.floor(totHr / 7),
+          totBln = thn * 12 + bln,
+          lahirStr = fmtTgl(lahir);
 
-                // Tolak angka negatif secara eksplisit
-                if (trimmed.startsWith("-")) {
-                    return {
-                        valid: false,
-                        error: "Kolom " + fieldName + " tidak boleh bernilai negatif."
-                    };
-                }
+    const getUltah = yr => {
+        const k = new Date(yr, lahir.getMonth(), lahir.getDate());
+        return k.getMonth() !== lahir.getMonth() ? new Date(yr, lahir.getMonth() + 1, 0) : k;
+    };
+    let ultah = getUltah(today.getFullYear());
+    if (ultah < today) ultah = getUltah(today.getFullYear() + 1);
+    const ultahStr = fmtTgl(ultah),
+          hrMundur = Math.round((ultah - today) / 864e5);
 
-                // Pastikan hanya digit angka 0-9 (menolak desimal, huruf, simbol)
-                if (!/^\d+$/.test(trimmed)) {
-                    return {
-                        valid: false,
-                        error: "Kolom " + fieldName + " hanya boleh diisi bilangan bulat positif."
-                    };
-                }
+    let mundurStr = 'Selamat Ulang Tahun Hari Ini!';
+    if (hrMundur > 0) {
+        let mB = ultah.getMonth() - today.getMonth() + 12 * (ultah.getFullYear() - today.getFullYear()),
+            mH = ultah.getDate() - today.getDate();
+        if (mH < 0) { mB--; mH += new Date(ultah.getFullYear(), ultah.getMonth(), 0).getDate(); }
+        const p = [];
+        if (mB > 0) p.push(`${mB} bulan`);
+        if (mH > 0) p.push(`${mH} hari`);
+        mundurStr = `${p.join(' ')} (${fmtNum(hrMundur, 0)} hari lagi)`;
+    }
 
-                const parsed = Number(trimmed);
+    $('rThn').textContent = fmtNum(thn, 0);
+    $('rBln').textContent = fmtNum(bln, 0);
+    $('rHr').textContent = fmtNum(hr, 0);
+    $('rTotBln').textContent = `${fmtNum(totBln, 0)} bln`;
+    $('rTotMgg').textContent = `${fmtNum(totMgg, 0)} mgg`;
+    $('rTotHr').textContent = `${fmtNum(totHr, 0)} hr`;
+    $('rLahir').textContent = lahirStr;
+    $('rUltah').textContent = ultahStr;
+    $('rMundur').textContent = mundurStr;
+    $('cardUsia').classList.remove('hidden');
 
-                // Periksa batas aman bilangan bulat JavaScript (Number.MAX_SAFE_INTEGER)
-                if (!Number.isSafeInteger(parsed)) {
-                    return {
-                        valid: false,
-                        error: "Angka pada kolom " + fieldName + " terlalu besar untuk dihitung dengan aman."
-                    };
-                }
+    lastUsia = `Hasil Hitung Usia (Kalkulator Serbaguna):\n• Usia Saat Ini    : ${thn} Tahun, ${bln} Bulan, ${hr} Hari\n• Lahir Pada       : ${lahirStr}\n• Total Bulan      : ${fmtNum(totBln, 0)} bulan\n• Total Minggu     : ${fmtNum(totMgg, 0)} minggu\n• Total Hari       : ${fmtNum(totHr, 0)} hari\n• Ultah Berikutnya : ${ultahStr}\n• Hitung Mundur    : ${mundurStr}`;
+}
 
-                return { valid: true, value: parsed };
-            }
+// Fitur 2: Konversi Waktu
+['inJam', 'inMenit'].forEach(id => $(id).oninput = e => {
+    if (e.target.value.includes('-')) {
+        e.target.value = e.target.value.replace(/-/g, '');
+        showErr('errWaktu', 'errWaktuTxt', 'cardWaktu', 'Angka negatif tidak diperbolehkan.');
+    } else hideErr('errWaktu');
+});
 
-            /**
-             * Memicu animasi ulang pada kotak hasil
-             */
-            function triggerResultAnimation() {
-                resultDisplay.classList.remove("animate-pop");
-                detailDisplay.classList.remove("animate-pop");
-                // Memaksa reflow DOM agar animasi CSS berjalan kembali
-                void resultDisplay.offsetWidth;
-                resultDisplay.classList.add("animate-pop");
-                detailDisplay.classList.add("animate-pop");
-            }
+function resetWaktu() {
+    $('inJam').value = $('inMenit').value = '';
+    hideErr('errWaktu');
+    $('cardWaktu').classList.add('hidden');
+    lastWaktu = '';
+}
 
-            /**
-             * Fungsi utama perhitungan Jam ke Menit
-             */
-            function calculateMinutes() {
-                hideError();
+function konversiWaktu() {
+    const rJ = $('inJam').value.trim().replace(',', '.'),
+          rM = $('inMenit').value.trim().replace(',', '.');
+    if (!rJ && !rM) return showErr('errWaktu', 'errWaktuTxt', 'cardWaktu', 'Masukkan nilai jam atau menit terlebih dahulu.');
+    const j = rJ ? +rJ : 0, m = rM ? +rM : 0;
+    if (isNaN(j) || isNaN(m)) return showErr('errWaktu', 'errWaktuTxt', 'cardWaktu', 'Format angka tidak valid. Gunakan angka bulat atau desimal.');
+    if (j < 0 || m < 0) return showErr('errWaktu', 'errWaktuTxt', 'cardWaktu', 'Angka tidak boleh bernilai negatif.');
+    hideErr('errWaktu');
 
-                const hoursCheck = parseStrictPositiveInt(hoursInput.value, "Jam");
-                if (!hoursCheck.valid) {
-                    showError(hoursCheck.error);
-                    hoursInput.focus();
-                    return;
-                }
+    const totMnt = j * 60 + m,
+          totDtk = totMnt * 60,
+          dtkB = Math.round(totDtk),
+          jU = Math.floor(dtkB / 3600),
+          sD = dtkB % 3600,
+          mU = Math.floor(sD / 60),
+          dA = sD % 60,
+          fmtJm = `${fmtNum(jU, 0)} jam ${mU} menit${dA > 0 ? ` ${dA} detik` : ''}`,
+          mntStr = `${fmtNum(totMnt, 2)} Menit`,
+          dtkStr = `${fmtNum(totDtk, 2)} detik`;
 
-                const minutesCheck = parseStrictPositiveInt(minutesInput.value, "Menit");
-                if (!minutesCheck.valid) {
-                    showError(minutesCheck.error);
-                    minutesInput.focus();
-                    return;
-                }
+    $('rTotMnt').textContent = mntStr;
+    $('rTotDtk').textContent = dtkStr;
+    $('rFmtJm').textContent = fmtJm;
+    $('cardWaktu').classList.remove('hidden');
 
-                const hours = hoursCheck.value;
-                const minutes = minutesCheck.value;
-
-                // Rumus: Total menit = (Jam * 60) + Menit
-                const totalMinutes = (hours * 60) + minutes;
-
-                // Pastikan hasil akhir tidak melebihi batas aman integer JavaScript
-                if (!Number.isSafeInteger(totalMinutes)) {
-                    showError("Hasil perhitungan melebihi batas angka aman JavaScript.");
-                    return;
-                }
-
-                const formattedHours = formatNumber(hours);
-                const formattedMinutes = formatNumber(minutes);
-                const formattedTotal = formatNumber(totalMinutes);
-
-                // Perbarui tampilan hasil
-                resultDisplay.textContent = formattedTotal + " MENIT";
-                const detailString = formattedHours + " jam " + formattedMinutes + " menit = " + formattedTotal + " menit.";
-                detailDisplay.textContent = detailString;
-
-                // Simpan teks untuk tombol salin (format bersih sesuai contoh)
-                latestCopyText = hours + " jam " + minutes + " menit = " + totalMinutes + " menit.";
-
-                triggerResultAnimation();
-            }
-
-            // Event Submit Form (Tombol Hitung atau tekan Enter)
-            calcForm.addEventListener("submit", function (event) {
-                event.preventDefault();
-                calculateMinutes();
-            });
-
-            // Sembunyikan pesan error saat pengguna memperbaiki ketikan
-            hoursInput.addEventListener("input", hideError);
-            minutesInput.addEventListener("input", hideError);
-
-            // Event Tombol Reset
-            resetBtn.addEventListener("click", function () {
-                hoursInput.value = "";
-                minutesInput.value = "";
-                hideError();
-
-                resultDisplay.textContent = "0 MENIT";
-                detailDisplay.textContent = "0 jam 0 menit = 0 menit.";
-                latestCopyText = "0 jam 0 menit = 0 menit.";
-
-                triggerResultAnimation();
-                hoursInput.focus();
-            });
-
-            // Event Tombol Salin Hasil (100% Offline dengan fallback kompatibel)
-            copyBtn.addEventListener("click", function () {
-                const textToCopy = latestCopyText;
-                let copied = false;
-
-                // Gunakan textarea sementara + execCommand agar berjalan lancar di file:// dan semua browser
-                const tempTextArea = document.createElement("textarea");
-                tempTextArea.value = textToCopy;
-                tempTextArea.setAttribute("readonly", "");
-                tempTextArea.style.position = "fixed";
-                tempTextArea.style.left = "-9999px";
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                tempTextArea.setSelectionRange(0, 99999);
-
-                try {
-                    copied = document.execCommand("copy");
-                } catch (err) {
-                    copied = false;
-                }
-
-                document.body.removeChild(tempTextArea);
-
-                // Coba API modern jika execCommand gagal dan konteks mengizinkan
-                if (!copied && navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(textToCopy).catch(function () {});
-                }
-
-                // Umpan balik visual tombol berhasil disalin
-                copyBtn.classList.add("copied");
-                copyBtnText.textContent = "Hasil Tersalin!";
-
-                if (copyTimeout) {
-                    clearTimeout(copyTimeout);
-                }
-
-                copyTimeout = setTimeout(function () {
-                    copyBtn.classList.remove("copied");
-                    copyBtnText.textContent = "Salin Hasil";
-                }, 2000);
-            });
-        })();
-    </script>
+    lastWaktu = `Hasil Konversi Waktu (Kalkulator Serbaguna):\n• Format Waktu : ${fmtJm}\n• Total Menit  : ${mntStr}\n• Total Detik  : ${dtkStr}`;
+}
+</script>
 </body>
 </html>
